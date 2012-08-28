@@ -1,0 +1,11 @@
+.deps
+.libs
+*.lo
+*.la
+Makefile
+Makefile.in
+fh2svg
+fh2svg.exe
+fh2xhtml
+fh2xhtml.exe
+*.rc
