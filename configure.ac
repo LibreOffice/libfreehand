@@ -201,8 +201,6 @@ build/win32/Makefile
 docs/Makefile
 docs/doxygen/Makefile
 libfreehand-0.0.pc
-libfreehand.spec
-libfreehand-zip
 ])
 AC_OUTPUT
 

@@ -14,20 +14,10 @@ EXTRA_DIST = \
 	NEWS \
 	README \
 	autogen.sh \
-	libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.pc.in \
-	libfreehand-zip.in \
-	libfreehand.spec \
-	libfreehand.spec.in
+	libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.pc.in
 
 distclean-local:
 	rm -rf *.cache *~
-
-rpm: dist
-	rpmbuild -ta $(PACKAGE)-$(VERSION).tar.gz
-	@rm -f $(PACKAGE)-$(VERSION).tar.gz
-
-zip: all install
-	sh libfreehand-zip 
 
 dist-hook:
 	git log --date=short --pretty="format:@%cd  %an  <%ae>  [%H]%n%n%s%n%n%e%b" | sed -e "s|^\([^@]\)|\t\1|" -e "s|^@||" >$(distdir)/ChangeLog
