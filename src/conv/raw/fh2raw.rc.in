@@ -1,0 +1,31 @@
+#include <winver.h>
+
+VS_VERSION_INFO VERSIONINFO
+  FILEVERSION @FH_MAJOR_VERSION@,@FH_MINOR_VERSION@,@FH_MICRO_VERSION@,BUILDNUMBER
+  PRODUCTVERSION @FH_MAJOR_VERSION@,@FH_MINOR_VERSION@,@FH_MICRO_VERSION@,0
+  FILEFLAGSMASK 0
+  FILEFLAGS 0
+  FILEOS VOS__WINDOWS32
+  FILETYPE VFT_APP
+  FILESUBTYPE VFT2_UNKNOWN
+  BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+      BLOCK "040904B0"
+      BEGIN
+	VALUE "CompanyName", "The libfreehand developer community"
+	VALUE "FileDescription", "fh2raw"
+	VALUE "FileVersion", "@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.@FH_MICRO_VERSION@.BUILDNUMBER"
+	VALUE "InternalName", "fh2raw"
+	VALUE "LegalCopyright", "Copyright (C) 2004 Marc Oude Kotte, other contributers"
+	VALUE "OriginalFilename", "fh2raw.exe"
+	VALUE "ProductName", "libfreehand"
+	VALUE "ProductVersion", "@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.@FH_MICRO_VERSION@"
+      END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+      VALUE "Translation", 0x409, 1200
+    END
+  END
+

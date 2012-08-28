@@ -1,0 +1,50 @@
+#!/bin/sh
+
+# Build runtime and developer zipfiles for libfreehand on Win32.
+
+ZIP=libfreehand-@FH_VERSION@-MinGW.zip
+DEVZIP=libfreehand-devel-@FH_VERSION@-MinGW.zip
+TOOLSZIP=libfreehand-tools-@FH_VERSION@.zip
+
+cd $DESTDIR@prefix@
+
+DLLDIR=lib
+[ -f bin/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.dll ] && \
+DLLDIR=bin
+
+@STRIP@ --strip-all \
+$DLLDIR/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.dll \
+bin/fh2raw.exe \
+bin/fh2xhtml.exe
+
+upx -qqq --best \
+$DLLDIR/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.dll \
+bin/fh2raw.exe \
+bin/fh2xhtml.exe
+
+rm -f $ZIP
+zip -q -r $ZIP -@ <<EOF
+$DLLDIR/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.dll
+EOF
+
+rm -f $DEVZIP
+zip -q -r $DEVZIP -@ <<EOF
+include/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@
+lib/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.dll.a
+lib/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.a
+lib/pkgconfig/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.pc
+EOF
+
+rm -f $TOOLSZIP
+zip -q -r -j $TOOLSZIP -@ <<EOF
+bin/fh2raw.exe
+bin/fh2xhtml.exe
+bin/fh2xhtmlbatch.exe
+EOF
+
+rm -f $TOOLSZIP
+zip -q -r -j $TOOLSZIP -@ <<EOF
+bin/fh2raw.exe
+bin/fh2xhtml.exe
+bin/fh2xhtmlbatch.pl
+EOF
