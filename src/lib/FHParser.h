@@ -53,6 +53,7 @@ private:
 
   void parseDictionary(WPXInputStream *input);
   void parseListOfRecords(WPXInputStream *input);
+  void parseData(WPXInputStream *input);
 
   WPXInputStream *m_input;
   FHCollector *m_collector;

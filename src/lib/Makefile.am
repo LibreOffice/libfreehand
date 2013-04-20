@@ -19,11 +19,13 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LDFLAGS = $(version_info) -
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHCollector.cpp \
 	FreeHandDocument.cpp \
+	FHInternalStream.cpp \
 	FHParser.cpp \
 	FHStringVector.cpp \
 	FHSVGGenerator.cpp \
 	libfreehand_utils.cpp \
 	FHCollector.h \
+	FHInternalStream.h \
 	FHParser.h \
 	FHSVGGenerator.h \
 	libfreehand_utils.h 

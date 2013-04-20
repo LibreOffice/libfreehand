@@ -32,6 +32,7 @@
 #include <libwpd-stream/WPXStream.h>
 #include "FHParser.h"
 #include "FHCollector.h"
+#include "FHInternalStream.h"
 #include "libfreehand_utils.h"
 
 libfreehand::FHParser::FHParser(WPXInputStream *input, FHCollector *collector)
@@ -64,8 +65,12 @@ bool libfreehand::FHParser::parse()
 
   parseListOfRecords(m_input);
 
-  m_input->seek(dataOffset, WPX_SEEK_SET);
-  return false;
+  m_input->seek(dataOffset+12, WPX_SEEK_SET);
+
+  FHInternalStream dataStream(m_input, dataLength-12, m_version >= 9);
+  parseData(&dataStream);
+
+  return true;
 }
 
 void libfreehand::FHParser::parseDictionary(WPXInputStream *input)
@@ -104,6 +109,10 @@ void libfreehand::FHParser::parseListOfRecords(WPXInputStream *input)
     m_records.push_back(id);
     FH_DEBUG_MSG(("FHParser::parseListOfRecords - ID: 0x%x\n", id));
   }
+}
+
+void libfreehand::FHParser::parseData(WPXInputStream *input)
+{
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
