@@ -61,7 +61,7 @@ uint16_t libfreehand::readU16(WPXInputStream *input)
   uint8_t const *p = input->read(sizeof(uint16_t), numBytesRead);
 
   if (p && numBytesRead == sizeof(uint16_t))
-    return (uint16_t)p[0]|((uint16_t)p[1]<<8);
+    return (uint16_t)p[1]|((uint16_t)p[0]<<8);
 
   FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
   throw EndOfStreamException();
@@ -83,7 +83,7 @@ uint32_t libfreehand::readU32(WPXInputStream *input)
   uint8_t const *p = input->read(sizeof(uint32_t), numBytesRead);
 
   if (p && numBytesRead == sizeof(uint32_t))
-    return (uint32_t)p[0]|((uint32_t)p[1]<<8)|((uint32_t)p[2]<<16)|((uint32_t)p[3]<<24);
+    return (uint32_t)p[3]|((uint32_t)p[2]<<8)|((uint32_t)p[1]<<16)|((uint32_t)p[0]<<24);
 
   FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
   throw EndOfStreamException();
@@ -92,41 +92,6 @@ uint32_t libfreehand::readU32(WPXInputStream *input)
 int32_t libfreehand::readS32(WPXInputStream *input)
 {
   return (int32_t)readU32(input);
-}
-
-uint64_t libfreehand::readU64(WPXInputStream *input)
-{
-  if (!input || input->atEOS())
-  {
-    FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
-    throw EndOfStreamException();
-  }
-  unsigned long numBytesRead;
-  uint8_t const *p = input->read(sizeof(uint64_t), numBytesRead);
-
-  if (p && numBytesRead == sizeof(uint64_t))
-    return (uint64_t)p[0]|((uint64_t)p[1]<<8)|((uint64_t)p[2]<<16)|((uint64_t)p[3]<<24)|((uint64_t)p[4]<<32)|((uint64_t)p[5]<<40)|((uint64_t)p[6]<<48)|((uint64_t)p[7]<<56);
-
-  FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
-  throw EndOfStreamException();
-}
-
-int64_t libfreehand::readS64(WPXInputStream *input)
-{
-  return (int64_t)readU64(input);
-}
-
-double libfreehand::readDouble(WPXInputStream *input)
-{
-  union
-  {
-    uint64_t u;
-    double d;
-  } tmpUnion;
-
-  tmpUnion.u = readU64(input);
-
-  return tmpUnion.d;
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

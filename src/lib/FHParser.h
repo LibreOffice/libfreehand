@@ -29,6 +29,8 @@
 #ifndef __FHPARSER_H__
 #define __FHPARSER_H__
 
+#include <map>
+#include <vector>
 #include <libwpd/libwpd.h>
 #include <libwpg/libwpg.h>
 
@@ -49,8 +51,14 @@ private:
   FHParser(const FHParser &);
   FHParser &operator=(const FHParser &);
 
+  void parseDictionary(WPXInputStream *input);
+  void parseListOfRecords(WPXInputStream *input);
+
   WPXInputStream *m_input;
   FHCollector *m_collector;
+  int m_version;
+  std::map<unsigned short, WPXString> m_dictionary;
+  std::vector<unsigned short> m_records;
 };
 
 } // namespace libfreehand

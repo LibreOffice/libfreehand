@@ -1,29 +1,88 @@
 /* -*- Mode: C++; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*- */
 /* libfreehand
- * Copyright (C) 2012 Fridrich Strba (fridrich.strba@bluewin.ch)
+ * Version: MPL 1.1 / GPLv2+ / LGPLv2+
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Library General Public
- * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * The contents of this file are subject to the Mozilla Public License Version
+ * 1.1 (the "License"); you may not use this file except in compliance with
+ * the License or as specified alternatively below. You may obtain a copy of
+ * the License at http://www.mozilla.org/MPL/
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Library General Public License for more details.
+ * Software distributed under the License is distributed on an "AS IS" basis,
+ * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+ * for the specific language governing rights and limitations under the
+ * License.
  *
- * You should have received a copy of the GNU Library General Public
- * License along with this library; if not, write to the
- * Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
- * Boston, MA  02111-1301 USA
+ * Major Contributor(s):
+ * Copyright (C) 2012 Fridrich Strba <fridrich.strba@bluewin.ch>
+ *
+ *
+ * All Rights Reserved.
+ *
+ * For minor contributions see the git repository.
+ *
+ * Alternatively, the contents of this file may be used under the terms of
+ * either the GNU General Public License Version 2 or later (the "GPLv2+"), or
+ * the GNU Lesser General Public License Version 2 or later (the "LGPLv2+"),
+ * in which case the provisions of the GPLv2+ or the LGPLv2+ are applicable
+ * instead of those above.
  */
 
 #include <sstream>
 #include <string>
 #include <string.h>
 #include "FreeHandDocument.h"
+#include "FHCollector.h"
+#include "FHParser.h"
 #include "FHSVGGenerator.h"
 #include "libfreehand_utils.h"
+
+namespace
+{
+
+using namespace libfreehand;
+
+static bool findAGD(WPXInputStream *input)
+{
+  unsigned agd = readU32(input);
+  input->seek(-4, WPX_SEEK_CUR);
+  if (((agd >> 24) & 0xff) == 'A' && ((agd >> 16) & 0xff) == 'G' && ((agd >> 8) & 0xff) == 'D')
+  {
+    FH_DEBUG_MSG(("Found AGD at offset 0x%lx (FreeHand version %i)\n", input->tell(), (agd & 0xff) - 0x30 + 5));
+    return true;
+  }
+  else
+  {
+    // parse the document for AGD block
+    while (!input->atEOS())
+    {
+      if (0x1c != readU8(input))
+        return false;
+      unsigned short opcode = readU16(input);
+      unsigned char flag = readU8(input);
+      unsigned length = readU8(input);
+      if (0x80 == flag)
+      {
+        if (4 != length)
+          return false;
+        length = readU32(input);
+        if (0x080a == opcode)
+        {
+          agd = readU32(input);
+          input->seek(-4, WPX_SEEK_CUR);
+          if (((agd >> 24) & 0xff) == 'A' && ((agd >> 16) & 0xff) == 'G' && ((agd >> 8) & 0xff) == 'D')
+          {
+            FH_DEBUG_MSG(("Found AGD at offset 0x%lx (FreeHand version %i)\n", input->tell(), (agd & 0xff) - 0x30 + 5));
+            return true;
+          }
+        }
+      }
+      input->seek(length, WPX_SEEK_CUR);
+    }
+  }
+  return false;
+}
+
+} // anonymous namespace
 
 /**
 Analyzes the content of an input stream to see if it can be parsed
@@ -33,7 +92,20 @@ stream is a FreeHand Document that libfreehand is able to parse
 */
 bool libfreehand::FreeHandDocument::isSupported(WPXInputStream *input)
 {
+  try
+  {
+    input->seek(0, WPX_SEEK_SET);
+    if (findAGD(input))
+    {
+      input->seek(0, WPX_SEEK_SET);
+      return true;
+    }
+  }
+  catch (...)
+  {
+  }
   return false;
+
 }
 
 /**
@@ -46,6 +118,19 @@ WPGPaintInterface class implementation when needed. This is often commonly calle
 */
 bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPaintInterface *painter)
 {
+  try
+  {
+    input->seek(0, WPX_SEEK_SET);
+    if (findAGD(input))
+    {
+      FHCollector collector(painter);
+      FHParser parser(input, &collector);
+      return parser.parse();
+    }
+  }
+  catch (...)
+  {
+  }
   return false;
 }
 
