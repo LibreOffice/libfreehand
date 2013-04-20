@@ -33,14 +33,36 @@ AC_PROG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 PKG_PROG_PKG_CONFIG([0.20])
 
-# ====================
-# Find additional apps
-# ====================
-PKG_CHECK_MODULES([LIBFREEHAND],[
+# ===========
+# Find libwpd
+# ===========
+PKG_CHECK_MODULES([WPD],[
 	libwpd-0.9
 	libwpd-stream-0.9
+])
+AC_SUBST(WPD_CFLAGS)
+AC_SUBST(WPD_LIBS)
+
+# ===========
+# Find libwpg
+# ===========
+PKG_CHECK_MODULES([WPG],[
 	libwpg-0.2
 ])
+AC_SUBST(WPG_CFLAGS)
+AC_SUBST(WPG_LIBS)
+
+# =========
+# Find zlib
+# =========
+PKG_CHECK_MODULES([ZLIB],[zlib],[],[
+    AC_CHECK_HEADER(zlib.h, [ZLIB_CFLAGS=],
+        [AC_MSG_ERROR(zlib.h not found. install zlib)], [])
+    AC_CHECK_LIB(z, inflate, [ ZLIB_LIBS=-lz ],
+        [AC_MSG_ERROR(zlib not found or functional)], [])
+])
+AC_SUBST(ZLIB_CFLAGS)
+AC_SUBST(ZLIB_LIBS)
 
 # =================================
 # Libtool/Version Makefile settings
@@ -66,20 +88,20 @@ AS_CASE([$host],
 	[*-*-mingw*], [
 		native_win32=yes
 		LIBFREEHAND_WIN32_RESOURCE=libfreehand-win32res.lo
-		PPP2RAW_WIN32_RESOURCE=fh2raw-win32res.lo
-		PPP2XHTML_WIN32_RESOURCE=fh2xhtml-win32res.lo
+		FH2RAW_WIN32_RESOURCE=fh2raw-win32res.lo
+		FH2XHTML_WIN32_RESOURCE=fh2xhtml-win32res.lo
 	], [
 		native_win32=no
 		LIBFREEHAND_WIN32_RESOURCE=
-		PPP2RAW_WIN32_RESOURCE=
-		PPP2XHTML_WIN32_RESOURCE=
+		FH2RAW_WIN32_RESOURCE=
+		FH2XHTML_WIN32_RESOURCE=
 	]
 )
 AC_MSG_RESULT([$native_win32])
 AM_CONDITIONAL(OS_WIN32, [test "x$native_win32" = "xyes"])
 AC_SUBST(LIBFREEHAND_WIN32_RESOURCE)
-AC_SUBST(PPP2RAW_WIN32_RESOURCE)
-AC_SUBST(PPP2XHTML_WIN32_RESOURCE)
+AC_SUBST(FH2RAW_WIN32_RESOURCE)
+AC_SUBST(FH2XHTML_WIN32_RESOURCE)
 
 AC_MSG_CHECKING([for Win32 platform in general])
 AS_CASE([$host],

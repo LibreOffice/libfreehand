@@ -11,11 +11,11 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_include_HEADERS = \
 	FreeHandDocument.h \
 	FHStringVector.h
 
-AM_CXXFLAGS = $(LIBFREEHAND_CXXFLAGS) $(DEBUG_CXXFLAGS)
+AM_CXXFLAGS = $(WPD_CFLAGS) $(WPG_CFLAGS) $(ZLIB_CFLAGS) $(DEBUG_CXXFLAGS)
 
-libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LIBADD  = $(LIBFREEHAND_LIBS) @LIBFREEHAND_WIN32_RESOURCE@
+libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LIBADD  = $(WPD_LIBS) $(ZLIB_LIBS) @LIBFREEHAND_WIN32_RESOURCE@
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_DEPENDENCIES = @LIBFREEHAND_WIN32_RESOURCE@
-libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic -no_undefined
+libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic -no-undefined
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHCollector.cpp \
 	FreeHandDocument.cpp \
