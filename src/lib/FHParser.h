@@ -169,11 +169,12 @@ private:
   void readVMpObj(WPXInputStream *input);
   void readXform(WPXInputStream *input);
 
+  unsigned _readRecordId(WPXInputStream *input);
 
   WPXInputStream *m_input;
   FHCollector *m_collector;
   int m_version;
-  std::map<unsigned short, WPXString> m_dictionary;
+  std::map<unsigned short, int> m_dictionary;
   std::vector<unsigned short> m_records;
 };
 

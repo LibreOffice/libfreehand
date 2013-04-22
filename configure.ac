@@ -33,6 +33,24 @@ AC_PROG_LIBTOOL
 AC_LIBTOOL_WIN32_DLL
 PKG_PROG_PKG_CONFIG([0.20])
 
+AC_PROG_EGREP
+AC_PROG_SED
+
+dnl ===================================================================
+dnl Check for gperf
+dnl ===================================================================
+AC_PATH_PROG(GPERF, gperf)
+if test -z "$GPERF"; then
+    AC_MSG_ERROR([gperf not found but needed. Install it.])
+fi
+AC_MSG_CHECKING([gperf version])
+if test "`$GPERF --version | $EGREP ^GNU\ gperf | $AWK '{ print $3 }' | cut -d. -f1`" -ge "3"; then
+    AC_MSG_RESULT([OK])
+else
+    AC_MSG_ERROR([too old, you need at least 3.0.0])
+fi
+AC_SUBST(GPERF)
+
 # ===========
 # Find libwpd
 # ===========

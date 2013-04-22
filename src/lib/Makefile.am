@@ -30,6 +30,22 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHSVGGenerator.h \
 	libfreehand_utils.h 
 
+generated_files = \
+	$(top_builddir)/src/lib/tokens.h \
+	$(top_builddir)/src/lib/tokenhash.h
+
+FHParser.lo : $(generated_files)
+
+$(top_builddir)/src/lib/tokens.h : $(top_builddir)/src/lib/tokens.gperf
+
+$(top_builddir)/src/lib/tokenhash.h : $(top_builddir)/src/lib/tokens.gperf
+	$(GPERF) --compare-strncmp -C -m 20 $(top_builddir)/src/lib/tokens.gperf \
+		| $(SED) -e "s/(char\*)0/(char\*)0, 0/g" > $(top_builddir)/src/lib/tokenhash.h
+
+$(top_builddir)/src/lib/tokens.gperf : $(top_srcdir)/src/lib/tokens.txt gentoken.pl
+	perl $(top_srcdir)/src/lib/gentoken.pl $(top_srcdir)/src/lib/tokens.txt \
+		$(top_builddir)/src/lib/tokens.h $(top_builddir)/src/lib/tokens.gperf
+
 if OS_WIN32
 
 @LIBFREEHAND_WIN32_RESOURCE@ : libfreehand.rc $(libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_OBJECTS)
@@ -38,6 +54,8 @@ if OS_WIN32
 
 endif
 
+distclean-local :
+	rm -f $(generated_files) $(top_builddir)/src/lib/*.gperf
 
 EXTRA_DIST = \
 	libfreehand.rc.in \

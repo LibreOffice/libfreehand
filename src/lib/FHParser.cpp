@@ -34,6 +34,23 @@
 #include "FHCollector.h"
 #include "FHInternalStream.h"
 #include "libfreehand_utils.h"
+#include "tokens.h"
+
+namespace
+{
+
+#include "tokenhash.h"
+
+static int getTokenId(const char *name)
+{
+  const fhtoken *token = Perfect_Hash::in_word_set(name, strlen(name));
+  if(token)
+    return token->tokenId;
+  else
+    return FH_TOKEN_INVALID;
+}
+
+} // anonymous namespace
 
 libfreehand::FHParser::FHParser(WPXInputStream *input, FHCollector *collector)
   : m_input(input), m_collector(collector), m_version(-1), m_dictionary(), m_records()
@@ -96,7 +113,7 @@ void libfreehand::FHParser::parseDictionary(WPXInputStream *input)
           f++;
       }
     }
-    m_dictionary[id] = name;
+    m_dictionary[id] = getTokenId(name.cstr());
   }
 }
 
