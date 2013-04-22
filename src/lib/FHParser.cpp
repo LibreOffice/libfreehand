@@ -115,455 +115,455 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
 {
 }
 
-void libvisio::FHParser::readAGDFont(WPXInputStream * /* input */)
+void libfreehand::FHParser::readAGDFont(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readAGDSelection(WPXInputStream * /* input */)
+void libfreehand::FHParser::readAGDSelection(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readArrowPath(WPXInputStream * /* input */)
+void libfreehand::FHParser::readArrowPath(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readAttributeHolder(WPXInputStream * /* input */)
+void libfreehand::FHParser::readAttributeHolder(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBasicFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBasicFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBasicLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBasicLine(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBendFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBendFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBlock(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBlock(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBrushList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBrushList(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBrush(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBrush(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBrushStroke(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBrushStroke(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readBrushTip(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBrushTip(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readCalligraphicStroke(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCalligraphicStroke(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readCharacterFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCharacterFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readClipGroup(WPXInputStream * /* input */)
+void libfreehand::FHParser::readClipGroup(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readCollector(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCollector(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readColor6(WPXInputStream * /* input */)
+void libfreehand::FHParser::readColor6(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readCompositePath(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCompositePath(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readConeFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readConeFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readConnectorLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readConnectorLine(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readContentFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readContentFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readContourFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readContourFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readCustomProc(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCustomProc(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readDataList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readDataList(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readData(WPXInputStream * /* input */)
+void libfreehand::FHParser::readData(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readDateTime(WPXInputStream * /* input */)
+void libfreehand::FHParser::readDateTime(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readDuetFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readDuetFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readElement(WPXInputStream * /* input */)
+void libfreehand::FHParser::readElement(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readElemList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readElemList(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readElemPropLst(WPXInputStream * /* input */)
+void libfreehand::FHParser::readElemPropLst(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readEnvelope(WPXInputStream * /* input */)
+void libfreehand::FHParser::readEnvelope(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readExpandFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readExpandFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readExtrusion(WPXInputStream * /* input */)
+void libfreehand::FHParser::readExtrusion(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFHDocHeader(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFHDocHeader(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFigure(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFigure(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFileDescriptor(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFileDescriptor(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFilterAttributeHolder(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFilterAttributeHolder(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFWBevelFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFWBevelFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFWBlurFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFWBlurFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFWFeatherFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFWFeatherFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFWGlowFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFWGlowFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFWShadowFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFWShadowFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readFWSharpenFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFWSharpenFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readGradientMaskFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readGradientMaskFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readGraphicStyle(WPXInputStream * /* input */)
+void libfreehand::FHParser::readGraphicStyle(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readGroup(WPXInputStream * /* input */)
+void libfreehand::FHParser::readGroup(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readGuides(WPXInputStream * /* input */)
+void libfreehand::FHParser::readGuides(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readHalftone(WPXInputStream * /* input */)
+void libfreehand::FHParser::readHalftone(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readImageFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readImageFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readImageImport(WPXInputStream * /* input */)
+void libfreehand::FHParser::readImageImport(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readLayer(WPXInputStream * /* input */)
+void libfreehand::FHParser::readLayer(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readLensFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readLensFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readLinearFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readLinearFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readLinePat(WPXInputStream * /* input */)
+void libfreehand::FHParser::readLinePat(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readLineTable(WPXInputStream * /* input */)
+void libfreehand::FHParser::readLineTable(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readList(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMasterPageDocMan(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageDocMan(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMasterPageElement(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageElement(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMasterPageLayerElement(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageLayerElement(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMasterPageLayerInstance(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageLayerInstance(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMasterPageSymbolClass(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageSymbolClass(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMasterPageSymbolInstance(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageSymbolInstance(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMDict(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMDict(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMList(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMName(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMName(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMpObject(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMpObject(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMQuickDict(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMQuickDict(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMString(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMString(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMultiBlend(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMultiBlend(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readMultiColorList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMultiColorList(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readNewBlend(WPXInputStream * /* input */)
+void libfreehand::FHParser::readNewBlend(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readNewContourFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readNewContourFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readNewRadialFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readNewRadialFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readOpacityFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readOpacityFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readOval(WPXInputStream * /* input */)
+void libfreehand::FHParser::readOval(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readParagraph(WPXInputStream * /* input */)
+void libfreehand::FHParser::readParagraph(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPath(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPath(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPathTextLineInfo(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPatternFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPatternFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPatternLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPatternLine(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPerspectiveEnvelope(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPerspectiveEnvelope(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPerspectiveGrid(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPerspectiveGrid(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPolygonFigure(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPolygonFigure(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readProcedure(WPXInputStream * /* input */)
+void libfreehand::FHParser::readProcedure(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPropLst(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPropLst(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readPSLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPSLine(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readRadialFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readRadialFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readRadialFillX(WPXInputStream * /* input */)
+void libfreehand::FHParser::readRadialFillX(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readRaggedFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readRaggedFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readRectangle(WPXInputStream * /* input */)
+void libfreehand::FHParser::readRectangle(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readSketchFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readSketchFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readSpotColor6(WPXInputStream * /* input */)
+void libfreehand::FHParser::readSpotColor6(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readStylePropLst(WPXInputStream * /* input */)
+void libfreehand::FHParser::readStylePropLst(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readSwfImport(WPXInputStream * /* input */)
+void libfreehand::FHParser::readSwfImport(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readSymbolClass(WPXInputStream * /* input */)
+void libfreehand::FHParser::readSymbolClass(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readSymbolInstance(WPXInputStream * /* input */)
+void libfreehand::FHParser::readSymbolInstance(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readSymbolLibrary(WPXInputStream * /* input */)
+void libfreehand::FHParser::readSymbolLibrary(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTabTable(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTabTable(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTaperedFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTaperedFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTaperedFillX(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTaperedFillX(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTEffect(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTEffect(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTextBlok(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTextBlok(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTextColumn(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTextColumn(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTextInPath(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTextInPath(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTFOnPath(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTFOnPath(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTileFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTileFill(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTintColor6(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTintColor6(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTransformFilter(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTransformFilter(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readTString(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTString(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readUString(WPXInputStream * /* input */)
+void libfreehand::FHParser::readUString(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readVDict(WPXInputStream * /* input */)
+void libfreehand::FHParser::readVDict(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readVMpObj(WPXInputStream * /* input */)
+void libfreehand::FHParser::readVMpObj(WPXInputStream * /* input */)
 {
 }
 
-void libvisio::FHParser::readXform(WPXInputStream * /* input */)
+void libfreehand::FHParser::readXform(WPXInputStream * /* input */)
 {
 }
 
