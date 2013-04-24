@@ -39,6 +39,7 @@ AC_PROG_SED
 dnl ===================================================================
 dnl Check for gperf
 dnl ===================================================================
+AC_ARG_VAR(GPERF, [Setting this variable will override the gperf detection])
 AC_PATH_PROG(GPERF, gperf)
 if test -z "$GPERF"; then
     AC_MSG_ERROR([gperf not found but needed. Install it.])
