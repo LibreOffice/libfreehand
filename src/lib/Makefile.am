@@ -13,6 +13,10 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_include_HEADERS = \
 
 AM_CXXFLAGS = $(WPD_CFLAGS) $(WPG_CFLAGS) $(ZLIB_CFLAGS) $(DEBUG_CXXFLAGS)
 
+generated_files = \
+	$(top_builddir)/src/lib/tokens.h \
+	$(top_builddir)/src/lib/tokenhash.h
+
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LIBADD  = $(WPD_LIBS) $(ZLIB_LIBS) @LIBFREEHAND_WIN32_RESOURCE@
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_DEPENDENCIES = @LIBFREEHAND_WIN32_RESOURCE@
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic -no-undefined
@@ -28,11 +32,8 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHInternalStream.h \
 	FHParser.h \
 	FHSVGGenerator.h \
-	libfreehand_utils.h 
-
-generated_files = \
-	$(top_builddir)/src/lib/tokens.h \
-	$(top_builddir)/src/lib/tokenhash.h
+	libfreehand_utils.h \
+	$(generated_files)
 
 FHParser.lo : $(generated_files)
 
@@ -58,8 +59,9 @@ distclean-local :
 	rm -f $(generated_files) $(top_builddir)/src/lib/*.gperf
 
 EXTRA_DIST = \
-	libfreehand.rc.in \
-	makefile.mk
+	tokens.txt \
+    gentoken.pl \
+	libfreehand.rc.in
 
 # These may be in the builddir too
 BUILD_EXTRA_DIST = \
