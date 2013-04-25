@@ -157,6 +157,7 @@ private:
   int m_version;
   std::map<unsigned short, int> m_dictionary;
   std::vector<unsigned short> m_records;
+  std::vector<unsigned short>::size_type m_currentRecord;
 };
 
 } // namespace libfreehand

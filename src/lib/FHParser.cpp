@@ -34,7 +34,8 @@ static int getTokenId(const char *name)
 } // anonymous namespace
 
 libfreehand::FHParser::FHParser(WPXInputStream *input, FHCollector *collector)
-  : m_input(input), m_collector(collector), m_version(-1), m_dictionary(), m_records()
+  : m_input(input), m_collector(collector), m_version(-1), m_dictionary(),
+    m_records(), m_currentRecord(0)
 {
 }
 
@@ -111,10 +112,9 @@ void libfreehand::FHParser::parseListOfRecords(WPXInputStream *input)
 
 void libfreehand::FHParser::parseData(WPXInputStream *input)
 {
-  for (std::vector<unsigned short>::const_iterator iterList = m_records.begin();
-       iterList != m_records.end(); ++iterList)
+  for (m_currentRecord = 0; m_currentRecord < m_records.size(); ++m_currentRecord)
   {
-    std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(*iterList);
+    std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(m_records[m_currentRecord]);
     if (iterDict != m_dictionary.end())
     {
       switch (iterDict->second)
