@@ -31,6 +31,22 @@ static int getTokenId(const char *name)
     return FH_TOKEN_INVALID;
 }
 
+#ifdef DEBUG
+const char *getTokenName(int tokenId)
+{
+  if(tokenId >= FH_TOKEN_COUNT)
+    return 0;
+  const fhtoken *currentToken = wordlist;
+  while(currentToken != wordlist+sizeof(wordlist)/sizeof(*wordlist))
+  {
+    if(currentToken->tokenId == tokenId)
+      return currentToken->name;
+    ++currentToken;
+  }
+  return 0;
+}
+#endif
+
 } // anonymous namespace
 
 libfreehand::FHParser::FHParser(WPXInputStream *input, FHCollector *collector)
@@ -117,6 +133,7 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
     std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(m_records[m_currentRecord]);
     if (iterDict != m_dictionary.end())
     {
+      FH_DEBUG_MSG(("Parsing record number %u: %s\n", (unsigned)m_currentRecord, getTokenName(iterDict->second)));
       switch (iterDict->second)
       {
       case FH_AGDFONT:
@@ -462,6 +479,10 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
         FH_DEBUG_MSG(("FHParser::parseData UNKNOWN TOKEN\n"));
         return;
       }
+    }
+    else
+    {
+      FH_DEBUG_MSG(("FHParser::parseData NO SUCH TOKEN IN DICTIONARY\n"));
     }
   }
 }
