@@ -128,7 +128,7 @@ void libfreehand::FHParser::parseListOfRecords(WPXInputStream *input)
 
 void libfreehand::FHParser::parseData(WPXInputStream *input)
 {
-  for (m_currentRecord = 0; m_currentRecord < m_records.size(); ++m_currentRecord)
+  for (m_currentRecord = 0; m_currentRecord < m_records.size() && !input->atEOS(); ++m_currentRecord)
   {
     std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(m_records[m_currentRecord]);
     if (iterDict != m_dictionary.end())
@@ -487,8 +487,23 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
   }
 }
 
-void libfreehand::FHParser::readAGDFont(WPXInputStream * /* input */)
+void libfreehand::FHParser::readAGDFont(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
+  unsigned short num = readU16(input);
+  input->seek(2, WPX_SEEK_CUR);
+  for (unsigned short i = 0; i < num; ++i)
+  {
+#if 0
+    unsigned short key = readU16(input);
+    unsigned short rec = readU16(input);
+#else
+    input->seek(4, WPX_SEEK_CUR);
+#endif
+    unsigned short something = readU16(input);
+    if (0xffff == something)
+      input->seek(2, WPX_SEEK_CUR);
+  }
 }
 
 void libfreehand::FHParser::readAGDSelection(WPXInputStream * /* input */)
@@ -583,8 +598,10 @@ void libfreehand::FHParser::readDataList(WPXInputStream * /* input */)
 {
 }
 
-void libfreehand::FHParser::readData(WPXInputStream * /* input */)
+void libfreehand::FHParser::readData(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  input->seek(size*4+4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readDateTime(WPXInputStream * /* input */)
@@ -743,8 +760,10 @@ void libfreehand::FHParser::readMList(WPXInputStream * /* input */)
 {
 }
 
-void libfreehand::FHParser::readMName(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMName(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  input->seek((size+1)*4 - 2, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readMpObject(WPXInputStream * /* input */)
@@ -755,8 +774,10 @@ void libfreehand::FHParser::readMQuickDict(WPXInputStream * /* input */)
 {
 }
 
-void libfreehand::FHParser::readMString(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMString(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  input->seek((size+1)*4 - 2, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readMultiBlend(WPXInputStream * /* input */)
@@ -931,12 +952,57 @@ void libfreehand::FHParser::readVDict(WPXInputStream * /* input */)
 {
 }
 
-void libfreehand::FHParser::readVMpObj(WPXInputStream * /* input */)
+void libfreehand::FHParser::readVMpObj(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
+  unsigned short num = readU16(input);
+  input->seek(2, WPX_SEEK_CUR);
+  for (unsigned short i = 0; i < num; ++i)
+  {
+#if 0
+    unsigned short key = readU16(input);
+    unsigned short rec = readU16(input);
+#else
+    input->seek(4, WPX_SEEK_CUR);
+#endif
+    unsigned short something = readU16(input);
+    if (0xffff == something)
+      input->seek(2, WPX_SEEK_CUR);
+  }
 }
 
-void libfreehand::FHParser::readXform(WPXInputStream * /* input */)
+void libfreehand::FHParser::readXform(WPXInputStream *input)
 {
+  unsigned char var1 = readU8(input);
+  unsigned char var2 = readU8(input);
+  input->seek(_xformCalc(var1, var2), WPX_SEEK_CUR);
+  var1 = readU8(input);
+  var2 = readU8(input);
+  input->seek(_xformCalc(var1, var2), WPX_SEEK_CUR);
+}
+
+unsigned libfreehand::FHParser::_readRecordId(WPXInputStream *input)
+{
+  unsigned recid = readU16(input);
+  if (recid == 0xffff)
+    recid = 0x1ff00 - readU16(input);
+  return recid;
+}
+
+unsigned libfreehand::FHParser::_xformCalc(unsigned char var1, unsigned char var2)
+{
+  unsigned a5 = ~((var1&0x20)>>5);
+  unsigned a4 = ~((var1&0x10)>>4);
+  unsigned a2 = (var1&0x4)>>2;
+  unsigned a1 = (var1&0x2)>>1;
+  unsigned a0 = var1&0x1;
+
+  unsigned b6 = (var2&0x40) >> 6;
+  unsigned b5 = (var2&0x20) >> 5;
+  if (a2)
+    return 0;
+
+  return (a5+a4+a1+a0+b6+b5)*4;
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

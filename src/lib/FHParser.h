@@ -152,6 +152,8 @@ private:
 
   unsigned _readRecordId(WPXInputStream *input);
 
+  unsigned _xformCalc(unsigned char var1, unsigned char var2);
+
   WPXInputStream *m_input;
   FHCollector *m_collector;
   int m_version;
