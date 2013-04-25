@@ -3,13 +3,7 @@ bin_PROGRAMS = fh2raw
 AM_CXXFLAGS = -I$(top_srcdir)/src/lib -I$(top_builddir)/src/lib $(WPD_CFLAGS) $(WPG_CFLAGS) $(DEBUG_CXXFLAGS)
 
 fh2raw_DEPENDENCIES = @FH2RAW_WIN32_RESOURCE@
-
-if STATIC_TOOLS
-fh2raw_LDADD = ../../lib/@FH_OBJDIR@/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.a $(WPD_LIBS) $(ZLIB_LIBS) @FH2RAW_WIN32_RESOURCE@
-fh2raw_LDFLAGS = -all-static 
-else
 fh2raw_LDADD = ../../lib/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.la $(WPD_LIBS) $(ZLIB_LIBS) @FH2RAW_WIN32_RESOURCE@ 
-endif
 
 fh2raw_SOURCES = \
 	fh2raw.cpp

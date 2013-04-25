@@ -4,12 +4,7 @@ AM_CXXFLAGS = -I$(top_srcdir)/src/lib -I$(top_builddir)/src/lib $(WPD_CFLAGS) $(
 
 fh2xhtml_DEPENDENCIES = @FH2XHTML_WIN32_RESOURCE@
 
-if STATIC_TOOLS
-fh2xhtml_LDADD = ../../lib/@FH_OBJDIR@/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.a $(WPD_LIBS) $(ZLIB_LIBS) @FH2XHTML_WIN32_RESOURCE@
-fh2xhtml_LDFLAGS = -all-static 
-else
 fh2xhtml_LDADD = ../../lib/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.la $(WPD_LIBS) $(ZLIB_LIBS) @FH2XHTML_WIN32_RESOURCE@ 
-endif
 
 fh2xhtml_SOURCES = \
 	fh2xhtml.cpp

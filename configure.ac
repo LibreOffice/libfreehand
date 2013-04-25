@@ -23,14 +23,16 @@ AC_LANG([C++])
 # ===========================
 # Find required base packages
 # ===========================
+m4_ifdef([AM_PROG_AR], [AM_PROG_AR])
 AC_PROG_CC
 AC_PROG_CPP
 AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
-AC_PROG_LIBTOOL
-AC_LIBTOOL_WIN32_DLL
+LT_INIT([win32-dll disable-static pic-only])
+AC_CANONICAL_HOST
+
 PKG_PROG_PKG_CONFIG([0.20])
 
 AC_PROG_EGREP
@@ -130,11 +132,12 @@ AS_CASE([$host],
 AC_MSG_RESULT([$platform_win32])
 AM_CONDITIONAL([PLATFORM_WIN32], [test "x$platform_win32" = "xyes"])
 
+
 # ================
 # Check for cflags
 # ================
 AC_ARG_ENABLE([werror],
-	[AS_HELP_STRING([--disable-werror], [Treat all warnings as errors, usefull for development])],
+	[AS_HELP_STRING([--disable-werror], [Treat all warnings as errors, useful for development])],
 	[enable_werror="$enableval"],
 	[enable_werror=yes]
 )
@@ -142,6 +145,16 @@ AS_IF([test x"$enable_werror" != "xno"], [
 	CFLAGS="$CFLAGS -Werror"
 	CXXFLAGS="$CXXFLAGS -Werror"
 ])
+AC_ARG_ENABLE([weffc],
+	[AS_HELP_STRING([--disable-weffc], [ Disable -Weffc++ warnings, usefull when using an old version of gcc or of boost])],
+	[enable_weffc="$enableval"],
+	[enable_weffc=yes]
+)
+AC_ARG_ENABLE([wparanoic],
+	[AS_HELP_STRING([--enable-wparanoic], [Enable a lot of warnings...])],
+	[enable_wparanoic="$enableval"],
+	[enable_wparanoic=no]
+)
 # Courtesy of Glib: Ensure MSVC-compatible struct packing convention
 # is used when compiling for Win32 with gcc.
 AS_IF([test "x$native_win32" = "xyes"], [
@@ -163,16 +176,35 @@ AS_IF([test "x$native_win32" = "xyes"], [
 			AC_MSG_WARN([produced libraries might be incompatible with MSVC-compiled code])
 		])
 	])
-	CFLAGS="$CFLAGS -Wall -pedantic"
-	CXXFLAGS="$CXXFLAGS -Wall -pedantic"
+	CFLAGS="$CFLAGS -Wall -Wextra -pedantic"
+		CXXFLAGS="$CXXFLAGS -Wall -Wextra -pedantic -Wshadow -Wunused-variable"
+		AS_IF([test x"$enable_weffc" != "xno"], [
+			CXXFLAGS="$CXXFLAGS -Weffc++"
+		])
+		AS_IF([test x"$enable_wparanoic" != "xno"], [
+			CXXFLAGS="$CXXFLAGS -Wcast-align -Wcast-qual -Wchar-subscripts"
+			CXXFLAGS="$CXXFLAGS -Wcomment -Wconversion -Wdisabled-optimization"
+			CXXFLAGS="$CXXFLAGS -Wfloat-equal -Wformat -Wformat=2"
+			CXXFLAGS="$CXXFLAGS -Wformat-nonliteral -Wformat-security"
+			CXXFLAGS="$CXXFLAGS -Wformat-y2k -Wimport -Winit-self -Winvalid-pch"
+			CXXFLAGS="$CXXFLAGS -Wmissing-braces -Wmissing-field-initializers"
+			CXXFLAGS="$CXXFLAGS -Wmissing-format-attribute -Wmissing-include-dirs"
+			CXXFLAGS="$CXXFLAGS -Wmissing-noreturn -Wpacked -Wparentheses"
+			CXXFLAGS="$CXXFLAGS -Wpointer-arith -Wredundant-decls -Wreturn-type"
+			CXXFLAGS="$CXXFLAGS -Wsequence-point -Wsign-compare -Wstrict-aliasing"
+			CXXFLAGS="$CXXFLAGS -Wstrict-aliasing=2 -Wswitch -Wswitch-default"
+			CXXFLAGS="$CXXFLAGS -Wswitch-enum -Wtrigraphs -Wunknown-pragmas -Wunused"
+			CXXFLAGS="$CXXFLAGS -Wunused-function -Wunused-label -Wunused-parameter"
+			CXXFLAGS="$CXXFLAGS -Wunused-value -Wvariadic-macros"
+			CXXFLAGS="$CXXFLAGS -Wvolatile-register-var -Wwrite-strings"
+		])
 ], [
 	AS_IF([test x"$GCC" = xyes], [
 		# Be tough with warnings and produce less careless code
-		CFLAGS="$CFLAGS -Wall -pedantic"
-		CXXFLAGS="$CXXFLAGS -Wall -pedantic -Weffc++"
+		CFLAGS="$CFLAGS -Wall -Wextra -pedantic"
+		CXXFLAGS="$CXXFLAGS -Wall -Wextra -Wshadow -pedantic"
 	])
 ])
-AC_SUBST(DEBUG_CXXFLAGS)
 
 # ============
 # Debug switch
@@ -184,27 +216,12 @@ AC_ARG_ENABLE([debug],
 )
 AS_IF([test "x$enable_debug" = "xyes"], [
 	DEBUG_CXXFLAGS="-DDEBUG -g"
+	CXXFLAGS="$CXXFLAGS -O0"
+	CFLAGS="$CFLAGS -O0"
 ], [
 	DEBUG_CXXFLAGS="-DNDEBUG"
 ])
-LIBFREEHAND_CXXFLAGS="$LIBFREEHAND_CFLAGS"
-AC_SUBST(LIBFREEHAND_CXXFLAGS)
 AC_SUBST(DEBUG_CXXFLAGS)
-
-# ============
-# Static tools
-# ============
-AC_ARG_ENABLE([static-tools],
-	[AS_HELP_STRING([--enable-static-tools], [Link tools (binaries) statically])],
-	[enable_static_tools="$enableval"],
-	[enable_static_tools=no]
-)
-AS_IF([test "x$enable_static_tools" = "xyes"], [
-	enable_static="yes"
-], [
-	AC_DISABLE_STATIC
-])
-AM_CONDITIONAL(STATIC_TOOLS, [test "x$enable_static_tools" = "xyes"])
 
 # =============
 # Documentation
