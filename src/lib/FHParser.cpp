@@ -655,15 +655,11 @@ void libfreehand::FHParser::readContentFill(WPXInputStream * /* input */)
 void libfreehand::FHParser::readContourFill(WPXInputStream *input)
 {
   if (m_version == 10)
-  {
-    printf("Fridrich %x\n", readU32(input));
-    input->seek(20, WPX_SEEK_CUR);
-  }
+    input->seek(24, WPX_SEEK_CUR);
   else
   {
     unsigned short num = readU16(input);
     unsigned short size = readU16(input);
-    printf("Fridrich num %x size %x\n", num, size);
     while (num)
     {
       input->seek(6+size*2, WPX_SEEK_CUR);
@@ -960,10 +956,10 @@ void libfreehand::FHParser::readOpacityFilter(WPXInputStream * /* input */)
 
 void libfreehand::FHParser::readOval(WPXInputStream *input)
 {
-  printf("Fridrich 1 %x\n", _readRecordId(input));
-  printf("Fridrich 2 %x\n", _readRecordId(input));
+  _readRecordId(input);
+  _readRecordId(input);
   input->seek(12, WPX_SEEK_CUR);
-  printf("Fridrich 3 %x\n", _readRecordId(input));
+  _readRecordId(input);
   input->seek(16, WPX_SEEK_CUR);
   if (m_version > 10)
     input->seek(10, WPX_SEEK_CUR);
