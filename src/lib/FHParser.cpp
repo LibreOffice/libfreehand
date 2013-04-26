@@ -132,7 +132,7 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
     std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(m_records[m_currentRecord]);
     if (iterDict != m_dictionary.end())
     {
-      FH_DEBUG_MSG(("Parsing record number 0x%x: %s (%x)\n", (unsigned)m_currentRecord+1, getTokenName(iterDict->second), iterDict->second));
+      FH_DEBUG_MSG(("Parsing record number 0x%x: %s\n", (unsigned)m_currentRecord+1, getTokenName(iterDict->second)));
       switch (iterDict->second)
       {
       case FH_AGDFONT:
@@ -493,15 +493,11 @@ void libfreehand::FHParser::readAGDFont(WPXInputStream *input)
   input->seek(2, WPX_SEEK_CUR);
   for (unsigned short i = 0; i < num; ++i)
   {
-#if 0
     unsigned short key = readU16(input);
-    unsigned short rec = readU16(input);
-#else
-    input->seek(4, WPX_SEEK_CUR);
-#endif
-    unsigned short something = readU16(input);
-    if (0xffff == something)
-      input->seek(2, WPX_SEEK_CUR);
+    if (key == 2)
+      input->seek(4, WPX_SEEK_CUR);
+    else
+      input->seek(6, WPX_SEEK_CUR);
   }
 }
 
@@ -1024,8 +1020,11 @@ void libfreehand::FHParser::readUString(WPXInputStream *input)
   unsigned short length = readU16(input);
   std::vector<unsigned short> ustr;
   unsigned short character = 0;
-  for (unsigned short i = 0; i < length && 0 != (character = readU16(input)); i++)
-    ustr.push_back(character);
+  if (length)
+  {
+    for (unsigned short i = 0; i < length && 0 != (character = readU16(input)); i++)
+      ustr.push_back(character);
+  }
 #ifdef DEBUG
   WPXString str;
   for (std::vector<unsigned short>::const_iterator iter = ustr.begin(); iter != ustr.end(); ++iter)
@@ -1046,15 +1045,11 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input)
   input->seek(2, WPX_SEEK_CUR);
   for (unsigned short i = 0; i < num; ++i)
   {
-#if 0
     unsigned short key = readU16(input);
-    unsigned short rec = readU16(input);
-#else
-    input->seek(4, WPX_SEEK_CUR);
-#endif
-    unsigned short something = readU16(input);
-    if (0xffff == something)
-      input->seek(2, WPX_SEEK_CUR);
+    if (key == 2)
+      input->seek(4, WPX_SEEK_CUR);
+    else
+      input->seek(6, WPX_SEEK_CUR);
   }
 }
 
