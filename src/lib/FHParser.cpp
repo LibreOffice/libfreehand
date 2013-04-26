@@ -522,8 +522,19 @@ void libfreehand::FHParser::readBasicFill(WPXInputStream *input)
   input->seek(4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readBasicLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readBasicLine(WPXInputStream *input)
 {
+  readU16(input); // clr
+  readU16(input); // dash
+  readU16(input); // larr
+  readU16(input); // rarr
+  readU16(input); // mit
+  readU16(input); // mitf
+  readU16(input); // w
+  input->seek(3, WPX_SEEK_CUR);
+  readU8(input); // overprint
+  readU8(input); // join
+  readU8(input); // cap
 }
 
 void libfreehand::FHParser::readBendFilter(WPXInputStream * /* input */)
@@ -939,8 +950,14 @@ void libfreehand::FHParser::readSpotColor6(WPXInputStream *input)
   input->seek(size*4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readStylePropLst(WPXInputStream * /* input */)
+void libfreehand::FHParser::readStylePropLst(WPXInputStream *input)
 {
+  input->seek(2, WPX_SEEK_CUR);
+  unsigned short size = readU16(input);
+  input->seek(8, WPX_SEEK_CUR);
+  _readRecordId(input);
+  for (unsigned short i = 0; i < size; ++i)
+    _readRecordId(input);
 }
 
 void libfreehand::FHParser::readSwfImport(WPXInputStream * /* input */)
