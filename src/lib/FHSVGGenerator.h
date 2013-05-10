@@ -15,7 +15,7 @@
 #include <sstream>
 #include <libwpd/libwpd.h>
 #include <libwpg/libwpg.h>
-#include "FHStringVector.h"
+#include <libfreehand/libfreehand.h>
 
 namespace libfreehand
 {

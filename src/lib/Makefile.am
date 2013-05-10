@@ -7,11 +7,11 @@ endif
 lib_LTLIBRARIES = libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.la
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_includedir = $(includedir)/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@/libfreehand
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_include_HEADERS = \
-	libfreehand.h \
-	FreeHandDocument.h \
-	FHStringVector.h
+	$(top_srcdir)/inc/libfreehand/libfreehand.h \
+	$(top_srcdir)/inc/libfreehand/FreeHandDocument.h \
+	$(top_srcdir)/inc/libfreehand/FHStringVector.h
 
-AM_CXXFLAGS = $(WPD_CFLAGS) $(WPG_CFLAGS) $(ZLIB_CFLAGS) $(DEBUG_CXXFLAGS)
+AM_CXXFLAGS = -I$(top_srcdir)/inc $(WPD_CFLAGS) $(WPG_CFLAGS) $(ZLIB_CFLAGS) $(DEBUG_CXXFLAGS)
 
 generated_files = \
 	$(top_builddir)/src/lib/tokens.h \

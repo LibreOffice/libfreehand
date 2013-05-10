@@ -7,11 +7,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include "FHSVGGenerator.h"
-#include "libfreehand.h"
 #include <locale.h>
 #include <sstream>
 #include <string>
+#include "FHSVGGenerator.h"
 
 static std::string doubleToString(const double value)
 {

@@ -10,7 +10,7 @@
 #include <sstream>
 #include <string>
 #include <string.h>
-#include "FreeHandDocument.h"
+#include <libfreehand/libfreehand.h>
 #include "FHCollector.h"
 #include "FHParser.h"
 #include "FHSVGGenerator.h"

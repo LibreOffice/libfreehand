@@ -254,11 +254,13 @@ src/conv/svg/Makefile
 src/conv/svg/fh2xhtml.rc
 src/lib/Makefile
 src/lib/libfreehand.rc
+inc/Makefile
+inc/libfreehand/Makefile
 build/Makefile
 build/win32/Makefile
 docs/Makefile
 docs/doxygen/Makefile
-libfreehand-0.0.pc
+libfreehand-$FH_MAJOR_VERSION.$FH_MINOR_VERSION.pc:libfreehand.pc.in
 ])
 AC_OUTPUT
 

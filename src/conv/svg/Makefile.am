@@ -1,6 +1,6 @@
 bin_PROGRAMS = fh2xhtml
 
-AM_CXXFLAGS = -I$(top_srcdir)/src/lib -I$(top_builddir)/src/lib $(WPD_CFLAGS) $(WPG_CFLAGS) $(DEBUG_CXXFLAGS)
+AM_CXXFLAGS = -I$(top_srcdir)/inc -I$(top_builddir)/src/lib $(WPD_CFLAGS) $(WPG_CFLAGS) $(DEBUG_CXXFLAGS)
 
 fh2xhtml_DEPENDENCIES = @FH2XHTML_WIN32_RESOURCE@
 

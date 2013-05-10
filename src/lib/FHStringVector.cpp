@@ -8,7 +8,7 @@
  */
 
 #include <vector>
-#include "FHStringVector.h"
+#include <libfreehand/libfreehand.h>
 
 namespace libfreehand
 {

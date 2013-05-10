@@ -11,9 +11,9 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
-#include "libfreehand.h"
 #include <libwpd-stream/libwpd-stream.h>
 #include <libwpd/libwpd.h>
+#include <libfreehand/libfreehand.h>
 
 namespace
 {

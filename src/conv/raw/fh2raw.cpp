@@ -10,10 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "libfreehand.h"
 #include <libwpd-stream/libwpd-stream.h>
 #include <libwpd/libwpd.h>
 #include <libwpg/libwpg.h>
+#include <libfreehand/libfreehand.h>
 
 class RawPainter : public libwpg::WPGPaintInterface
 {
