@@ -154,6 +154,8 @@ private:
 
   unsigned _xformCalc(unsigned char var1, unsigned char var2);
 
+  double _readCoordinate(WPXInputStream *input);
+
   WPXInputStream *m_input;
   FHCollector *m_collector;
   int m_version;

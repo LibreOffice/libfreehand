@@ -993,7 +993,26 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
   input->seek(startPosition, WPX_SEEK_SET);
   size = readU16(input);
   unsigned short graphicStyle = readU16(input);
-  printf("Graphic Style 0x%x\n", graphicStyle);
+  input->seek(18, WPX_SEEK_CUR);
+  std::vector<unsigned char> ptrTypes;
+  std::vector<std::vector<std::pair<double, double> > > path;
+  for (unsigned short i = 0; i < size; ++i)
+  {
+    input->seek(1, WPX_SEEK_CUR);
+    ptrTypes.push_back(readU8(input));
+    input->seek(1, WPX_SEEK_CUR);
+    std::vector<std::pair<double, double> > segment;
+    for (unsigned short j = 0; j < 3; ++j)
+    {
+      double x = _readCoordinate(input) - 1692.0;
+      double y = _readCoordinate(input) - 1584.0;
+      std::pair<double, double> tmpPoint = std::make_pair(x, y);
+      segment.push_back(tmpPoint);
+    }
+    path.push_back(segment);
+    segment.clear();
+  }
+
   input->seek(startPosition+length, WPX_SEEK_SET);
 }
 
@@ -1237,6 +1256,13 @@ unsigned libfreehand::FHParser::_xformCalc(unsigned char var1, unsigned char var
     return 0;
 
   return (a5+a4+a1+a0+b6+b5)*4;
+}
+
+double libfreehand::FHParser::_readCoordinate(WPXInputStream *input)
+{
+  double value = (double)readU16(input);
+  value += (double)readU16(input) / 65536.0;
+  return value;
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
