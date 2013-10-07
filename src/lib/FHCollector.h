@@ -10,6 +10,9 @@
 #ifndef __FHCOLLECTOR_H__
 #define __FHCOLLECTOR_H__
 
+#include <vector>
+#include <libwpd/libwpd.h>
+
 namespace libwpg
 {
 
@@ -27,6 +30,8 @@ public:
   virtual ~FHCollector();
 
   // collector functions
+  void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr);
+  void collectMName(unsigned recordId, const WPXString &name);
 
 private:
   FHCollector(const FHCollector &);

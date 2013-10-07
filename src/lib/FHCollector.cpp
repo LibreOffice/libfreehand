@@ -18,4 +18,12 @@ libfreehand::FHCollector::~FHCollector()
 {
 }
 
+void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
+{
+}
+
+void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const WPXString & /* name */)
+{
+}
+
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

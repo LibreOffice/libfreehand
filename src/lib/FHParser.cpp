@@ -900,6 +900,7 @@ void libfreehand::FHParser::readMName(WPXInputStream *input)
     name.append((char)character);
   FH_DEBUG_MSG(("FHParser::readMName %s\n", name.cstr()));
   input->seek(startPosition + (size+1)*4, WPX_SEEK_SET);
+  m_collector->collectMName(m_currentRecord+1, name);
 }
 
 void libfreehand::FHParser::readMpObject(WPXInputStream * /* input */)
@@ -989,6 +990,10 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     length = 24 + 27*var4;
   else if (var2 == 0xffff)
     length = 26 + 27*var5;
+  input->seek(startPosition, WPX_SEEK_SET);
+  size = readU16(input);
+  unsigned short graphicStyle = readU16(input);
+  printf("Graphic Style 0x%x\n", graphicStyle);
   input->seek(startPosition+length, WPX_SEEK_SET);
 }
 
@@ -1178,6 +1183,7 @@ void libfreehand::FHParser::readUString(WPXInputStream *input)
   FH_DEBUG_MSG(("FHParser::readUString %s\n", str.cstr()));
 #endif
   input->seek(startPosition + (size+1)*4, WPX_SEEK_SET);
+  m_collector->collectUString(m_currentRecord+1, ustr);
 }
 
 void libfreehand::FHParser::readVDict(WPXInputStream * /* input */)
