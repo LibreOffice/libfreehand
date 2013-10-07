@@ -992,7 +992,11 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     length = 26 + 27*var5;
   input->seek(startPosition, WPX_SEEK_SET);
   size = readU16(input);
+#if 0
   unsigned short graphicStyle = readU16(input);
+#else
+  input->seek(2, WPX_SEEK_CUR);
+#endif
   input->seek(18, WPX_SEEK_CUR);
   std::vector<unsigned char> ptrTypes;
   std::vector<std::vector<std::pair<double, double> > > path;
