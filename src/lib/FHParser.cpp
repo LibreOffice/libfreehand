@@ -990,26 +990,28 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     length = 24 + 27*var4;
   else if (var2 == 0xffff)
     length = 26 + 27*var5;
+
   input->seek(startPosition, WPX_SEEK_SET);
-  size = readU16(input);
-#if 0
-  unsigned short graphicStyle = readU16(input);
-#else
-  input->seek(2, WPX_SEEK_CUR);
-#endif
-  input->seek(18, WPX_SEEK_CUR);
+  FHInternalStream stream(input, length);
+  input->seek(startPosition+length, WPX_SEEK_SET);
+
+  unsigned short graphicStyle = 0;
   std::vector<unsigned char> ptrTypes;
   std::vector<std::vector<std::pair<double, double> > > path;
-  for (unsigned short i = 0; i < size; ++i)
+
+  stream.seek(2, WPX_SEEK_CUR);
+  graphicStyle = readU16(&stream);
+  stream.seek(18, WPX_SEEK_CUR);
+  for (unsigned short i = 0; i < size  && !stream.atEOS(); ++i)
   {
-    input->seek(1, WPX_SEEK_CUR);
-    ptrTypes.push_back(readU8(input));
-    input->seek(1, WPX_SEEK_CUR);
+    stream.seek(1, WPX_SEEK_CUR);
+    ptrTypes.push_back(readU8(&stream));
+    stream.seek(1, WPX_SEEK_CUR);
     std::vector<std::pair<double, double> > segment;
-    for (unsigned short j = 0; j < 3; ++j)
+    for (unsigned short j = 0; j < 3 && !stream.atEOS(); ++j)
     {
-      double x = _readCoordinate(input) - 1692.0;
-      double y = _readCoordinate(input) - 1584.0;
+      double x = _readCoordinate(&stream) - 1692.0;
+      double y = _readCoordinate(&stream) - 1584.0;
       std::pair<double, double> tmpPoint = std::make_pair(x, y);
       segment.push_back(tmpPoint);
     }
@@ -1017,7 +1019,8 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     segment.clear();
   }
 
-  input->seek(startPosition+length, WPX_SEEK_SET);
+  m_collector->collectPath(graphicStyle, path);
+
 }
 
 void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream * /* input */)
