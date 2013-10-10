@@ -29,7 +29,9 @@ void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const WPXSt
 {
 }
 
-void libfreehand::FHCollector::collectPath(unsigned short /* graphicStyle */, const std::vector<std::vector<std::pair<double, double> > > &path)
+void libfreehand::FHCollector::collectPath(unsigned short /* graphicStyle */,
+    const std::vector<std::vector<std::pair<double, double> > > &path,
+    bool /* evenOdd */, bool closed)
 {
   if (path.empty())
     return;
@@ -47,7 +49,8 @@ void libfreehand::FHCollector::collectPath(unsigned short /* graphicStyle */, co
   propList.insert("svg:y", (1000.0 - path[0][0].second) / 72.0);
   propVec.append(propList);
   propList.clear();
-  for (unsigned i = 0; i<path.size()-1; ++i)
+  unsigned i = 0;
+  for (i = 0; i<path.size()-1; ++i)
   {
     propList.insert("libwpg:path-action", "C");
     propList.insert("svg:x1", path[i][2].first / 72.0);
@@ -58,6 +61,20 @@ void libfreehand::FHCollector::collectPath(unsigned short /* graphicStyle */, co
     propList.insert("svg:y", (1000.0 - path[i+1][0].second) / 72.0);
     propVec.append(propList);
     propList.clear();
+  }
+  if (closed)
+  {
+    propList.insert("libwpg:path-action", "C");
+    propList.insert("svg:x1", path[i][2].first / 72.0);
+    propList.insert("svg:y1", (1000.0 - path[i][2].second) / 72.0);
+    propList.insert("svg:x2", path[0][1].first / 72.0);
+    propList.insert("svg:y2", (1000.0 - path[0][1].second) / 72.0);
+    propList.insert("svg:x", path[0][0].first / 72.0);
+    propList.insert("svg:y", (1000.0 - path[0][0].second) / 72.0);
+    propVec.append(propList);
+    propList.clear();
+    propList.insert("libwpg:path-action", "Z");
+    propVec.append(propList);
   }
 
   m_painter->drawPath(propVec);

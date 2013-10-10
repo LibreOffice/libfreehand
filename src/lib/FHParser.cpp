@@ -1164,12 +1164,18 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
   unsigned short graphicStyle = 0;
   std::vector<unsigned char> ptrTypes;
   std::vector<std::vector<std::pair<double, double> > > path;
+  bool evenOdd = false;
+  bool closed = false;
 
   try
   {
     stream.seek(2, WPX_SEEK_CUR);
     graphicStyle = readU16(&stream);
-    stream.seek(18, WPX_SEEK_CUR);
+    stream.seek(15, WPX_SEEK_CUR);
+    unsigned char flag = readU8(&stream);
+    evenOdd = bool(flag&2);
+    closed = bool(flag&1);
+    stream.seek(2, WPX_SEEK_CUR);
     for (unsigned short i = 0; i < numPoints  && !stream.atEOS(); ++i)
     {
       stream.seek(1, WPX_SEEK_CUR);
@@ -1192,7 +1198,7 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     FH_DEBUG_MSG(("Caught EndOfStreamException, continuing\n"));
   }
 
-  m_collector->collectPath(graphicStyle, path);
+  m_collector->collectPath(graphicStyle, path, evenOdd, closed);
 }
 
 void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream *input)

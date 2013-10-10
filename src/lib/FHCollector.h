@@ -32,7 +32,9 @@ public:
   // collector functions
   void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr);
   void collectMName(unsigned recordId, const WPXString &name);
-  void collectPath(unsigned short graphicStyle, const std::vector<std::vector<std::pair<double, double> > > &path);
+  void collectPath(unsigned short graphicStyle,
+                   const std::vector<std::vector<std::pair<double, double> > > &path,
+                   bool evenOdd, bool closed);
 
 private:
   FHCollector(const FHCollector &);
