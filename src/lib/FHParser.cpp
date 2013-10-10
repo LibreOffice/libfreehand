@@ -502,8 +502,10 @@ void libfreehand::FHParser::readAGDFont(WPXInputStream *input)
   }
 }
 
-void libfreehand::FHParser::readAGDSelection(WPXInputStream * /* input */)
+void libfreehand::FHParser::readAGDSelection(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  input->seek(6+size*4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readArrowPath(WPXInputStream *input)
@@ -601,8 +603,11 @@ void libfreehand::FHParser::readBrushTip(WPXInputStream *input)
     input->seek(4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readCalligraphicStroke(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCalligraphicStroke(WPXInputStream *input)
 {
+  _readRecordId(input);
+  input->seek(12, WPX_SEEK_CUR);
+  _readRecordId(input);
 }
 
 void libfreehand::FHParser::readCharacterFill(WPXInputStream * /* input */)
@@ -618,8 +623,9 @@ void libfreehand::FHParser::readClipGroup(WPXInputStream *input)
   input->seek(2, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readCollector(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCollector(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readColor6(WPXInputStream *input)
@@ -658,8 +664,11 @@ void libfreehand::FHParser::readConeFill(WPXInputStream *input)
   input->seek(14, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readConnectorLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readConnectorLine(WPXInputStream *input)
 {
+  input->seek(20, WPX_SEEK_CUR);
+  unsigned short num = readU16(input);
+  input->seek(46+num*27, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readContentFill(WPXInputStream * /* input */)
@@ -684,12 +693,19 @@ void libfreehand::FHParser::readContourFill(WPXInputStream *input)
   }
 }
 
-void libfreehand::FHParser::readCustomProc(WPXInputStream * /* input */)
+void libfreehand::FHParser::readCustomProc(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  _readRecordId(input);
+  input->seek(4+10*size, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readDataList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readDataList(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  input->seek(8, WPX_SEEK_CUR);
+  for (unsigned short i = 0; i < size; ++i)
+    _readRecordId(input);
 }
 
 void libfreehand::FHParser::readData(WPXInputStream *input)
@@ -708,12 +724,14 @@ void libfreehand::FHParser::readDuetFilter(WPXInputStream *input)
   input->seek(14, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readElement(WPXInputStream * /* input */)
+void libfreehand::FHParser::readElement(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readElemList(WPXInputStream * /* input */)
+void libfreehand::FHParser::readElemList(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readElemPropLst(WPXInputStream *input)
@@ -725,8 +743,17 @@ void libfreehand::FHParser::readElemPropLst(WPXInputStream *input)
     _readRecordId(input);
 }
 
-void libfreehand::FHParser::readEnvelope(WPXInputStream * /* input */)
+void libfreehand::FHParser::readEnvelope(WPXInputStream *input)
 {
+  input->seek(2, WPX_SEEK_CUR);
+  _readRecordId(input);
+  _readRecordId(input);
+  input->seek(14, WPX_SEEK_CUR);
+  unsigned short num = readU16(input);
+  _readRecordId(input);
+  input->seek(19, WPX_SEEK_CUR);
+  unsigned short num2 = readU16(input);
+  input->seek(4*num2+27*num, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readExpandFilter(WPXInputStream *input)
@@ -734,8 +761,16 @@ void libfreehand::FHParser::readExpandFilter(WPXInputStream *input)
   input->seek(14, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readExtrusion(WPXInputStream * /* input */)
+void libfreehand::FHParser::readExtrusion(WPXInputStream *input)
 {
+  long startPosition = input->tell();
+  input->seek(96, WPX_SEEK_CUR);
+  unsigned char var1 = readU8(input);
+  unsigned char var2 = readU8(input);
+  input->seek(startPosition, WPX_SEEK_SET);
+  _readRecordId(input);
+  _readRecordId(input);
+  input->seek(92 + _xformCalc(var1, var2) + 2, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readFHDocHeader(WPXInputStream *input)
@@ -743,8 +778,9 @@ void libfreehand::FHParser::readFHDocHeader(WPXInputStream *input)
   input->seek(4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readFigure(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFigure(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readFileDescriptor(WPXInputStream *input)
@@ -831,12 +867,15 @@ void libfreehand::FHParser::readGuides(WPXInputStream *input)
   input->seek(16+size*8, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readHalftone(WPXInputStream * /* input */)
+void libfreehand::FHParser::readHalftone(WPXInputStream *input)
 {
+  _readRecordId(input);
+  input->seek(8, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readImageFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readImageFill(WPXInputStream *input)
 {
+  input->seek(6, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readImageImport(WPXInputStream *input)
@@ -915,32 +954,52 @@ void libfreehand::FHParser::readList(WPXInputStream *input)
     input->seek(startPosition+32, WPX_SEEK_SET);
 }
 
-void libfreehand::FHParser::readMasterPageDocMan(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageDocMan(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMasterPageElement(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageElement(WPXInputStream *input)
 {
+  input->seek(14, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMasterPageLayerElement(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageLayerElement(WPXInputStream *input)
 {
+  input->seek(14, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMasterPageLayerInstance(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageLayerInstance(WPXInputStream *input)
 {
+  input->seek(14, WPX_SEEK_CUR);
+  unsigned char var1 = readU8(input);
+  unsigned char var2 = readU8(input);
+  input->seek(_xformCalc(var1, var2) + 2, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMasterPageSymbolClass(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageSymbolClass(WPXInputStream *input)
 {
+  input->seek(12, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMasterPageSymbolInstance(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMasterPageSymbolInstance(WPXInputStream *input)
 {
+  input->seek(14, WPX_SEEK_CUR);
+  unsigned char var1 = readU8(input);
+  unsigned char var2 = readU8(input);
+  input->seek(_xformCalc(var1, var2) + 2, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMDict(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMDict(WPXInputStream *input)
 {
+  input->seek(2, WPX_SEEK_CUR);
+  unsigned short size = readU16(input);
+  input->seek(2, WPX_SEEK_CUR);
+  for (unsigned short i = 0; i < size; ++i)
+  {
+    _readRecordId(input);
+    _readRecordId(input);
+  }
 }
 
 void libfreehand::FHParser::readMList(WPXInputStream *input)
@@ -968,12 +1027,15 @@ void libfreehand::FHParser::readMName(WPXInputStream *input)
   m_collector->collectMName(m_currentRecord+1, name);
 }
 
-void libfreehand::FHParser::readMpObject(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMpObject(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMQuickDict(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMQuickDict(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  input->seek(5+size*4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readMString(WPXInputStream *input)
@@ -989,8 +1051,15 @@ void libfreehand::FHParser::readMString(WPXInputStream *input)
   input->seek(startPosition + (size+1)*4, WPX_SEEK_SET);
 }
 
-void libfreehand::FHParser::readMultiBlend(WPXInputStream * /* input */)
+void libfreehand::FHParser::readMultiBlend(WPXInputStream *input)
 {
+  unsigned short size = readU16(input);
+  _readRecordId(input);
+  input->seek(8, WPX_SEEK_CUR);
+  _readRecordId(input);
+  _readRecordId(input);
+  _readRecordId(input);
+  input->seek(32 + size*6, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readMultiColorList(WPXInputStream *input)
@@ -1126,20 +1195,24 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
   m_collector->collectPath(graphicStyle, path);
 }
 
-void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream *input)
 {
+  input->seek(46, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readPatternFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPatternFill(WPXInputStream *input)
 {
+  input->seek(10, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readPatternLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPatternLine(WPXInputStream *input)
 {
+  input->seek(22, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readPerspectiveEnvelope(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPerspectiveEnvelope(WPXInputStream *input)
 {
+  input->seek(177, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readPerspectiveGrid(WPXInputStream *input)
@@ -1159,8 +1232,9 @@ void libfreehand::FHParser::readPolygonFigure(WPXInputStream *input)
   input->seek(35, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readProcedure(WPXInputStream * /* input */)
+void libfreehand::FHParser::readProcedure(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readPropLst(WPXInputStream *input)
@@ -1172,12 +1246,15 @@ void libfreehand::FHParser::readPropLst(WPXInputStream *input)
     _readRecordId(input);
 }
 
-void libfreehand::FHParser::readPSLine(WPXInputStream * /* input */)
+void libfreehand::FHParser::readPSLine(WPXInputStream *input)
 {
+  input->seek(8, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readRadialFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readRadialFill(WPXInputStream *input)
 {
+  input->seek(20, WPX_SEEK_CUR);
+  _readRecordId(input);
 }
 
 void libfreehand::FHParser::readRadialFillX(WPXInputStream *input)
@@ -1246,8 +1323,9 @@ void libfreehand::FHParser::readStylePropLst(WPXInputStream *input)
     _readRecordId(input);
 }
 
-void libfreehand::FHParser::readSwfImport(WPXInputStream * /* input */)
+void libfreehand::FHParser::readSwfImport(WPXInputStream *input)
 {
+  input->seek(43, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readSymbolClass(WPXInputStream *input)
@@ -1289,16 +1367,32 @@ void libfreehand::FHParser::readTabTable(WPXInputStream *input)
     input->seek(size*6, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readTaperedFill(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTaperedFill(WPXInputStream *input)
 {
+  input->seek(12, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readTaperedFillX(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTaperedFillX(WPXInputStream *input)
 {
+  _readRecordId(input);
+  input->seek(14, WPX_SEEK_CUR);
+  _readRecordId(input);
 }
 
-void libfreehand::FHParser::readTEffect(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTEffect(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
+  unsigned short num = readU16(input);
+  input->seek(2, WPX_SEEK_CUR);
+  for (unsigned i = 0; i < num; ++i)
+  {
+    unsigned short key = readU16(input);
+    unsigned short rec = readU16(input);
+    if (key == 2)
+      _readRecordId(input);
+    else
+      input->seek(4, WPX_SEEK_CUR);
+  }
 }
 
 void libfreehand::FHParser::readTextBlok(WPXInputStream *input)
@@ -1330,16 +1424,63 @@ void libfreehand::FHParser::readTextColumn(WPXInputStream *input)
     }
     else
       input->seek(6, WPX_SEEK_CUR);
-
   }
 }
 
-void libfreehand::FHParser::readTextInPath(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTextInPath(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
+  unsigned short num = readU16(input);
+  input->seek(2, WPX_SEEK_CUR);
+  _readRecordId(input);
+  _readRecordId(input);
+  _readRecordId(input);
+  _readRecordId(input);
+  _readRecordId(input);
+  unsigned flag = readU32(input);
+  if (flag == 0xffffffff)
+    input->seek(-2, WPX_SEEK_CUR);
+  else
+    input->seek(-4, WPX_SEEK_CUR);
+  _readRecordId(input);
+  _readRecordId(input);
+  _readRecordId(input);
+
+  for (unsigned short i = 0; i < num; ++i)
+  {
+    unsigned short key = readU16(input);
+    if (key == 2)
+    {
+      input->seek(2, WPX_SEEK_CUR);
+      _readRecordId(input);
+    }
+    else
+      input->seek(6, WPX_SEEK_CUR);
+  }
 }
 
-void libfreehand::FHParser::readTFOnPath(WPXInputStream * /* input */)
+void libfreehand::FHParser::readTFOnPath(WPXInputStream *input)
 {
+  input->seek(4, WPX_SEEK_CUR);
+  unsigned short num = readU16(input);
+  input->seek(4, WPX_SEEK_CUR);
+  _readRecordId(input);
+  input->seek(8, WPX_SEEK_CUR);
+  _readRecordId(input);
+  _readRecordId(input);
+  _readRecordId(input);
+
+  for (unsigned short i = 0; i < num; ++i)
+  {
+    unsigned short key = readU16(input);
+    if (key == 2)
+    {
+      input->seek(2, WPX_SEEK_CUR);
+      _readRecordId(input);
+    }
+    else
+      input->seek(6, WPX_SEEK_CUR);
+  }
 }
 
 void libfreehand::FHParser::readTileFill(WPXInputStream *input)
