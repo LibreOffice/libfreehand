@@ -37,6 +37,9 @@ public:
                    bool evenOdd, bool closed);
   void collectXform(unsigned recordId, double m11, double m21,
                     double m12, double m22,  double m13, double m23);
+  void collectOval(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
+                   unsigned short xform, double x, double y, double w, double h,
+                   double arc1, double arc2, bool closed);
 
 private:
   FHCollector(const FHCollector &);

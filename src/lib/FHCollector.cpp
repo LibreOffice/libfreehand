@@ -85,6 +85,10 @@ void libfreehand::FHCollector::collectXform(unsigned /* recordId */,
 {
 }
 
-
+void libfreehand::FHCollector::collectOval(unsigned recordId,
+    unsigned short graphicStyle, unsigned short layer, unsigned short xform,
+    double x, double y, double w, double h,double arc1, double arc2, bool closed)
+{
+}
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

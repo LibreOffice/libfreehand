@@ -1114,10 +1114,10 @@ void libfreehand::FHParser::readOval(WPXInputStream *input)
   unsigned short layer = _readRecordId(input);
   input->seek(12, WPX_SEEK_CUR);
   unsigned short xform = _readRecordId(input);
-  double x1 = _readCoordinate(input) - 1692.0;
-  double y1 = _readCoordinate(input) - 1584.0;
-  double x2 = _readCoordinate(input) - 1692.0;
-  double y2 = _readCoordinate(input) - 1584.0;
+  double x = _readCoordinate(input) - 1692.0;
+  double y = _readCoordinate(input) - 1584.0;
+  double w = _readCoordinate(input);
+  double h = _readCoordinate(input);
   double arc1 = 0.0;
   double arc2 = 0.0;
   bool closed = false;
@@ -1128,6 +1128,8 @@ void libfreehand::FHParser::readOval(WPXInputStream *input)
     closed = bool(readU8(input));
     input->seek(1, WPX_SEEK_CUR);
   }
+  m_collector->collectOval(m_currentRecord+1, graphicStyle, layer,
+                           xform, x, y, w, h, arc1, arc2, closed);
 }
 
 void libfreehand::FHParser::readParagraph(WPXInputStream *input)
