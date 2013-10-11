@@ -1198,7 +1198,7 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     FH_DEBUG_MSG(("Caught EndOfStreamException, continuing\n"));
   }
 
-  m_collector->collectPath(graphicStyle, path, evenOdd, closed);
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, path, evenOdd, closed);
 }
 
 void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream *input)
@@ -1576,6 +1576,7 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input)
 
 void libfreehand::FHParser::readXform(WPXInputStream *input)
 {
+  long startPosition = input->tell();
   if (m_version == 8)
     input->seek(52, WPX_SEEK_CUR);
   else
@@ -1589,6 +1590,41 @@ void libfreehand::FHParser::readXform(WPXInputStream *input)
     unsigned len2 =  _xformCalc(var1, var2);
     input->seek(len2, WPX_SEEK_CUR);
   }
+  long length = input->tell() - startPosition;
+  input->seek(startPosition, WPX_SEEK_SET);
+  double m11 = 1.0;
+  double m21 = 0.0;
+  double m12 = 0.0;
+  double m22 = 1.0;
+  double m13 = 0.0;
+  double m23 = 0.0;
+  unsigned char var1 = readU8(input);
+  unsigned char var2 = readU8(input);
+  unsigned a5 = (((~var1)&0x20)>>5);
+  unsigned a4 = (((~var1)&0x10)>>4);
+  unsigned a2 = (var1&0x4)>>2;
+  unsigned a1 = (var1&0x2)>>1;
+  unsigned a0 = var1&0x1;
+
+  unsigned b6 = (var2&0x40) >> 6;
+  unsigned b5 = (var2&0x20) >> 5;
+  if (!a2)
+  {
+    if (a4)
+      m11 = _readCoordinate(input);
+    if (b6)
+      m21 = _readCoordinate(input);
+    if (b5)
+      m12 = _readCoordinate(input);
+    if (a5)
+      m22 = _readCoordinate(input);
+    if (a0)
+      m13 = _readCoordinate(input);
+    if (a1)
+      m23 = _readCoordinate(input);
+  }
+  m_collector->collectXform(m_currentRecord+1, m11, m21, m12, m22, m13, m23);
+  input->seek(startPosition+length, WPX_SEEK_SET);
 }
 
 unsigned libfreehand::FHParser::_readRecordId(WPXInputStream *input)
@@ -1617,7 +1653,7 @@ unsigned libfreehand::FHParser::_xformCalc(unsigned char var1, unsigned char var
 
 double libfreehand::FHParser::_readCoordinate(WPXInputStream *input)
 {
-  double value = (double)readU16(input);
+  double value = (double)readS16(input);
   value += (double)readU16(input) / 65536.0;
   return value;
 }

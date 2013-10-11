@@ -29,9 +29,8 @@ void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const WPXSt
 {
 }
 
-void libfreehand::FHCollector::collectPath(unsigned short /* graphicStyle */,
-    const std::vector<std::vector<std::pair<double, double> > > &path,
-    bool /* evenOdd */, bool closed)
+void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
+    const std::vector<std::vector<std::pair<double, double> > > &path, bool /* evenOdd */, bool closed)
 {
   if (path.empty())
     return;
@@ -79,5 +78,13 @@ void libfreehand::FHCollector::collectPath(unsigned short /* graphicStyle */,
 
   m_painter->drawPath(propVec);
 }
+
+void libfreehand::FHCollector::collectXform(unsigned /* recordId */,
+    double /* m11 */, double /* m21 */, double /* m12 */,
+    double /* m22 */,  double /* m13 */, double /* m23 */)
+{
+}
+
+
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
