@@ -40,6 +40,8 @@ public:
   void collectOval(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
                    unsigned short xform, double x, double y, double w, double h,
                    double arc1, double arc2, bool closed);
+  void collectRectangle(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
+                        unsigned short xform, double x1, double y1, double x2, double y2);
 
 private:
   FHCollector(const FHCollector &);

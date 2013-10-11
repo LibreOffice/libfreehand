@@ -1303,6 +1303,8 @@ void libfreehand::FHParser::readRectangle(WPXInputStream *input)
     rbll = _readCoordinate(input);
     input->seek(9, WPX_SEEK_CUR);
   }
+  m_collector->collectRectangle(m_currentRecord+1, graphicStyle, layer,
+                                xform, x1, y1, x2, y2);
 }
 
 void libfreehand::FHParser::readSketchFilter(WPXInputStream *input)

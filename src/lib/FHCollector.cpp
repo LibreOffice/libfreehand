@@ -91,4 +91,10 @@ void libfreehand::FHCollector::collectOval(unsigned recordId,
 {
 }
 
+void libfreehand::FHCollector::collectRectangle(unsigned recordId,
+    unsigned short graphicStyle, unsigned short layer, unsigned short xform,
+    double x1, double y1, double x2, double y2)
+{
+}
+
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
