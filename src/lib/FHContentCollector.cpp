@@ -11,7 +11,7 @@
 #include "FHContentCollector.h"
 
 libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *painter) :
-  m_painter(painter)
+  m_painter(painter), m_transforms()
 {
   m_painter->startGraphics(WPXPropertyList());
 }
@@ -79,10 +79,10 @@ void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsig
   m_painter->drawPath(propVec);
 }
 
-void libfreehand::FHContentCollector::collectXform(unsigned /* recordId */,
-    double /* m11 */, double /* m21 */, double /* m12 */,
-    double /* m22 */,  double /* m13 */, double /* m23 */)
+void libfreehand::FHContentCollector::collectXform(unsigned recordId,
+    double m11, double m21, double m12, double m22, double m13, double m23)
 {
+  m_transforms[recordId] = FHTransform(m11, m21, m12, m22, m13, m23);
 }
 
 void libfreehand::FHContentCollector::collectOval(unsigned recordId,

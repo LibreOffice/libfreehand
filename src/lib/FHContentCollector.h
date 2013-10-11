@@ -10,7 +10,9 @@
 #ifndef __FHCONTENTCOLLECTOR_H__
 #define __FHCONTENTCOLLECTOR_H__
 
+#include <map>
 #include "FHCollector.h"
+#include "FHTransform.h"
 
 namespace libfreehand
 {
@@ -28,7 +30,7 @@ public:
                    const std::vector<std::vector<std::pair<double, double> > > &path,
                    bool evenOdd, bool closed);
   void collectXform(unsigned recordId, double m11, double m21,
-                    double m12, double m22,  double m13, double m23);
+                    double m12, double m22, double m13, double m23);
   void collectOval(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
                    unsigned short xform, double x, double y, double w, double h,
                    double arc1, double arc2, bool closed);
@@ -39,9 +41,8 @@ private:
   FHContentCollector(const FHContentCollector &);
   FHContentCollector &operator=(const FHContentCollector &);
 
-  // helper functions
-
   libwpg::WPGPaintInterface *m_painter;
+  std::map<unsigned, FHTransform> m_transforms;
 };
 
 } // namespace libfreehand

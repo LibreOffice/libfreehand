@@ -21,13 +21,14 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LIBADD  = $(WPD_LIBS) $(ZLI
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_DEPENDENCIES = @LIBFREEHAND_WIN32_RESOURCE@
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic -no-undefined
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
-	FHContentCollector.cpp \
 	FreeHandDocument.cpp \
+	FHContentCollector.cpp \
 	FHInternalStream.cpp \
 	FHParser.cpp \
 	FHStringVector.cpp \
 	FHStylesCollector.cpp \
 	FHSVGGenerator.cpp \
+	FHTransform.cpp \
 	libfreehand_utils.cpp \
 	FHCollector.h \
 	FHContentCollector.h \
@@ -35,6 +36,7 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHParser.h \
 	FHStylesCollector.h \
 	FHSVGGenerator.h \
+	FHTransform.h \
 	libfreehand_utils.h \
 	$(generated_files)
 
