@@ -11,7 +11,8 @@
 #include <string>
 #include <string.h>
 #include <libfreehand/libfreehand.h>
-#include "FHCollector.h"
+#include "FHContentCollector.h"
+#include "FHStylesCollector.h"
 #include "FHParser.h"
 #include "FHSVGGenerator.h"
 #include "libfreehand_utils.h"
@@ -103,10 +104,20 @@ bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPa
     input->seek(0, WPX_SEEK_SET);
     if (findAGD(input))
     {
-      FHCollector collector(painter);
+      FHStylesCollector collector;
       FHParser parser(input, &collector);
-      return parser.parse();
+      if (!parser.parse())
+        return false;
     }
+    input->seek(0, WPX_SEEK_SET);
+    if (findAGD(input))
+    {
+      FHContentCollector collector(painter);
+      FHParser parser(input, &collector);
+      if (!parser.parse())
+        return false;
+    }
+    return true;
   }
   catch (...)
   {

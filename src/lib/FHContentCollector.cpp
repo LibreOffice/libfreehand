@@ -8,28 +8,28 @@
  */
 
 #include <libwpg/libwpg.h>
-#include "FHCollector.h"
+#include "FHContentCollector.h"
 
-libfreehand::FHCollector::FHCollector(libwpg::WPGPaintInterface *painter) :
+libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *painter) :
   m_painter(painter)
 {
   m_painter->startGraphics(WPXPropertyList());
 }
 
-libfreehand::FHCollector::~FHCollector()
+libfreehand::FHContentCollector::~FHContentCollector()
 {
   m_painter->endGraphics();
 }
 
-void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
+void libfreehand::FHContentCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
 {
 }
 
-void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const WPXString & /* name */)
+void libfreehand::FHContentCollector::collectMName(unsigned /* recordId */, const WPXString & /* name */)
 {
 }
 
-void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
+void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
     const std::vector<std::vector<std::pair<double, double> > > &path, bool /* evenOdd */, bool closed)
 {
   if (path.empty())
@@ -79,19 +79,19 @@ void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned sho
   m_painter->drawPath(propVec);
 }
 
-void libfreehand::FHCollector::collectXform(unsigned /* recordId */,
+void libfreehand::FHContentCollector::collectXform(unsigned /* recordId */,
     double /* m11 */, double /* m21 */, double /* m12 */,
     double /* m22 */,  double /* m13 */, double /* m23 */)
 {
 }
 
-void libfreehand::FHCollector::collectOval(unsigned recordId,
+void libfreehand::FHContentCollector::collectOval(unsigned recordId,
     unsigned short graphicStyle, unsigned short layer, unsigned short xform,
     double x, double y, double w, double h,double arc1, double arc2, bool closed)
 {
 }
 
-void libfreehand::FHCollector::collectRectangle(unsigned recordId,
+void libfreehand::FHContentCollector::collectRectangle(unsigned recordId,
     unsigned short graphicStyle, unsigned short layer, unsigned short xform,
     double x1, double y1, double x2, double y2)
 {
