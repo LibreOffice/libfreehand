@@ -4,7 +4,7 @@ EXTRA_DIST =	doxygen.cfg \
 
 if WITH_LIBFREEHAND_DOCS
 
-install-data-am:
+install-data-am: all
 	mkdir -p $(DESTDIR)$(docdir)/html
 	$(INSTALL_DATA) html/*.html $(DESTDIR)$(docdir)/html/
 	$(INSTALL_DATA) html/*.png $(DESTDIR)$(docdir)/html/
