@@ -6,7 +6,7 @@
 { perl ./createBuildNumber.pl \
 	src/lib/libfreehand-build.stamp \
 	src/conv/raw/fh2raw-build.stamp \
-	src/conv/svg/fh2xhtml-build.stamp
+	src/conv/svg/fh2svg-build.stamp
 #Success
 exit 0
 }

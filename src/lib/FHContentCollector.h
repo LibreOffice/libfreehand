@@ -13,6 +13,7 @@
 #include <map>
 #include "FHCollector.h"
 #include "FHTransform.h"
+#include "FHTypes.h"
 
 namespace libfreehand
 {
@@ -20,7 +21,7 @@ namespace libfreehand
 class FHContentCollector : public FHCollector
 {
 public:
-  FHContentCollector(::libwpg::WPGPaintInterface *painter);
+  FHContentCollector(::libwpg::WPGPaintInterface *painter, const FHPageInfo &pageInfo);
   virtual ~FHContentCollector();
 
   // collector functions
@@ -37,11 +38,17 @@ public:
   void collectRectangle(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
                         unsigned short xform, double x1, double y1, double x2, double y2);
 
+  void collectOffsetX(double) {}
+  void collectOffsetY(double) {}
+  void collectPageWidth(double) {}
+  void collectPageHeight(double) {}
+
 private:
   FHContentCollector(const FHContentCollector &);
   FHContentCollector &operator=(const FHContentCollector &);
 
   libwpg::WPGPaintInterface *m_painter;
+  const FHPageInfo &m_pageInfo;
   std::map<unsigned, FHTransform> m_transforms;
 };
 

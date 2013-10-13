@@ -37,6 +37,7 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHStylesCollector.h \
 	FHSVGGenerator.h \
 	FHTransform.h \
+	FHTypes.h \
 	libfreehand_utils.h \
 	$(generated_files)
 

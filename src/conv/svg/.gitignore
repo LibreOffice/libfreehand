@@ -6,6 +6,6 @@ Makefile
 Makefile.in
 fh2svg
 fh2svg.exe
-fh2xhtml
-fh2xhtml.exe
+fh2svg
+fh2svg.exe
 *.rc

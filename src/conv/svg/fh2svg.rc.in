@@ -14,11 +14,11 @@ VS_VERSION_INFO VERSIONINFO
       BLOCK "040904B0"
       BEGIN
 	VALUE "CompanyName", "The libfreehand developer community"
-	VALUE "FileDescription", "fh2xhtml"
+	VALUE "FileDescription", "fh2svg"
 	VALUE "FileVersion", "@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.@FH_MICRO_VERSION@.BUILDNUMBER"
-	VALUE "InternalName", "fh2xhtml"
+	VALUE "InternalName", "fh2svg"
 	VALUE "LegalCopyright", "Copyright (C) 2011 Fridrich Strba, other contribut0rs"
-	VALUE "OriginalFilename", "fh2xhtml.exe"
+	VALUE "OriginalFilename", "fh2svg.exe"
 	VALUE "ProductName", "libfreehand"
 	VALUE "ProductVersion", "@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.@FH_MICRO_VERSION@"
       END

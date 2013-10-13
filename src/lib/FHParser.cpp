@@ -1114,8 +1114,8 @@ void libfreehand::FHParser::readOval(WPXInputStream *input)
   unsigned short layer = _readRecordId(input);
   input->seek(12, WPX_SEEK_CUR);
   unsigned short xform = _readRecordId(input);
-  double x = _readCoordinate(input) - 1692.0;
-  double y = _readCoordinate(input) - 1584.0;
+  double x = _readCoordinate(input);
+  double y = _readCoordinate(input);
   double w = _readCoordinate(input);
   double h = _readCoordinate(input);
   double arc1 = 0.0;
@@ -1186,8 +1186,8 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
       std::vector<std::pair<double, double> > segment;
       for (unsigned short j = 0; j < 3 && !stream.atEOS(); ++j)
       {
-        double x = _readCoordinate(&stream) - 1692.0;
-        double y = _readCoordinate(&stream) - 1584.0;
+        double x = _readCoordinate(&stream);
+        double y = _readCoordinate(&stream);
         std::pair<double, double> tmpPoint = std::make_pair(x, y);
         segment.push_back(tmpPoint);
       }
@@ -1281,10 +1281,10 @@ void libfreehand::FHParser::readRectangle(WPXInputStream *input)
   unsigned short layer = readU16(input);
   input->seek(12, WPX_SEEK_CUR);
   unsigned short xform = readU16(input);
-  double x1 = _readCoordinate(input) - 1692.0;
-  double y1 = _readCoordinate(input) - 1584.0;
-  double x2 = _readCoordinate(input) - 1692.0;
-  double y2 = _readCoordinate(input) - 1584.0;
+  double x1 = _readCoordinate(input);
+  double y1 = _readCoordinate(input);
+  double x2 = _readCoordinate(input);
+  double y2 = _readCoordinate(input);
   double rtlt = _readCoordinate(input);
   double rltl = _readCoordinate(input);
   double rtrt = 0.0;
@@ -1570,11 +1570,43 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input)
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
-    input->seek(2, WPX_SEEK_CUR);
+    unsigned short rec = readU16(input);
     if (key == 2)
       _readRecordId(input);
     else
-      input->seek(4, WPX_SEEK_CUR);
+    {
+      switch (rec)
+      {
+      case FH_PAGE_START_X1:
+      case FH_PAGE_START_X2:
+      {
+        double offsetX = _readCoordinate(input);
+        m_collector->collectOffsetX(offsetX);
+        break;
+      }
+      case FH_PAGE_START_Y1:
+      case FH_PAGE_START_Y2:
+      {
+        double offsetY = _readCoordinate(input);
+        m_collector->collectOffsetY(offsetY);
+        break;
+      }
+      case FH_PAGE_WIDTH:
+      {
+        double pageWidth = _readCoordinate(input);
+        m_collector->collectPageWidth(pageWidth);
+        break;
+      }
+      case FH_PAGE_HEIGHT:
+      {
+        double pageHeight = _readCoordinate(input);
+        m_collector->collectPageHeight(pageHeight);
+        break;
+      }
+      default:
+        input->seek(4, WPX_SEEK_CUR);
+      }
+    }
   }
 }
 

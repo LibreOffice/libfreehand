@@ -11,6 +11,7 @@
 #define __FHSTYLESCOLLECTOR_H__
 
 #include "FHCollector.h"
+#include "FHTypes.h"
 
 namespace libfreehand
 {
@@ -18,8 +19,8 @@ namespace libfreehand
 class FHStylesCollector : public FHCollector
 {
 public:
-  FHStylesCollector();
-  virtual ~FHStylesCollector();
+  FHStylesCollector(FHPageInfo &pageInfo);
+  ~FHStylesCollector();
 
   // collector functions
   void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr) {}
@@ -35,9 +36,16 @@ public:
   void collectRectangle(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
                         unsigned short xform, double x1, double y1, double x2, double y2) {}
 
+  void collectOffsetX(double offsetX);
+  void collectOffsetY(double offsetY);
+  void collectPageWidth(double pageWidth);
+  void collectPageHeight(double pageHeight);
+
 private:
   FHStylesCollector(const FHStylesCollector &);
   FHStylesCollector &operator=(const FHStylesCollector &);
+
+  FHPageInfo &m_pageInfo;
 
 };
 

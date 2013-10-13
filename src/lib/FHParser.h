@@ -15,6 +15,13 @@
 #include <libwpd/libwpd.h>
 #include <libwpg/libwpg.h>
 
+#define FH_PAGE_START_X1 0x1c7c
+#define FH_PAGE_START_Y1 0x1c84
+#define FH_PAGE_START_X2 0x1c24
+#define FH_PAGE_START_Y2 0x1c2c
+#define FH_PAGE_WIDTH 0x1c34
+#define FH_PAGE_HEIGHT 0x1c3c
+
 class WPXInputStream;
 
 namespace libfreehand

@@ -10,10 +10,13 @@
 #include <libwpg/libwpg.h>
 #include "FHContentCollector.h"
 
-libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *painter) :
-  m_painter(painter), m_transforms()
+libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *painter, const FHPageInfo &pageInfo) :
+  m_painter(painter), m_pageInfo(pageInfo), m_transforms()
 {
-  m_painter->startGraphics(WPXPropertyList());
+  WPXPropertyList propList;
+  propList.insert("svg:height", m_pageInfo.m_height / 72.0);
+  propList.insert("svg:width", m_pageInfo.m_width / 72.0);
+  m_painter->startGraphics(propList);
 }
 
 libfreehand::FHContentCollector::~FHContentCollector()
@@ -44,32 +47,32 @@ void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsig
 
   propList.clear();
   propList.insert("libwpg:path-action", "M");
-  propList.insert("svg:x", path[0][0].first / 72.0);
-  propList.insert("svg:y", (1000.0 - path[0][0].second) / 72.0);
+  propList.insert("svg:x", (path[0][0].first - m_pageInfo.m_offsetX) / 72.0);
+  propList.insert("svg:y", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[0][0].second) / 72.0);
   propVec.append(propList);
   propList.clear();
   unsigned i = 0;
   for (i = 0; i<path.size()-1; ++i)
   {
     propList.insert("libwpg:path-action", "C");
-    propList.insert("svg:x1", path[i][2].first / 72.0);
-    propList.insert("svg:y1", (1000.0 - path[i][2].second) / 72.0);
-    propList.insert("svg:x2", path[i+1][1].first / 72.0);
-    propList.insert("svg:y2", (1000.0 - path[i+1][1].second) / 72.0);
-    propList.insert("svg:x", path[i+1][0].first / 72.0);
-    propList.insert("svg:y", (1000.0 - path[i+1][0].second) / 72.0);
+    propList.insert("svg:x1", (path[i][2].first - m_pageInfo.m_offsetX) / 72.0);
+    propList.insert("svg:y1", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i][2].second) / 72.0);
+    propList.insert("svg:x2", (path[i+1][1].first - m_pageInfo.m_offsetX) / 72.0);
+    propList.insert("svg:y2", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i+1][1].second) / 72.0);
+    propList.insert("svg:x", (path[i+1][0].first - m_pageInfo.m_offsetX) / 72.0);
+    propList.insert("svg:y", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i+1][0].second) / 72.0);
     propVec.append(propList);
     propList.clear();
   }
   if (closed)
   {
     propList.insert("libwpg:path-action", "C");
-    propList.insert("svg:x1", path[i][2].first / 72.0);
-    propList.insert("svg:y1", (1000.0 - path[i][2].second) / 72.0);
-    propList.insert("svg:x2", path[0][1].first / 72.0);
-    propList.insert("svg:y2", (1000.0 - path[0][1].second) / 72.0);
-    propList.insert("svg:x", path[0][0].first / 72.0);
-    propList.insert("svg:y", (1000.0 - path[0][0].second) / 72.0);
+    propList.insert("svg:x1", (path[i][2].first - m_pageInfo.m_offsetX) / 72.0);
+    propList.insert("svg:y1", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i][2].second) / 72.0);
+    propList.insert("svg:x2", (path[0][1].first - m_pageInfo.m_offsetX) / 72.0);
+    propList.insert("svg:y2", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[0][1].second) / 72.0);
+    propList.insert("svg:x", (path[0][0].first - m_pageInfo.m_offsetX) / 72.0);
+    propList.insert("svg:y", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[0][0].second) / 72.0);
     propVec.append(propList);
     propList.clear();
     propList.insert("libwpg:path-action", "Z");
