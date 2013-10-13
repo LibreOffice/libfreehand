@@ -1577,15 +1577,13 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input)
     {
       switch (rec)
       {
-      case FH_PAGE_START_X1:
-      case FH_PAGE_START_X2:
+      case FH_PAGE_START_X:
       {
         double offsetX = _readCoordinate(input);
         m_collector->collectOffsetX(offsetX);
         break;
       }
-      case FH_PAGE_START_Y1:
-      case FH_PAGE_START_Y2:
+      case FH_PAGE_START_Y:
       {
         double offsetY = _readCoordinate(input);
         m_collector->collectOffsetY(offsetY);
