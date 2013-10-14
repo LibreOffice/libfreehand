@@ -23,18 +23,15 @@ public:
   ~FHStylesCollector();
 
   // collector functions
-  void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr) {}
-  void collectMName(unsigned recordId, const WPXString &name) {}
-  void collectPath(unsigned recordId, unsigned short graphicStyle,
-                   const std::vector<std::vector<std::pair<double, double> > > &path,
-                   bool evenOdd, bool closed) {}
-  void collectXform(unsigned recordId, double m11, double m21,
-                    double m12, double m22,  double m13, double m23) {}
-  void collectOval(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
-                   unsigned short xform, double x, double y, double w, double h,
-                   double arc1, double arc2, bool closed) {}
-  void collectRectangle(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
-                        unsigned short xform, double x1, double y1, double x2, double y2) {}
+  void collectUString(unsigned, const std::vector<unsigned short> &) {}
+  void collectMName(unsigned, const WPXString &) {}
+  void collectPath(unsigned, unsigned short, const std::vector<std::vector<std::pair<double, double> > > &,
+                   bool, bool) {}
+  void collectXform(unsigned, double, double, double, double,  double, double) {}
+  void collectOval(unsigned, unsigned short, unsigned short, unsigned short,
+                   double, double, double, double, double, double, bool) {}
+  void collectRectangle(unsigned, unsigned short, unsigned short,
+                        unsigned short, double, double, double, double) {}
 
   void collectOffsetX(double offsetX);
   void collectOffsetY(double offsetY);
