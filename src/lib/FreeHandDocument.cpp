@@ -110,6 +110,8 @@ bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPa
       if (!parser.parse())
         return false;
     }
+    else
+      return false;
     input->seek(0, WPX_SEEK_SET);
     if (findAGD(input))
     {
@@ -118,6 +120,8 @@ bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPa
       if (!parser.parse())
         return false;
     }
+    else
+      return false;
     return true;
   }
   catch (...)
