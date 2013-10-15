@@ -21,22 +21,22 @@ libfreehand::FHStylesCollector::~FHStylesCollector()
 
 void libfreehand::FHStylesCollector::collectOffsetX(double offsetX)
 {
-  m_pageInfo.m_offsetX = offsetX;
+  m_pageInfo.m_offsetX = offsetX / 72.0;
 }
 
 void libfreehand::FHStylesCollector::collectOffsetY(double offsetY)
 {
-  m_pageInfo.m_offsetY = offsetY;
+  m_pageInfo.m_offsetY = offsetY / 72.0;
 }
 
 void libfreehand::FHStylesCollector::collectPageWidth(double pageWidth)
 {
-  m_pageInfo.m_width = pageWidth;
+  m_pageInfo.m_width = pageWidth / 72.0;
 }
 
 void libfreehand::FHStylesCollector::collectPageHeight(double pageHeight)
 {
-  m_pageInfo.m_height = pageHeight;
+  m_pageInfo.m_height = pageHeight / 72.0;
 }
 
 

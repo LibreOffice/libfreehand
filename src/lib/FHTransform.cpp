@@ -83,18 +83,18 @@ void libfreehand::FHTransform::applyToArc(double &rx, double &ry, double &rotati
     return;
   }
 
-  double m11, m12, v2, m21;
+  double v0, v1, v2, v3;
   if (!FH_ALMOST_ZERO(determinant))
   {
-    m11 = ry*(m_m22*cos(rotation)- m_m21*sin(rotation));
-    m12 = ry*(m_m11*sin(rotation)- m_m12*cos(rotation));
+    v0 = ry*(m_m22*cos(rotation)- m_m21*sin(rotation));
+    v1 = ry*(m_m11*sin(rotation)- m_m12*cos(rotation));
     v2 = -rx*(m_m22*sin(rotation) + m_m21*cos(rotation));
-    m21 = rx*(m_m12*sin(rotation) + m_m11*cos(rotation));
+    v3 = rx*(m_m12*sin(rotation) + m_m11*cos(rotation));
 
     // Transformed ellipse
-    double A = m11*m11 + v2*v2;
-    double B = 2.0*(m11*m12 + v2*m21);
-    double C = m12*m12 + m21*m21;
+    double A = v0*v0 + v2*v2;
+    double B = 2.0*(v0*v1 + v2*v3);
+    double C = v1*v1 + v3*v3;
 
     // Rotate the transformed ellipse
     if (FH_ALMOST_ZERO(B))
@@ -125,25 +125,25 @@ void libfreehand::FHTransform::applyToArc(double &rx, double &ry, double &rotati
   }
 
   // Special case of a close to singular transformation
-  m11 = ry*(m_m22*cos(rotation) - m_m21*sin(rotation));
-  m12 = ry*(m_m12*cos(rotation) - m_m11*sin(rotation));
+  v0 = ry*(m_m22*cos(rotation) - m_m21*sin(rotation));
+  v1 = ry*(m_m12*cos(rotation) - m_m11*sin(rotation));
   v2 = rx*(m_m21*cos(rotation) + m_m22*sin(rotation));
-  m21 = rx*(m_m11*cos(rotation) + m_m12*sin(rotation));
+  v3 = rx*(m_m11*cos(rotation) + m_m12*sin(rotation));
 
   // The result of transformation is a point
-  if (FH_ALMOST_ZERO(m21*m21 + m12*m12) && FH_ALMOST_ZERO(v2*v2 + m11*m11))
+  if (FH_ALMOST_ZERO(v3*v3 + v1*v1) && FH_ALMOST_ZERO(v2*v2 + v0*v0))
   {
     rotation = rx = ry = 0;
     return;
   }
   else // The result of transformation is a line
   {
-    double x = sqrt(m21*m21 + m12*m12);
-    double y = sqrt(v2*v2 + m11*m11);
-    if (m21*m21 + m12*m12 >= v2*v2 + m11*m11)
-      y = (v2*v2 + m11*m11) / x;
+    double x = sqrt(v3*v3 + v1*v1);
+    double y = sqrt(v2*v2 + v0*v0);
+    if (v3*v3 + v1*v1 >= v2*v2 + v0*v0)
+      y = (v2*v2 + v0*v0) / x;
     else
-      x = (m21*m21 + m12*m12) / y;
+      x = (v3*v3 + v1*v1) / y;
     rx = sqrt(x*x + y*y);
     ry = 0;
     rotation = atan2(y, x);

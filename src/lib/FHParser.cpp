@@ -1200,7 +1200,24 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     FH_DEBUG_MSG(("Caught EndOfStreamException, continuing\n"));
   }
 
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, path, evenOdd, closed);
+  FHPath fhPath;
+  fhPath.appendMoveTo(path[0][0].first / 72.0, path[0][0].second / 72.0);
+
+  unsigned i = 0;
+  for (i = 0; i<path.size()-1; ++i)
+    fhPath.appendCubicBezierTo(path[i][2].first / 72.0, path[i][2].second / 72.0,
+                               path[i+1][1].first / 72.0, path[i+1][1].second / 72.0,
+                               path[i+1][0].first / 72.0,  path[i+1][0].second / 72.0);
+  if (closed)
+  {
+    fhPath.appendCubicBezierTo(path[i][2].first / 72.0, path[i][2].second / 72.0,
+                               path[0][1].first / 72.0, path[0][1].second / 72.0,
+                               path[0][0].first / 72.0, path[0][0].second / 72.0);
+
+    fhPath.appendClosePath();
+  }
+
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, fhPath, evenOdd);
 }
 
 void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream *input)

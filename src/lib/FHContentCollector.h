@@ -14,6 +14,7 @@
 #include "FHCollector.h"
 #include "FHTransform.h"
 #include "FHTypes.h"
+#include "FHPath.h"
 
 namespace libfreehand
 {
@@ -27,9 +28,7 @@ public:
   // collector functions
   void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr);
   void collectMName(unsigned recordId, const WPXString &name);
-  void collectPath(unsigned recordId, unsigned short graphicStyle,
-                   const std::vector<std::vector<std::pair<double, double> > > &path,
-                   bool evenOdd, bool closed);
+  void collectPath(unsigned recordId, unsigned short graphicStyle, const FHPath &path, bool evenOdd);
   void collectXform(unsigned recordId, double m11, double m21,
                     double m12, double m22, double m13, double m23);
   void collectOval(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
@@ -46,6 +45,8 @@ public:
 private:
   FHContentCollector(const FHContentCollector &);
   FHContentCollector &operator=(const FHContentCollector &);
+
+  void _normalizePath(FHPath &path);
 
   libwpg::WPGPaintInterface *m_painter;
   const FHPageInfo &m_pageInfo;

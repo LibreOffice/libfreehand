@@ -12,6 +12,7 @@
 
 #include <vector>
 #include <libwpd/libwpd.h>
+#include "FHPath.h"
 
 namespace libwpg
 {
@@ -32,9 +33,7 @@ public:
   // collector functions
   virtual void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr) = 0;
   virtual void collectMName(unsigned recordId, const WPXString &name) = 0;
-  virtual void collectPath(unsigned recordId, unsigned short graphicStyle,
-                           const std::vector<std::vector<std::pair<double, double> > > &path,
-                           bool evenOdd, bool closed) = 0;
+  virtual void collectPath(unsigned recordId, unsigned short graphicStyle, const FHPath &path, bool evenOdd) = 0;
   virtual void collectXform(unsigned recordId, double m11, double m21,
                             double m12, double m22,  double m13, double m23) = 0;
   virtual void collectOval(unsigned recordId, unsigned short graphicStyle, unsigned short layer,

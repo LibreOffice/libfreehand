@@ -14,8 +14,8 @@ libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *p
   m_painter(painter), m_pageInfo(pageInfo), m_transforms()
 {
   WPXPropertyList propList;
-  propList.insert("svg:height", m_pageInfo.m_height / 72.0);
-  propList.insert("svg:width", m_pageInfo.m_width / 72.0);
+  propList.insert("svg:height", m_pageInfo.m_height);
+  propList.insert("svg:width", m_pageInfo.m_width);
   m_painter->startGraphics(propList);
 }
 
@@ -33,11 +33,11 @@ void libfreehand::FHContentCollector::collectMName(unsigned /* recordId */, cons
 }
 
 void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
-    const std::vector<std::vector<std::pair<double, double> > > &path, bool /* evenOdd */, bool closed)
+    const libfreehand::FHPath &path, bool /* evenOdd */)
 {
   if (path.empty())
     return;
-  WPXPropertyListVector propVec;
+
   WPXPropertyList propList;
   propList.insert("draw:fill", "none");
   propList.insert("draw:stroke", "solid");
@@ -45,39 +45,10 @@ void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsig
   propList.insert("svg:stroke-color", "#000000");
   m_painter->setStyle(propList, WPXPropertyListVector());
 
-  propList.clear();
-  propList.insert("libwpg:path-action", "M");
-  propList.insert("svg:x", (path[0][0].first - m_pageInfo.m_offsetX) / 72.0);
-  propList.insert("svg:y", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[0][0].second) / 72.0);
-  propVec.append(propList);
-  propList.clear();
-  unsigned i = 0;
-  for (i = 0; i<path.size()-1; ++i)
-  {
-    propList.insert("libwpg:path-action", "C");
-    propList.insert("svg:x1", (path[i][2].first - m_pageInfo.m_offsetX) / 72.0);
-    propList.insert("svg:y1", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i][2].second) / 72.0);
-    propList.insert("svg:x2", (path[i+1][1].first - m_pageInfo.m_offsetX) / 72.0);
-    propList.insert("svg:y2", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i+1][1].second) / 72.0);
-    propList.insert("svg:x", (path[i+1][0].first - m_pageInfo.m_offsetX) / 72.0);
-    propList.insert("svg:y", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i+1][0].second) / 72.0);
-    propVec.append(propList);
-    propList.clear();
-  }
-  if (closed)
-  {
-    propList.insert("libwpg:path-action", "C");
-    propList.insert("svg:x1", (path[i][2].first - m_pageInfo.m_offsetX) / 72.0);
-    propList.insert("svg:y1", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[i][2].second) / 72.0);
-    propList.insert("svg:x2", (path[0][1].first - m_pageInfo.m_offsetX) / 72.0);
-    propList.insert("svg:y2", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[0][1].second) / 72.0);
-    propList.insert("svg:x", (path[0][0].first - m_pageInfo.m_offsetX) / 72.0);
-    propList.insert("svg:y", (m_pageInfo.m_height + m_pageInfo.m_offsetY - path[0][0].second) / 72.0);
-    propVec.append(propList);
-    propList.clear();
-    propList.insert("libwpg:path-action", "Z");
-    propVec.append(propList);
-  }
+  FHPath fhPath(path);
+  WPXPropertyListVector propVec;
+  _normalizePath(fhPath);
+  fhPath.writeOut(propVec);
 
   m_painter->drawPath(propVec);
 }
@@ -98,6 +69,12 @@ void libfreehand::FHContentCollector::collectRectangle(unsigned recordId,
     unsigned short graphicStyle, unsigned short layer, unsigned short xform,
     double x1, double y1, double x2, double y2)
 {
+}
+
+void libfreehand::FHContentCollector::_normalizePath(libfreehand::FHPath &path)
+{
+  FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_offsetX, m_pageInfo.m_offsetY + m_pageInfo.m_height);
+  path.transform(trafo);
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
