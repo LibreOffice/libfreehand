@@ -139,7 +139,7 @@ AM_CONDITIONAL([PLATFORM_WIN32], [test "x$platform_win32" = "xyes"])
 AC_ARG_ENABLE([werror],
 	[AS_HELP_STRING([--enable-werror], [Treat all warnings as errors, useful for development])],
 	[enable_werror="$enableval"],
-	[enable_werror=no]
+	[enable_werror=yes]
 )
 AS_IF([test x"$enable_werror" != "xno"], [
 	CFLAGS="$CFLAGS -Werror"
