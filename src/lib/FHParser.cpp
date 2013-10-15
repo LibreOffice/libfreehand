@@ -1180,7 +1180,7 @@ void libfreehand::FHParser::readOval(WPXInputStream *input)
     path.appendArcTo(rx, ry, 0.0, true, false, x0, y0);
     path.appendClosePath();
   }
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path);
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, true);
 }
 
 void libfreehand::FHParser::readParagraph(WPXInputStream *input)
@@ -1268,7 +1268,7 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     fhPath.appendClosePath();
   }
 
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, fhPath, evenOdd);
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, 0, 0, fhPath, evenOdd);
 }
 
 void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream *input)
@@ -1301,11 +1301,46 @@ void libfreehand::FHParser::readPerspectiveGrid(WPXInputStream *input)
 
 void libfreehand::FHParser::readPolygonFigure(WPXInputStream *input)
 {
-  _readRecordId(input);
-  _readRecordId(input);
+  unsigned short graphicStyle = _readRecordId(input);
+  unsigned short layer = _readRecordId(input);
   input->seek(12, WPX_SEEK_CUR);
-  _readRecordId(input);
-  input->seek(35, WPX_SEEK_CUR);
+  unsigned short xform = _readRecordId(input);
+  unsigned short numSegments = readU16(input);
+  bool evenodd = bool(readU8(input));
+  double cx = _readCoordinate(input) / 72.0;
+  double cy = _readCoordinate(input) / 72.0;
+
+  double r1 = _readCoordinate(input) / 72.0;
+  double r2 = _readCoordinate(input) / 72.0;
+  double arc1 = _readCoordinate(input) * M_PI / 180.0;
+  double arc2 = _readCoordinate(input) * M_PI / 180.0;
+  while (arc1 < 0.0)
+    arc1 += 2.0 * M_PI;
+  while (arc1 > 2.0 * M_PI)
+    arc1 -= 2.0 * M_PI;
+
+  while (arc2 < 0.0)
+    arc2 += 2.0 * M_PI;
+  while (arc2 > 2*M_PI)
+    arc2 -= 2.0 * M_PI;
+  if (arc1 > arc2)
+  {
+    std::swap(arc1, arc2);
+    std::swap(r1, r2);
+  }
+
+  FHPath path;
+  path.appendMoveTo(r1 * cos(arc1) + cx, r1 * sin(arc1) + cy);
+  double deltaArc = arc2 - arc1;
+  for (double arc = arc1; arc < arc1 + 2.0 * M_PI; arc += 2.0 * M_PI / numSegments)
+  {
+    path.appendLineTo(r1 * cos(arc) + cx, r1 * sin(arc) + cy);
+    path.appendLineTo(r2 * cos(arc + deltaArc) + cx, r2 * sin(arc + deltaArc) + cy);
+  }
+  path.appendLineTo(r1 * cos(arc1) + cx, r1 * sin(arc1) + cy);
+  path.appendClosePath();
+  input->seek(8, WPX_SEEK_CUR);
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, evenodd);
 }
 
 void libfreehand::FHParser::readProcedure(WPXInputStream *input)
@@ -1423,7 +1458,7 @@ void libfreehand::FHParser::readRectangle(WPXInputStream *input)
     path.appendLineTo(x1 - rblb, y1);
   path.appendClosePath();
 
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path);
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, true);
 }
 
 void libfreehand::FHParser::readSketchFilter(WPXInputStream *input)

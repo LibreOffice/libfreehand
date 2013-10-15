@@ -25,9 +25,8 @@ public:
   // collector functions
   void collectUString(unsigned, const std::vector<unsigned short> &) {}
   void collectMName(unsigned, const WPXString &) {}
-  void collectPath(unsigned, unsigned short, const FHPath &, bool) {}
   void collectPath(unsigned, unsigned short, unsigned short,
-                   unsigned short, const FHPath &) {}
+                   unsigned short, const FHPath &, bool) {}
   void collectXform(unsigned, double, double, double, double,  double, double) {}
 
   void collectOffsetX(double offsetX);

@@ -33,28 +33,7 @@ void libfreehand::FHContentCollector::collectMName(unsigned /* recordId */, cons
 }
 
 void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
-    const libfreehand::FHPath &path, bool /* evenOdd */)
-{
-  if (path.empty())
-    return;
-
-  WPXPropertyList propList;
-  propList.insert("draw:fill", "none");
-  propList.insert("draw:stroke", "solid");
-  propList.insert("svg:stroke-width", 0.0);
-  propList.insert("svg:stroke-color", "#000000");
-  m_painter->setStyle(propList, WPXPropertyListVector());
-
-  FHPath fhPath(path);
-  WPXPropertyListVector propVec;
-  _normalizePath(fhPath);
-  fhPath.writeOut(propVec);
-
-  m_painter->drawPath(propVec);
-}
-
-void libfreehand::FHContentCollector::collectPath(unsigned recordId, unsigned short graphicStyle,
-    unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path)
+    unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path, bool /* evenOdd */)
 {
   if (path.empty())
     return;
@@ -65,7 +44,19 @@ void libfreehand::FHContentCollector::collectPath(unsigned recordId, unsigned sh
     if (iter != m_transforms.end())
       fhPath.transform(iter->second);
   }
-  collectPath(recordId, graphicStyle, fhPath, true);
+  _normalizePath(fhPath);
+
+  WPXPropertyList propList;
+  propList.insert("draw:fill", "none");
+  propList.insert("draw:stroke", "solid");
+  propList.insert("svg:stroke-width", 0.0);
+  propList.insert("svg:stroke-color", "#000000");
+  m_painter->setStyle(propList, WPXPropertyListVector());
+
+  WPXPropertyListVector propVec;
+  fhPath.writeOut(propVec);
+
+  m_painter->drawPath(propVec);
 }
 
 void libfreehand::FHContentCollector::collectXform(unsigned recordId,

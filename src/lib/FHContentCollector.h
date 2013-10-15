@@ -28,9 +28,8 @@ public:
   // collector functions
   void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr);
   void collectMName(unsigned recordId, const WPXString &name);
-  void collectPath(unsigned recordId, unsigned short graphicStyle, const FHPath &path, bool evenOdd);
   void collectPath(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
-                   unsigned short xform, const FHPath &path);
+                   unsigned short xform, const FHPath &path, bool evenodd);
   void collectXform(unsigned recordId, double m11, double m21,
                     double m12, double m22, double m13, double m23);
 
