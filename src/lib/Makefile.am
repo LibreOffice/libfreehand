@@ -25,6 +25,7 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHContentCollector.cpp \
 	FHInternalStream.cpp \
 	FHParser.cpp \
+	FHPath.cpp \
 	FHStringVector.cpp \
 	FHStylesCollector.cpp \
 	FHSVGGenerator.cpp \
@@ -34,6 +35,7 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHContentCollector.h \
 	FHInternalStream.h \
 	FHParser.h \
+	FHPath.h \
 	FHStylesCollector.h \
 	FHSVGGenerator.h \
 	FHTransform.h \
