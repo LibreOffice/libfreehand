@@ -26,11 +26,9 @@ public:
   void collectUString(unsigned, const std::vector<unsigned short> &) {}
   void collectMName(unsigned, const WPXString &) {}
   void collectPath(unsigned, unsigned short, const FHPath &, bool) {}
+  void collectPath(unsigned, unsigned short, unsigned short,
+                   unsigned short, const FHPath &) {}
   void collectXform(unsigned, double, double, double, double,  double, double) {}
-  void collectOval(unsigned, unsigned short, unsigned short, unsigned short,
-                   double, double, double, double, double, double, bool) {}
-  void collectRectangle(unsigned, unsigned short, unsigned short,
-                        unsigned short, double, double, double, double) {}
 
   void collectOffsetX(double offsetX);
   void collectOffsetY(double offsetY);

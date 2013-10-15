@@ -34,13 +34,10 @@ public:
   virtual void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr) = 0;
   virtual void collectMName(unsigned recordId, const WPXString &name) = 0;
   virtual void collectPath(unsigned recordId, unsigned short graphicStyle, const FHPath &path, bool evenOdd) = 0;
+  virtual void collectPath(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
+                           unsigned short xform, const FHPath &path) = 0;
   virtual void collectXform(unsigned recordId, double m11, double m21,
                             double m12, double m22,  double m13, double m23) = 0;
-  virtual void collectOval(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
-                           unsigned short xform, double x, double y, double w, double h,
-                           double arc1, double arc2, bool closed) = 0;
-  virtual void collectRectangle(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
-                                unsigned short xform, double x1, double y1, double x2, double y2) = 0;
 
   virtual void collectOffsetX(double offsetX) = 0;
   virtual void collectOffsetY(double offsetY) = 0;

@@ -1114,22 +1114,73 @@ void libfreehand::FHParser::readOval(WPXInputStream *input)
   unsigned short layer = _readRecordId(input);
   input->seek(12, WPX_SEEK_CUR);
   unsigned short xform = _readRecordId(input);
-  double x = _readCoordinate(input);
-  double y = _readCoordinate(input);
-  double w = _readCoordinate(input);
-  double h = _readCoordinate(input);
+  double xa = _readCoordinate(input) / 72.0;
+  double ya = _readCoordinate(input) / 72.0;
+  double xb = _readCoordinate(input) / 72.0;
+  double yb = _readCoordinate(input) / 72.0;
   double arc1 = 0.0;
   double arc2 = 0.0;
   bool closed = false;
   if (m_version > 10)
   {
-    arc1 = _readCoordinate(input);
-    arc2 = _readCoordinate(input);
+    arc1 = _readCoordinate(input) * M_PI / 180.0;
+    arc2 = _readCoordinate(input) * M_PI / 180.0;
     closed = bool(readU8(input));
     input->seek(1, WPX_SEEK_CUR);
   }
-  m_collector->collectOval(m_currentRecord+1, graphicStyle, layer,
-                           xform, x, y, w, h, arc1, arc2, closed);
+
+  double cx = (xb + xa) / 2.0;
+  double cy = (yb + ya) / 2.0;
+  double rx = fabs(xb - xa) / 2.0;
+  double ry = fabs(yb - ya) / 2.0;
+
+  while (arc1 < 0.0)
+    arc1 += 2*M_PI;
+  while (arc1 > 2*M_PI)
+    arc1 -= 2*M_PI;
+
+  while (arc2 < 0.0)
+    arc2 += 2*M_PI;
+  while (arc2 > 2*M_PI)
+    arc2 -= 2*M_PI;
+
+  FHPath path;
+  if (arc1 != arc2)
+  {
+    if (arc2 < arc1)
+      arc2 += 2*M_PI;
+    double x0 = cx + rx*cos(arc1);
+    double y0 = cy - ry*sin(arc1);
+
+    double x1 = cx + rx*cos(arc2);
+    double y1 = cy - ry*sin(arc2);
+
+    bool largeArc = (arc2 - arc1 > M_PI);
+
+    path.appendMoveTo(x0, y0);
+    path.appendArcTo(rx, ry, 0.0, largeArc, false, x1, y1);
+    if (closed)
+    {
+      path.appendLineTo(cx, cy);
+      path.appendLineTo(x0, y0);
+      path.appendClosePath();
+    }
+  }
+  else
+  {
+    arc2 += M_PI/2.0;
+    double x0 = cx + rx*cos(arc1);
+    double y0 = cy - ry*sin(arc1);
+
+    double x1 = cx + rx*cos(arc2);
+    double y1 = cy - ry*sin(arc2);
+
+    path.appendMoveTo(x0, y0);
+    path.appendArcTo(rx, ry, 0.0, false, false, x1, y1);
+    path.appendArcTo(rx, ry, 0.0, true, false, x0, y0);
+    path.appendClosePath();
+  }
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path);
 }
 
 void libfreehand::FHParser::readParagraph(WPXInputStream *input)
@@ -1298,30 +1349,81 @@ void libfreehand::FHParser::readRectangle(WPXInputStream *input)
   unsigned short layer = readU16(input);
   input->seek(12, WPX_SEEK_CUR);
   unsigned short xform = readU16(input);
-  double x1 = _readCoordinate(input);
-  double y1 = _readCoordinate(input);
-  double x2 = _readCoordinate(input);
-  double y2 = _readCoordinate(input);
-  double rtlt = _readCoordinate(input);
-  double rltl = _readCoordinate(input);
-  double rtrt = 0.0;
-  double rtrr = 0.0;
-  double rbrb = 0.0;
-  double rbrr = 0.0;
-  double rblb = 0.0;
-  double rbll = 0.0;
+  double x1 = _readCoordinate(input) / 72.0;
+  double y1 = _readCoordinate(input) / 72.0;
+  double x2 = _readCoordinate(input) / 72.0;
+  double y2 = _readCoordinate(input) / 72.0;
+  double rtlt = _readCoordinate(input) / 72.0;
+  double rtll = _readCoordinate(input) / 72.0;
+  double rtrt = rtlt;
+  double rtrr = rtll;
+  double rbrb = rtlt;
+  double rbrr = rtll;
+  double rblb = rtlt;
+  double rbll = rtll;
+  bool rbl(true);
+  bool rtl(true);
+  bool rtr(true);
+  bool rbr(true);
   if (m_version >= 11)
   {
-    rtrt = _readCoordinate(input);
-    rtrr = _readCoordinate(input);
-    rbrb = _readCoordinate(input);
-    rbrr = _readCoordinate(input);
-    rblb = _readCoordinate(input);
-    rbll = _readCoordinate(input);
+    rtrt = _readCoordinate(input) / 72.0;
+    rtrr = _readCoordinate(input) / 72.0;
+    rbrb = _readCoordinate(input) / 72.0;
+    rbrr = _readCoordinate(input) / 72.0;
+    rblb = _readCoordinate(input) / 72.0;
+    rbll = _readCoordinate(input) / 72.0;
     input->seek(9, WPX_SEEK_CUR);
   }
-  m_collector->collectRectangle(m_currentRecord+1, graphicStyle, layer,
-                                xform, x1, y1, x2, y2);
+  FHPath path;
+
+  if (FH_ALMOST_ZERO(rbll) || FH_ALMOST_ZERO(rblb))
+    path.appendMoveTo(x1, y1);
+  else
+  {
+    path.appendMoveTo(x1 - rblb, y1);
+    if (rbl)
+      path.appendQuadraticBezierTo(x1, y1, x1, y1 + rbll);
+    else
+      path.appendQuadraticBezierTo(x1 + rblb, y1 + rbll, x1, y1 + rbll);
+  }
+  if (FH_ALMOST_ZERO(rtll) || FH_ALMOST_ZERO(rtlt))
+    path.appendLineTo(x1, y2);
+  else
+  {
+    path.appendLineTo(x1, y2 - rtll);
+    if (rtl)
+      path.appendQuadraticBezierTo(x1, y2, x1 + rtlt, y2);
+    else
+      path.appendQuadraticBezierTo(x1 + rtlt, y2 - rtll, x1 + rtlt, y2);
+  }
+  if (FH_ALMOST_ZERO(rtrt) || FH_ALMOST_ZERO(rtrr))
+    path.appendLineTo(x2, y2);
+  else
+  {
+    path.appendLineTo(x2 - rtrt, y2);
+    if (rtr)
+      path.appendQuadraticBezierTo(x2, y2, x2, y2 - rtrr);
+    else
+      path.appendQuadraticBezierTo(x2 - rtrt, y2 - rtrr, x2, y2 - rtrr);
+  }
+  if (FH_ALMOST_ZERO(rbrr) || FH_ALMOST_ZERO(rbrb))
+    path.appendLineTo(x2, y1);
+  else
+  {
+    path.appendLineTo(x2, y1 + rbrr);
+    if (rbr)
+      path.appendQuadraticBezierTo(x2, y1, x2 - rbrb, y1);
+    else
+      path.appendQuadraticBezierTo(x2 - rbrb, y1 + rbrr, x2 - rbrb, y1);
+  }
+  if (FH_ALMOST_ZERO(rbll) || FH_ALMOST_ZERO(rblb))
+    path.appendLineTo(x1, y1);
+  else
+    path.appendLineTo(x1 - rblb, y1);
+  path.appendClosePath();
+
+  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path);
 }
 
 void libfreehand::FHParser::readSketchFilter(WPXInputStream *input)
@@ -1414,7 +1516,7 @@ void libfreehand::FHParser::readTEffect(WPXInputStream *input)
   for (unsigned i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
-    unsigned short rec = readU16(input);
+    input->seek(2, WPX_SEEK_CUR);
     if (key == 2)
       _readRecordId(input);
     else
@@ -1670,9 +1772,9 @@ void libfreehand::FHParser::readXform(WPXInputStream *input)
     if (a5)
       m22 = _readCoordinate(input);
     if (a0)
-      m13 = _readCoordinate(input);
+      m13 = _readCoordinate(input) / 72.0;
     if (a1)
-      m23 = _readCoordinate(input);
+      m23 = _readCoordinate(input) / 72.0;
   }
   m_collector->collectXform(m_currentRecord+1, m11, m21, m12, m22, m13, m23);
   input->seek(startPosition+length, WPX_SEEK_SET);

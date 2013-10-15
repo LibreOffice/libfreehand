@@ -53,22 +53,25 @@ void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsig
   m_painter->drawPath(propVec);
 }
 
+void libfreehand::FHContentCollector::collectPath(unsigned recordId, unsigned short graphicStyle,
+    unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path)
+{
+  if (path.empty())
+    return;
+  FHPath fhPath(path);
+  if (xform)
+  {
+    std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(xform);
+    if (iter != m_transforms.end())
+      fhPath.transform(iter->second);
+  }
+  collectPath(recordId, graphicStyle, fhPath, true);
+}
+
 void libfreehand::FHContentCollector::collectXform(unsigned recordId,
     double m11, double m21, double m12, double m22, double m13, double m23)
 {
   m_transforms[recordId] = FHTransform(m11, m21, m12, m22, m13, m23);
-}
-
-void libfreehand::FHContentCollector::collectOval(unsigned recordId,
-    unsigned short graphicStyle, unsigned short layer, unsigned short xform,
-    double x, double y, double w, double h,double arc1, double arc2, bool closed)
-{
-}
-
-void libfreehand::FHContentCollector::collectRectangle(unsigned recordId,
-    unsigned short graphicStyle, unsigned short layer, unsigned short xform,
-    double x1, double y1, double x2, double y2)
-{
 }
 
 void libfreehand::FHContentCollector::_normalizePath(libfreehand::FHPath &path)

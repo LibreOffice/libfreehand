@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <math.h>
 #include <libwpd/libwpd.h>
 #include <libwpd-stream/libwpd-stream.h>
 
