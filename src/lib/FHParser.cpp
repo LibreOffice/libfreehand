@@ -887,19 +887,17 @@ void libfreehand::FHParser::readImageFill(WPXInputStream *input)
 void libfreehand::FHParser::readImageImport(WPXInputStream *input)
 {
   _readRecordId(input);
-  input->seek(10, WPX_SEEK_CUR);
+  _readRecordId(input);
+  input->seek(8, WPX_SEEK_CUR);
   _readRecordId(input);
   _readRecordId(input);
   _readRecordId(input);
   _readRecordId(input);
 
-  input->seek(34, WPX_SEEK_CUR);
-  while (readU8(input))
-  {}
-  if (m_version == 11)
-    input->seek(2, WPX_SEEK_CUR);
+  if (m_version > 8)
+    input->seek(37, WPX_SEEK_CUR);
   else if (m_version == 8)
-    input->seek(-3, WPX_SEEK_CUR);
+    input->seek(32, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readLayer(WPXInputStream *input)
