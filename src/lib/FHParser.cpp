@@ -408,6 +408,9 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
       case FH_SKETCHFILTER:
         readSketchFilter(input);
         break;
+      case FH_SPOTCOLOR:
+        readSpotColor(input);
+        break;
       case FH_SPOTCOLOR6:
         readSpotColor6(input);
         break;
@@ -452,6 +455,9 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
         break;
       case FH_TILEFILL:
         readTileFill(input);
+        break;
+      case FH_TINTCOLOR:
+        readTintColor(input);
         break;
       case FH_TINTCOLOR6:
         readTintColor6(input);
@@ -944,14 +950,13 @@ void libfreehand::FHParser::readLineTable(WPXInputStream *input)
 
 void libfreehand::FHParser::readList(WPXInputStream *input)
 {
-  long startPosition = input->tell();
-  unsigned short flag = readU16(input);
+  unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
   input->seek(8, WPX_SEEK_CUR);
   for (unsigned short i = 0; i < size; ++i)
     _readRecordId(input);
-  if (m_version < 9 && (size || flag))
-    input->seek(startPosition+32, WPX_SEEK_SET);
+  if (m_version < 9)
+    input->seek((size2-size)*2, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readMasterPageDocMan(WPXInputStream *input)
@@ -1466,6 +1471,11 @@ void libfreehand::FHParser::readSketchFilter(WPXInputStream *input)
   input->seek(11, WPX_SEEK_CUR);
 }
 
+void libfreehand::FHParser::readSpotColor(WPXInputStream *input)
+{
+  input->seek(26, WPX_SEEK_CUR);
+}
+
 void libfreehand::FHParser::readSpotColor6(WPXInputStream *input)
 {
   unsigned short size = readU16(input);
@@ -1654,6 +1664,11 @@ void libfreehand::FHParser::readTileFill(WPXInputStream *input)
   input->seek(28, WPX_SEEK_CUR);
 }
 
+void libfreehand::FHParser::readTintColor(WPXInputStream *input)
+{
+  input->seek(20, WPX_SEEK_CUR);
+}
+
 void libfreehand::FHParser::readTintColor6(WPXInputStream *input)
 {
   _readRecordId(input);
@@ -1674,7 +1689,7 @@ void libfreehand::FHParser::readTString(WPXInputStream *input)
   input->seek(16, WPX_SEEK_CUR);
   for (unsigned short i = 0; i < size; ++i)
     _readRecordId(input);
-  if (m_version == 8)
+  if (m_version < 9)
     input->seek((size2-size)*2, WPX_SEEK_CUR);
 }
 
@@ -1765,7 +1780,7 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input)
 void libfreehand::FHParser::readXform(WPXInputStream *input)
 {
   long startPosition = input->tell();
-  if (m_version == 8)
+  if (m_version < 9)
     input->seek(52, WPX_SEEK_CUR);
   else
   {

@@ -89,6 +89,7 @@ RadialFillX
 RaggedFilter
 Rectangle
 SketchFilter
+SpotColor
 SpotColor6
 StylePropLst
 SwfImport
@@ -104,6 +105,7 @@ TextColumn
 TextInPath
 TFOnPath
 TileFill
+TintColor
 TintColor6
 TransformFilter
 TString

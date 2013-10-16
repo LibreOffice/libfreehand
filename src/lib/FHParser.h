@@ -132,6 +132,7 @@ private:
   void readRaggedFilter(WPXInputStream *input);
   void readRectangle(WPXInputStream *input);
   void readSketchFilter(WPXInputStream *input);
+  void readSpotColor(WPXInputStream *input);
   void readSpotColor6(WPXInputStream *input);
   void readStylePropLst(WPXInputStream *input);
   void readSwfImport(WPXInputStream *input);
@@ -147,6 +148,7 @@ private:
   void readTextInPath(WPXInputStream *input);
   void readTFOnPath(WPXInputStream *input);
   void readTileFill(WPXInputStream *input);
+  void readTintColor(WPXInputStream *input);
   void readTintColor6(WPXInputStream *input);
   void readTransformFilter(WPXInputStream *input);
   void readTString(WPXInputStream *input);
