@@ -75,6 +75,7 @@ private:
   void readExpandFilter(WPXInputStream *input);
   void readExtrusion(WPXInputStream *input);
   void readFHDocHeader(WPXInputStream *input);
+  void readFHTail(WPXInputStream *input);
   void readFigure(WPXInputStream *input);
   void readFileDescriptor(WPXInputStream *input);
   void readFilterAttributeHolder(WPXInputStream *input);
@@ -169,6 +170,7 @@ private:
   std::map<unsigned short, int> m_dictionary;
   std::vector<unsigned short> m_records;
   std::vector<unsigned short>::size_type m_currentRecord;
+  std::map<std::vector<unsigned short>::size_type, long> m_offsets;
 };
 
 } // namespace libfreehand
