@@ -1038,7 +1038,8 @@ void libfreehand::FHParser::readMName(WPXInputStream *input)
     name.append((char)character);
   FH_DEBUG_MSG(("FHParser::readMName %s\n", name.cstr()));
   input->seek(startPosition + (size+1)*4, WPX_SEEK_SET);
-  m_collector->collectMName(m_currentRecord+1, name);
+  if (m_collector)
+    m_collector->collectMName(m_currentRecord+1, name);
 }
 
 void libfreehand::FHParser::readMpObject(WPXInputStream *input)
@@ -1194,7 +1195,8 @@ void libfreehand::FHParser::readOval(WPXInputStream *input)
     path.appendArcTo(rx, ry, 0.0, true, false, x0, y0);
     path.appendClosePath();
   }
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, true);
+  if (m_collector)
+    m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, true);
 }
 
 void libfreehand::FHParser::readParagraph(WPXInputStream *input)
@@ -1282,7 +1284,8 @@ void libfreehand::FHParser::readPath(WPXInputStream *input)
     fhPath.appendClosePath();
   }
 
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, 0, 0, fhPath, evenOdd);
+  if (m_collector)
+    m_collector->collectPath(m_currentRecord+1, graphicStyle, 0, 0, fhPath, evenOdd);
 }
 
 void libfreehand::FHParser::readPathTextLineInfo(WPXInputStream *input)
@@ -1354,7 +1357,8 @@ void libfreehand::FHParser::readPolygonFigure(WPXInputStream *input)
   path.appendLineTo(r1 * cos(arc1) + cx, r1 * sin(arc1) + cy);
   path.appendClosePath();
   input->seek(8, WPX_SEEK_CUR);
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, evenodd);
+  if (m_collector)
+    m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, evenodd);
 }
 
 void libfreehand::FHParser::readProcedure(WPXInputStream *input)
@@ -1472,7 +1476,8 @@ void libfreehand::FHParser::readRectangle(WPXInputStream *input)
     path.appendLineTo(x1 - rblb, y1);
   path.appendClosePath();
 
-  m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, true);
+  if (m_collector)
+    m_collector->collectPath(m_currentRecord+1, graphicStyle, layer, xform, path, true);
 }
 
 void libfreehand::FHParser::readSketchFilter(WPXInputStream *input)
@@ -1721,7 +1726,8 @@ void libfreehand::FHParser::readUString(WPXInputStream *input)
   FH_DEBUG_MSG(("FHParser::readUString %s\n", str.cstr()));
 #endif
   input->seek(startPosition + (size+1)*4, WPX_SEEK_SET);
-  m_collector->collectUString(m_currentRecord+1, ustr);
+  if (m_collector)
+    m_collector->collectUString(m_currentRecord+1, ustr);
 }
 
 void libfreehand::FHParser::readVDict(WPXInputStream *input)
@@ -1758,25 +1764,29 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input)
       case FH_PAGE_START_X:
       {
         double offsetX = _readCoordinate(input);
-        m_collector->collectOffsetX(offsetX);
+        if (m_collector)
+          m_collector->collectOffsetX(offsetX);
         break;
       }
       case FH_PAGE_START_Y:
       {
         double offsetY = _readCoordinate(input);
-        m_collector->collectOffsetY(offsetY);
+        if (m_collector)
+          m_collector->collectOffsetY(offsetY);
         break;
       }
       case FH_PAGE_WIDTH:
       {
         double pageWidth = _readCoordinate(input);
-        m_collector->collectPageWidth(pageWidth);
+        if (m_collector)
+          m_collector->collectPageWidth(pageWidth);
         break;
       }
       case FH_PAGE_HEIGHT:
       {
         double pageHeight = _readCoordinate(input);
-        m_collector->collectPageHeight(pageHeight);
+        if (m_collector)
+          m_collector->collectPageHeight(pageHeight);
         break;
       }
       default:
@@ -1835,7 +1845,8 @@ void libfreehand::FHParser::readXform(WPXInputStream *input)
     if (a1)
       m23 = _readCoordinate(input) / 72.0;
   }
-  m_collector->collectXform(m_currentRecord+1, m11, m21, m12, m22, m13, m23);
+  if (m_collector)
+    m_collector->collectXform(m_currentRecord+1, m11, m21, m12, m22, m13, m23);
   input->seek(startPosition+length, WPX_SEEK_SET);
 }
 
