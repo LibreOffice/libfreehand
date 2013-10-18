@@ -170,7 +170,8 @@ private:
   std::map<unsigned short, int> m_dictionary;
   std::vector<unsigned short> m_records;
   std::vector<unsigned short>::size_type m_currentRecord;
-  std::map<std::vector<unsigned short>::size_type, long> m_offsets;
+  std::vector<long> m_offsets;
+  long m_fhTailOffset;
 };
 
 } // namespace libfreehand

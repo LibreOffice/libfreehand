@@ -50,7 +50,7 @@ const char *getTokenName(int tokenId)
 
 libfreehand::FHParser::FHParser(WPXInputStream *input, FHCollector *collector)
   : m_input(input), m_collector(collector), m_version(-1), m_dictionary(),
-    m_records(), m_currentRecord(0), m_offsets()
+    m_records(), m_currentRecord(0), m_offsets(), m_fhTailOffset(0)
 {
 }
 
@@ -132,9 +132,8 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
     std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(m_records[m_currentRecord]);
     if (iterDict != m_dictionary.end())
     {
-      long startPosition = input->tell();
-      m_offsets[m_currentRecord+1] = startPosition;
-      FH_DEBUG_MSG(("Parsing record number 0x%x: %s Offset 0x%lx\n", (unsigned)m_currentRecord+1, getTokenName(iterDict->second), startPosition));
+      m_offsets.push_back(input->tell());
+      FH_DEBUG_MSG(("Parsing record number 0x%x: %s Offset 0x%lx\n", (unsigned)m_currentRecord+1, getTokenName(iterDict->second), input->tell()));
       switch (iterDict->second)
       {
       case FH_AGDFONT:
@@ -492,6 +491,8 @@ void libfreehand::FHParser::parseData(WPXInputStream *input)
       FH_DEBUG_MSG(("FHParser::parseData NO SUCH TOKEN IN DICTIONARY\n"));
     }
   }
+  m_fhTailOffset = input->tell();
+  FH_DEBUG_MSG(("Parsing FHTail at offset 0x%lx\n", m_fhTailOffset));
   readFHTail(input);
 }
 
@@ -787,8 +788,11 @@ void libfreehand::FHParser::readFHDocHeader(WPXInputStream *input)
   input->seek(4, WPX_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readFHTail(WPXInputStream * /* input */)
+void libfreehand::FHParser::readFHTail(WPXInputStream *input)
 {
+  _readRecordId(input);
+  _readRecordId(input);
+  _readRecordId(input);
 }
 
 void libfreehand::FHParser::readFigure(WPXInputStream *input)
