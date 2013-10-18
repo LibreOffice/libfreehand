@@ -14,8 +14,8 @@ libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *p
   m_painter(painter), m_pageInfo(pageInfo), m_transforms()
 {
   WPXPropertyList propList;
-  propList.insert("svg:height", m_pageInfo.m_height);
-  propList.insert("svg:width", m_pageInfo.m_width);
+  propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
+  propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
   m_painter->startGraphics(propList);
 }
 
@@ -67,7 +67,7 @@ void libfreehand::FHContentCollector::collectXform(unsigned recordId,
 
 void libfreehand::FHContentCollector::_normalizePath(libfreehand::FHPath &path)
 {
-  FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_offsetX, m_pageInfo.m_offsetY + m_pageInfo.m_height);
+  FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_minX, m_pageInfo.m_maxY);
   path.transform(trafo);
 }
 

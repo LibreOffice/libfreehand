@@ -15,10 +15,11 @@ namespace libfreehand
 
 struct FHPageInfo
 {
-  double m_offsetX;
-  double m_offsetY;
-  double m_width;
-  double m_height;
+  double m_minX;
+  double m_minY;
+  double m_maxX;
+  double m_maxY;
+  FHPageInfo() : m_minX(0.0), m_minY(0.0), m_maxX(0.0), m_maxY(0.0) {}
 };
 
 } // namespace libfreehand

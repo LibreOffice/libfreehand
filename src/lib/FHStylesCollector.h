@@ -40,6 +40,11 @@ private:
 
   FHPageInfo &m_pageInfo;
 
+  double m_minX;
+  double m_minY;
+  double m_maxX;
+  double m_maxY;
+
 };
 
 } // namespace libfreehand

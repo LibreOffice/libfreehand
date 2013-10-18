@@ -7,6 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <stdio.h>
 #include <libwpg/libwpg.h>
 #include "FHStylesCollector.h"
 
@@ -21,22 +22,40 @@ libfreehand::FHStylesCollector::~FHStylesCollector()
 
 void libfreehand::FHStylesCollector::collectOffsetX(double offsetX)
 {
-  m_pageInfo.m_offsetX = offsetX / 72.0;
+  m_minX = offsetX / 72.0;
+  if (m_pageInfo.m_minX > 0.0)
+  {
+    if (m_pageInfo.m_minX > m_minX)
+      m_pageInfo.m_minX = m_minX;
+  }
+  else
+    m_pageInfo.m_minX = m_minX;
 }
 
 void libfreehand::FHStylesCollector::collectOffsetY(double offsetY)
 {
-  m_pageInfo.m_offsetY = offsetY / 72.0;
+  m_minY = offsetY / 72.0;
+  if (m_pageInfo.m_minY > 0.0)
+  {
+    if (m_pageInfo.m_minY > m_minY)
+      m_pageInfo.m_minY = m_minY;
+  }
+  else
+    m_pageInfo.m_minY = m_minY;
 }
 
 void libfreehand::FHStylesCollector::collectPageWidth(double pageWidth)
 {
-  m_pageInfo.m_width = pageWidth / 72.0;
+  m_maxX = m_minX + pageWidth / 72.0;
+  if (m_pageInfo.m_maxX < m_maxX)
+    m_pageInfo.m_maxX = m_maxX;
 }
 
 void libfreehand::FHStylesCollector::collectPageHeight(double pageHeight)
 {
-  m_pageInfo.m_height = pageHeight / 72.0;
+  m_maxY = m_minY + pageHeight / 72.0;
+  if (m_pageInfo.m_maxY < m_maxY)
+    m_pageInfo.m_maxY = m_maxY;
 }
 
 
