@@ -13,6 +13,10 @@
 
 libfreehand::FHStylesCollector::FHStylesCollector(libfreehand::FHPageInfo &pageInfo)
   : m_pageInfo(pageInfo)
+  , m_minX(0)
+  , m_minY(0)
+  , m_maxX(0)
+  , m_maxY(0)
 {
 }
 
