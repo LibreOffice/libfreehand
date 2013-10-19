@@ -911,7 +911,7 @@ void libfreehand::FHParser::readImageImport(WPXInputStream *input)
     input->seek(35, WPX_SEEK_CUR);
   else if (m_version < 9)
     input->seek(32, WPX_SEEK_CUR);
-  if recid > 0
+  if (recid > 0)
     input->seek(4, WPX_SEEK_CUR);
 }
 
