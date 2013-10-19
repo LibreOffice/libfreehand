@@ -900,15 +900,19 @@ void libfreehand::FHParser::readImageImport(WPXInputStream *input)
   _readRecordId(input);
   _readRecordId(input);
   input->seek(8, WPX_SEEK_CUR);
-  _readRecordId(input);
+  unsigned recid = _readRecordId(input);
   _readRecordId(input);
   _readRecordId(input);
   _readRecordId(input);
 
   if (m_version > 8)
     input->seek(37, WPX_SEEK_CUR);
-  else if (m_version == 8)
+  else if (m_version == 9)
+    input->seek(35, WPX_SEEK_CUR);
+  else if (m_version < 9)
     input->seek(32, WPX_SEEK_CUR);
+  if recid > 0
+    input->seek(4, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readLayer(WPXInputStream *input)
@@ -1557,13 +1561,16 @@ void libfreehand::FHParser::readTabTable(WPXInputStream *input)
 
 void libfreehand::FHParser::readTaperedFill(WPXInputStream *input)
 {
-  input->seek(12, WPX_SEEK_CUR);
+  _readRecordId(input);
+  _readRecordId(input);
+  input->seek(8, WPX_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readTaperedFillX(WPXInputStream *input)
 {
   _readRecordId(input);
-  input->seek(14, WPX_SEEK_CUR);
+  _readRecordId(input);
+  input->seek(12, WPX_SEEK_CUR);
   _readRecordId(input);
 }
 
