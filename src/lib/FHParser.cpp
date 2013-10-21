@@ -48,9 +48,9 @@ const char *getTokenName(int tokenId)
 
 } // anonymous namespace
 
-libfreehand::FHParser::FHParser(WPXInputStream *input, FHCollector *collector)
-  : m_input(input), m_collector(collector), m_version(-1), m_dictionary(),
-    m_records(), m_currentRecord(0), m_offsets(), m_fhTailOffset(0)
+libfreehand::FHParser::FHParser()
+  : m_version(-1), m_dictionary(), m_records(), m_currentRecord(0),
+    m_offsets(), m_fhTailOffset(0)
 {
 }
 
@@ -58,31 +58,31 @@ libfreehand::FHParser::~FHParser()
 {
 }
 
-bool libfreehand::FHParser::parse()
+bool libfreehand::FHParser::parse(WPXInputStream *input, libfreehand::FHCollector *collector)
 {
-  long dataOffset = m_input->tell();
-  if ('A' != readU8(m_input))
+  long dataOffset = input->tell();
+  if ('A' != readU8(input))
     return false;
-  if ('G' != readU8(m_input))
+  if ('G' != readU8(input))
     return false;
-  if ('D' != readU8(m_input))
+  if ('D' != readU8(input))
     return false;
-  m_version = readU8(m_input) - 0x30 + 5;
+  m_version = readU8(input) - 0x30 + 5;
 
   // Skip a dword
-  m_input->seek(4, WPX_SEEK_CUR);
+  input->seek(4, WPX_SEEK_CUR);
 
-  unsigned dataLength = readU32(m_input);
-  m_input->seek(dataOffset+dataLength, WPX_SEEK_SET);
+  unsigned dataLength = readU32(input);
+  input->seek(dataOffset+dataLength, WPX_SEEK_SET);
 
-  parseDictionary(m_input);
+  parseDictionary(input);
 
-  parseListOfRecords(m_input);
+  parseListOfRecords(input);
 
-  m_input->seek(dataOffset+12, WPX_SEEK_SET);
+  input->seek(dataOffset+12, WPX_SEEK_SET);
 
-  FHInternalStream dataStream(m_input, dataLength-12, m_version >= 9);
-  parseData(&dataStream, m_collector);
+  FHInternalStream dataStream(input, dataLength-12, m_version >= 9);
+  parseData(&dataStream, collector);
   dataStream.seek(0, WPX_SEEK_SET);
 
   return true;

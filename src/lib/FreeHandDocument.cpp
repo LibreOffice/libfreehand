@@ -106,8 +106,8 @@ bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPa
     if (findAGD(input))
     {
       FHStylesCollector collector(pageInfo);
-      FHParser parser(input, &collector);
-      if (!parser.parse())
+      FHParser parser;
+      if (!parser.parse(input, &collector))
         return false;
     }
     else
@@ -116,8 +116,8 @@ bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPa
     if (findAGD(input))
     {
       FHContentCollector collector(painter, pageInfo);
-      FHParser parser(input, &collector);
-      if (!parser.parse())
+      FHParser parser;
+      if (!parser.parse(input, &collector))
         return false;
     }
     else

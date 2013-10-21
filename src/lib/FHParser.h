@@ -29,11 +29,10 @@ class FHCollector;
 class FHParser
 {
 public:
-  explicit FHParser(WPXInputStream *input, FHCollector *collector);
+  explicit FHParser();
   virtual ~FHParser();
-  bool parse();
+  bool parse(WPXInputStream *input, FHCollector *collector);
 private:
-  FHParser();
   FHParser(const FHParser &);
   FHParser &operator=(const FHParser &);
 
