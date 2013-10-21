@@ -128,6 +128,363 @@ void libfreehand::FHParser::parseRecordList(WPXInputStream *input)
   }
 }
 
+void libfreehand::FHParser::parseRecord(WPXInputStream *input, libfreehand::FHCollector *collector, int recordId)
+{
+  FH_DEBUG_MSG(("Parsing record number 0x%x: %s Offset 0x%lx\n", (unsigned)m_currentRecord+1, getTokenName(recordId), input->tell()));
+  switch (recordId)
+  {
+  case FH_AGDFONT:
+    readAGDFont(input, collector);
+    break;
+  case FH_AGDSELECTION:
+    readAGDSelection(input, collector);
+    break;
+  case FH_ARROWPATH:
+    readArrowPath(input, collector);
+    break;
+  case FH_ATTRIBUTEHOLDER:
+    readAttributeHolder(input, collector);
+    break;
+  case FH_BASICFILL:
+    readBasicFill(input, collector);
+    break;
+  case FH_BASICLINE:
+    readBasicLine(input, collector);
+    break;
+  case FH_BENDFILTER:
+    readBendFilter(input, collector);
+    break;
+  case FH_BLOCK:
+    readBlock(input, collector);
+    break;
+  case FH_BRUSHLIST:
+    readBrushList(input, collector);
+    break;
+  case FH_BRUSH:
+    readBrush(input, collector);
+    break;
+  case FH_BRUSHSTROKE:
+    readBrushStroke(input, collector);
+    break;
+  case FH_BRUSHTIP:
+    readBrushTip(input, collector);
+    break;
+  case FH_CALLIGRAPHICSTROKE:
+    readCalligraphicStroke(input, collector);
+    break;
+  case FH_CHARACTERFILL:
+    readCharacterFill(input, collector);
+    break;
+  case FH_CLIPGROUP:
+    readClipGroup(input, collector);
+    break;
+  case FH_COLLECTOR:
+    readCollector(input, collector);
+    break;
+  case FH_COLOR6:
+    readColor6(input, collector);
+    break;
+  case FH_COMPOSITEPATH:
+    readCompositePath(input, collector);
+    break;
+  case FH_CONEFILL:
+    readConeFill(input, collector);
+    break;
+  case FH_CONNECTORLINE:
+    readConnectorLine(input, collector);
+    break;
+  case FH_CONTENTFILL:
+    readContentFill(input, collector);
+    break;
+  case FH_CONTOURFILL:
+    readContourFill(input, collector);
+    break;
+  case FH_CUSTOMPROC:
+    readCustomProc(input, collector);
+    break;
+  case FH_DATALIST:
+    readDataList(input, collector);
+    break;
+  case FH_DATA:
+    readData(input, collector);
+    break;
+  case FH_DATETIME:
+    readDateTime(input, collector);
+    break;
+  case FH_DUETFILTER:
+    readDuetFilter(input, collector);
+    break;
+  case FH_ELEMENT:
+    readElement(input, collector);
+    break;
+  case FH_ELEMLIST:
+    readElemList(input, collector);
+    break;
+  case FH_ELEMPROPLST:
+    readElemPropLst(input, collector);
+    break;
+  case FH_ENVELOPE:
+    readEnvelope(input, collector);
+    break;
+  case FH_EXPANDFILTER:
+    readExpandFilter(input, collector);
+    break;
+  case FH_EXTRUSION:
+    readExtrusion(input, collector);
+    break;
+  case FH_FHDOCHEADER:
+    readFHDocHeader(input, collector);
+    break;
+  case FH_FIGURE:
+    readFigure(input, collector);
+    break;
+  case FH_FILEDESCRIPTOR:
+    readFileDescriptor(input, collector);
+    break;
+  case FH_FILTERATTRIBUTEHOLDER:
+    readFilterAttributeHolder(input, collector);
+    break;
+  case FH_FWBEVELFILTER:
+    readFWBevelFilter(input, collector);
+    break;
+  case FH_FWBLURFILTER:
+    readFWBlurFilter(input, collector);
+    break;
+  case FH_FWFEATHERFILTER:
+    readFWFeatherFilter(input, collector);
+    break;
+  case FH_FWGLOWFILTER:
+    readFWGlowFilter(input, collector);
+    break;
+  case FH_FWSHADOWFILTER:
+    readFWShadowFilter(input, collector);
+    break;
+  case FH_FWSHARPENFILTER:
+    readFWSharpenFilter(input, collector);
+    break;
+  case FH_GRADIENTMASKFILTER:
+    readGradientMaskFilter(input, collector);
+    break;
+  case FH_GRAPHICSTYLE:
+    readGraphicStyle(input, collector);
+    break;
+  case FH_GROUP:
+    readGroup(input, collector);
+    break;
+  case FH_GUIDES:
+    readGuides(input, collector);
+    break;
+  case FH_HALFTONE:
+    readHalftone(input, collector);
+    break;
+  case FH_IMAGEFILL:
+    readImageFill(input, collector);
+    break;
+  case FH_IMAGEIMPORT:
+    readImageImport(input, collector);
+    break;
+  case FH_LAYER:
+    readLayer(input, collector);
+    break;
+  case FH_LENSFILL:
+    readLensFill(input, collector);
+    break;
+  case FH_LINEARFILL:
+    readLinearFill(input, collector);
+    break;
+  case FH_LINEPAT:
+    readLinePat(input, collector);
+    break;
+  case FH_LINETABLE:
+    readLineTable(input, collector);
+    break;
+  case FH_LIST:
+    readList(input, collector);
+    break;
+  case FH_MASTERPAGEDOCMAN:
+    readMasterPageDocMan(input, collector);
+    break;
+  case FH_MASTERPAGEELEMENT:
+    readMasterPageElement(input, collector);
+    break;
+  case FH_MASTERPAGELAYERELEMENT:
+    readMasterPageLayerElement(input, collector);
+    break;
+  case FH_MASTERPAGELAYERINSTANCE:
+    readMasterPageLayerInstance(input, collector);
+    break;
+  case FH_MASTERPAGESYMBOLCLASS:
+    readMasterPageSymbolClass(input, collector);
+    break;
+  case FH_MASTERPAGESYMBOLINSTANCE:
+    readMasterPageSymbolInstance(input, collector);
+    break;
+  case FH_MDICT:
+    readMDict(input, collector);
+    break;
+  case FH_MLIST:
+    readMList(input, collector);
+    break;
+  case FH_MNAME:
+    readMName(input, collector);
+    break;
+  case FH_MPOBJECT:
+    readMpObject(input, collector);
+    break;
+  case FH_MQUICKDICT:
+    readMQuickDict(input, collector);
+    break;
+  case FH_MSTRING:
+    readMString(input, collector);
+    break;
+  case FH_MULTIBLEND:
+    readMultiBlend(input, collector);
+    break;
+  case FH_MULTICOLORLIST:
+    readMultiColorList(input, collector);
+    break;
+  case FH_NEWBLEND:
+    readNewBlend(input, collector);
+    break;
+  case FH_NEWCONTOURFILL:
+    readNewContourFill(input, collector);
+    break;
+  case FH_NEWRADIALFILL:
+    readNewRadialFill(input, collector);
+    break;
+  case FH_OPACITYFILTER:
+    readOpacityFilter(input, collector);
+    break;
+  case FH_OVAL:
+    readOval(input, collector);
+    break;
+  case FH_PARAGRAPH:
+    readParagraph(input, collector);
+    break;
+  case FH_PATH:
+    readPath(input, collector);
+    break;
+  case FH_PATHTEXTLINEINFO:
+    readPathTextLineInfo(input, collector);
+    break;
+  case FH_PATTERNFILL:
+    readPatternFill(input, collector);
+    break;
+  case FH_PATTERNLINE:
+    readPatternLine(input, collector);
+    break;
+  case FH_PERSPECTIVEENVELOPE:
+    readPerspectiveEnvelope(input, collector);
+    break;
+  case FH_PERSPECTIVEGRID:
+    readPerspectiveGrid(input, collector);
+    break;
+  case FH_POLYGONFIGURE:
+    readPolygonFigure(input, collector);
+    break;
+  case FH_PROCEDURE:
+    readProcedure(input, collector);
+    break;
+  case FH_PROPLST:
+    readPropLst(input, collector);
+    break;
+  case FH_PSLINE:
+    readPSLine(input, collector);
+    break;
+  case FH_RADIALFILL:
+    readRadialFill(input, collector);
+    break;
+  case FH_RADIALFILLX:
+    readRadialFillX(input, collector);
+    break;
+  case FH_RAGGEDFILTER:
+    readRaggedFilter(input, collector);
+    break;
+  case FH_RECTANGLE:
+    readRectangle(input, collector);
+    break;
+  case FH_SKETCHFILTER:
+    readSketchFilter(input, collector);
+    break;
+  case FH_SPOTCOLOR:
+    readSpotColor(input, collector);
+    break;
+  case FH_SPOTCOLOR6:
+    readSpotColor6(input, collector);
+    break;
+  case FH_STYLEPROPLST:
+    readStylePropLst(input, collector);
+    break;
+  case FH_SWFIMPORT:
+    readSwfImport(input, collector);
+    break;
+  case FH_SYMBOLCLASS:
+    readSymbolClass(input, collector);
+    break;
+  case FH_SYMBOLINSTANCE:
+    readSymbolInstance(input, collector);
+    break;
+  case FH_SYMBOLLIBRARY:
+    readSymbolLibrary(input, collector);
+    break;
+  case FH_TABTABLE:
+    readTabTable(input, collector);
+    break;
+  case FH_TAPEREDFILL:
+    readTaperedFill(input, collector);
+    break;
+  case FH_TAPEREDFILLX:
+    readTaperedFillX(input, collector);
+    break;
+  case FH_TEFFECT:
+    readTEffect(input, collector);
+    break;
+  case FH_TEXTBLOK:
+    readTextBlok(input, collector);
+    break;
+  case FH_TEXTCOLUMN:
+    readTextColumn(input, collector);
+    break;
+  case FH_TEXTINPATH:
+    readTextInPath(input, collector);
+    break;
+  case FH_TFONPATH:
+    readTFOnPath(input, collector);
+    break;
+  case FH_TILEFILL:
+    readTileFill(input, collector);
+    break;
+  case FH_TINTCOLOR:
+    readTintColor(input, collector);
+    break;
+  case FH_TINTCOLOR6:
+    readTintColor6(input, collector);
+    break;
+  case FH_TRANSFORMFILTER:
+    readTransformFilter(input, collector);
+    break;
+  case FH_TSTRING:
+    readTString(input, collector);
+    break;
+  case FH_USTRING:
+    readUString(input, collector);
+    break;
+  case FH_VDICT:
+    readVDict(input, collector);
+    break;
+  case FH_VMPOBJ:
+    readVMpObj(input, collector);
+    break;
+  case FH_XFORM:
+    readXform(input, collector);
+    break;
+  default:
+    FH_DEBUG_MSG(("FHParser::parseRecords UNKNOWN TOKEN\n"));
+    return;
+  }
+
+}
+
 void libfreehand::FHParser::parseRecords(WPXInputStream *input, libfreehand::FHCollector *collector)
 {
   for (m_currentRecord = 0; m_currentRecord < m_records.size() && !input->atEOS(); ++m_currentRecord)
@@ -137,358 +494,7 @@ void libfreehand::FHParser::parseRecords(WPXInputStream *input, libfreehand::FHC
     {
       if (!collector)
         m_offsets.push_back(input->tell());
-      FH_DEBUG_MSG(("Parsing record number 0x%x: %s Offset 0x%lx\n", (unsigned)m_currentRecord+1, getTokenName(iterDict->second), input->tell()));
-      switch (iterDict->second)
-      {
-      case FH_AGDFONT:
-        readAGDFont(input, collector);
-        break;
-      case FH_AGDSELECTION:
-        readAGDSelection(input, collector);
-        break;
-      case FH_ARROWPATH:
-        readArrowPath(input, collector);
-        break;
-      case FH_ATTRIBUTEHOLDER:
-        readAttributeHolder(input, collector);
-        break;
-      case FH_BASICFILL:
-        readBasicFill(input, collector);
-        break;
-      case FH_BASICLINE:
-        readBasicLine(input, collector);
-        break;
-      case FH_BENDFILTER:
-        readBendFilter(input, collector);
-        break;
-      case FH_BLOCK:
-        readBlock(input, collector);
-        break;
-      case FH_BRUSHLIST:
-        readBrushList(input, collector);
-        break;
-      case FH_BRUSH:
-        readBrush(input, collector);
-        break;
-      case FH_BRUSHSTROKE:
-        readBrushStroke(input, collector);
-        break;
-      case FH_BRUSHTIP:
-        readBrushTip(input, collector);
-        break;
-      case FH_CALLIGRAPHICSTROKE:
-        readCalligraphicStroke(input, collector);
-        break;
-      case FH_CHARACTERFILL:
-        readCharacterFill(input, collector);
-        break;
-      case FH_CLIPGROUP:
-        readClipGroup(input, collector);
-        break;
-      case FH_COLLECTOR:
-        readCollector(input, collector);
-        break;
-      case FH_COLOR6:
-        readColor6(input, collector);
-        break;
-      case FH_COMPOSITEPATH:
-        readCompositePath(input, collector);
-        break;
-      case FH_CONEFILL:
-        readConeFill(input, collector);
-        break;
-      case FH_CONNECTORLINE:
-        readConnectorLine(input, collector);
-        break;
-      case FH_CONTENTFILL:
-        readContentFill(input, collector);
-        break;
-      case FH_CONTOURFILL:
-        readContourFill(input, collector);
-        break;
-      case FH_CUSTOMPROC:
-        readCustomProc(input, collector);
-        break;
-      case FH_DATALIST:
-        readDataList(input, collector);
-        break;
-      case FH_DATA:
-        readData(input, collector);
-        break;
-      case FH_DATETIME:
-        readDateTime(input, collector);
-        break;
-      case FH_DUETFILTER:
-        readDuetFilter(input, collector);
-        break;
-      case FH_ELEMENT:
-        readElement(input, collector);
-        break;
-      case FH_ELEMLIST:
-        readElemList(input, collector);
-        break;
-      case FH_ELEMPROPLST:
-        readElemPropLst(input, collector);
-        break;
-      case FH_ENVELOPE:
-        readEnvelope(input, collector);
-        break;
-      case FH_EXPANDFILTER:
-        readExpandFilter(input, collector);
-        break;
-      case FH_EXTRUSION:
-        readExtrusion(input, collector);
-        break;
-      case FH_FHDOCHEADER:
-        readFHDocHeader(input, collector);
-        break;
-      case FH_FIGURE:
-        readFigure(input, collector);
-        break;
-      case FH_FILEDESCRIPTOR:
-        readFileDescriptor(input, collector);
-        break;
-      case FH_FILTERATTRIBUTEHOLDER:
-        readFilterAttributeHolder(input, collector);
-        break;
-      case FH_FWBEVELFILTER:
-        readFWBevelFilter(input, collector);
-        break;
-      case FH_FWBLURFILTER:
-        readFWBlurFilter(input, collector);
-        break;
-      case FH_FWFEATHERFILTER:
-        readFWFeatherFilter(input, collector);
-        break;
-      case FH_FWGLOWFILTER:
-        readFWGlowFilter(input, collector);
-        break;
-      case FH_FWSHADOWFILTER:
-        readFWShadowFilter(input, collector);
-        break;
-      case FH_FWSHARPENFILTER:
-        readFWSharpenFilter(input, collector);
-        break;
-      case FH_GRADIENTMASKFILTER:
-        readGradientMaskFilter(input, collector);
-        break;
-      case FH_GRAPHICSTYLE:
-        readGraphicStyle(input, collector);
-        break;
-      case FH_GROUP:
-        readGroup(input, collector);
-        break;
-      case FH_GUIDES:
-        readGuides(input, collector);
-        break;
-      case FH_HALFTONE:
-        readHalftone(input, collector);
-        break;
-      case FH_IMAGEFILL:
-        readImageFill(input, collector);
-        break;
-      case FH_IMAGEIMPORT:
-        readImageImport(input, collector);
-        break;
-      case FH_LAYER:
-        readLayer(input, collector);
-        break;
-      case FH_LENSFILL:
-        readLensFill(input, collector);
-        break;
-      case FH_LINEARFILL:
-        readLinearFill(input, collector);
-        break;
-      case FH_LINEPAT:
-        readLinePat(input, collector);
-        break;
-      case FH_LINETABLE:
-        readLineTable(input, collector);
-        break;
-      case FH_LIST:
-        readList(input, collector);
-        break;
-      case FH_MASTERPAGEDOCMAN:
-        readMasterPageDocMan(input, collector);
-        break;
-      case FH_MASTERPAGEELEMENT:
-        readMasterPageElement(input, collector);
-        break;
-      case FH_MASTERPAGELAYERELEMENT:
-        readMasterPageLayerElement(input, collector);
-        break;
-      case FH_MASTERPAGELAYERINSTANCE:
-        readMasterPageLayerInstance(input, collector);
-        break;
-      case FH_MASTERPAGESYMBOLCLASS:
-        readMasterPageSymbolClass(input, collector);
-        break;
-      case FH_MASTERPAGESYMBOLINSTANCE:
-        readMasterPageSymbolInstance(input, collector);
-        break;
-      case FH_MDICT:
-        readMDict(input, collector);
-        break;
-      case FH_MLIST:
-        readMList(input, collector);
-        break;
-      case FH_MNAME:
-        readMName(input, collector);
-        break;
-      case FH_MPOBJECT:
-        readMpObject(input, collector);
-        break;
-      case FH_MQUICKDICT:
-        readMQuickDict(input, collector);
-        break;
-      case FH_MSTRING:
-        readMString(input, collector);
-        break;
-      case FH_MULTIBLEND:
-        readMultiBlend(input, collector);
-        break;
-      case FH_MULTICOLORLIST:
-        readMultiColorList(input, collector);
-        break;
-      case FH_NEWBLEND:
-        readNewBlend(input, collector);
-        break;
-      case FH_NEWCONTOURFILL:
-        readNewContourFill(input, collector);
-        break;
-      case FH_NEWRADIALFILL:
-        readNewRadialFill(input, collector);
-        break;
-      case FH_OPACITYFILTER:
-        readOpacityFilter(input, collector);
-        break;
-      case FH_OVAL:
-        readOval(input, collector);
-        break;
-      case FH_PARAGRAPH:
-        readParagraph(input, collector);
-        break;
-      case FH_PATH:
-        readPath(input, collector);
-        break;
-      case FH_PATHTEXTLINEINFO:
-        readPathTextLineInfo(input, collector);
-        break;
-      case FH_PATTERNFILL:
-        readPatternFill(input, collector);
-        break;
-      case FH_PATTERNLINE:
-        readPatternLine(input, collector);
-        break;
-      case FH_PERSPECTIVEENVELOPE:
-        readPerspectiveEnvelope(input, collector);
-        break;
-      case FH_PERSPECTIVEGRID:
-        readPerspectiveGrid(input, collector);
-        break;
-      case FH_POLYGONFIGURE:
-        readPolygonFigure(input, collector);
-        break;
-      case FH_PROCEDURE:
-        readProcedure(input, collector);
-        break;
-      case FH_PROPLST:
-        readPropLst(input, collector);
-        break;
-      case FH_PSLINE:
-        readPSLine(input, collector);
-        break;
-      case FH_RADIALFILL:
-        readRadialFill(input, collector);
-        break;
-      case FH_RADIALFILLX:
-        readRadialFillX(input, collector);
-        break;
-      case FH_RAGGEDFILTER:
-        readRaggedFilter(input, collector);
-        break;
-      case FH_RECTANGLE:
-        readRectangle(input, collector);
-        break;
-      case FH_SKETCHFILTER:
-        readSketchFilter(input, collector);
-        break;
-      case FH_SPOTCOLOR:
-        readSpotColor(input, collector);
-        break;
-      case FH_SPOTCOLOR6:
-        readSpotColor6(input, collector);
-        break;
-      case FH_STYLEPROPLST:
-        readStylePropLst(input, collector);
-        break;
-      case FH_SWFIMPORT:
-        readSwfImport(input, collector);
-        break;
-      case FH_SYMBOLCLASS:
-        readSymbolClass(input, collector);
-        break;
-      case FH_SYMBOLINSTANCE:
-        readSymbolInstance(input, collector);
-        break;
-      case FH_SYMBOLLIBRARY:
-        readSymbolLibrary(input, collector);
-        break;
-      case FH_TABTABLE:
-        readTabTable(input, collector);
-        break;
-      case FH_TAPEREDFILL:
-        readTaperedFill(input, collector);
-        break;
-      case FH_TAPEREDFILLX:
-        readTaperedFillX(input, collector);
-        break;
-      case FH_TEFFECT:
-        readTEffect(input, collector);
-        break;
-      case FH_TEXTBLOK:
-        readTextBlok(input, collector);
-        break;
-      case FH_TEXTCOLUMN:
-        readTextColumn(input, collector);
-        break;
-      case FH_TEXTINPATH:
-        readTextInPath(input, collector);
-        break;
-      case FH_TFONPATH:
-        readTFOnPath(input, collector);
-        break;
-      case FH_TILEFILL:
-        readTileFill(input, collector);
-        break;
-      case FH_TINTCOLOR:
-        readTintColor(input, collector);
-        break;
-      case FH_TINTCOLOR6:
-        readTintColor6(input, collector);
-        break;
-      case FH_TRANSFORMFILTER:
-        readTransformFilter(input, collector);
-        break;
-      case FH_TSTRING:
-        readTString(input, collector);
-        break;
-      case FH_USTRING:
-        readUString(input, collector);
-        break;
-      case FH_VDICT:
-        readVDict(input, collector);
-        break;
-      case FH_VMPOBJ:
-        readVMpObj(input, collector);
-        break;
-      case FH_XFORM:
-        readXform(input, collector);
-        break;
-      default:
-        FH_DEBUG_MSG(("FHParser::parseRecords UNKNOWN TOKEN\n"));
-        return;
-      }
+      parseRecord(input, collector, iterDict->second);
     }
     else
     {

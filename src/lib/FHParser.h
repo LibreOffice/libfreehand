@@ -39,6 +39,7 @@ private:
 
   void parseDictionary(WPXInputStream *input);
   void parseRecordList(WPXInputStream *input);
+  void parseRecord(WPXInputStream *input, FHCollector *collector, int recordId);
   void parseRecords(WPXInputStream *input, FHCollector *collector = 0);
   void parseDocument(WPXInputStream *input, FHCollector *collector);
 
