@@ -22,21 +22,18 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_DEPENDENCIES = @LIBFREEHAND
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic -no-undefined
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FreeHandDocument.cpp \
-	FHContentCollector.cpp \
+	FHCollector.cpp \
 	FHInternalStream.cpp \
 	FHParser.cpp \
 	FHPath.cpp \
 	FHStringVector.cpp \
-	FHStylesCollector.cpp \
 	FHSVGGenerator.cpp \
 	FHTransform.cpp \
 	libfreehand_utils.cpp \
 	FHCollector.h \
-	FHContentCollector.h \
 	FHInternalStream.h \
 	FHParser.h \
 	FHPath.h \
-	FHStylesCollector.h \
 	FHSVGGenerator.h \
 	FHTransform.h \
 	FHTypes.h \

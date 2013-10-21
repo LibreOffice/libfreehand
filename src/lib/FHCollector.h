@@ -10,16 +10,11 @@
 #ifndef __FHCOLLECTOR_H__
 #define __FHCOLLECTOR_H__
 
-#include <vector>
-#include <libwpd/libwpd.h>
+#include <map>
+#include "FHCollector.h"
+#include "FHTransform.h"
+#include "FHTypes.h"
 #include "FHPath.h"
-
-namespace libwpg
-{
-
-class WPGPaintInterface;
-
-} // namespace libwpg
 
 namespace libfreehand
 {
@@ -27,25 +22,31 @@ namespace libfreehand
 class FHCollector
 {
 public:
-  FHCollector() {}
-  virtual ~FHCollector() {}
+  FHCollector(::libwpg::WPGPaintInterface *painter, const FHPageInfo &pageInfo);
+  virtual ~FHCollector();
 
   // collector functions
-  virtual void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr) = 0;
-  virtual void collectMName(unsigned recordId, const WPXString &name) = 0;
-  virtual void collectPath(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
-                           unsigned short xform, const FHPath &path, bool evenodd) = 0;
-  virtual void collectXform(unsigned recordId, double m11, double m21,
-                            double m12, double m22,  double m13, double m23) = 0;
+  void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr);
+  void collectMName(unsigned recordId, const WPXString &name);
+  void collectPath(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
+                   unsigned short xform, const FHPath &path, bool evenodd);
+  void collectXform(unsigned recordId, double m11, double m21,
+                    double m12, double m22, double m13, double m23);
 
-  virtual void collectOffsetX(double offsetX) = 0;
-  virtual void collectOffsetY(double offsetY) = 0;
-  virtual void collectPageWidth(double pageWidth) = 0;
-  virtual void collectPageHeight(double pageHeight) = 0;
+  void collectOffsetX(double) {}
+  void collectOffsetY(double) {}
+  void collectPageWidth(double) {}
+  void collectPageHeight(double) {}
 
 private:
   FHCollector(const FHCollector &);
   FHCollector &operator=(const FHCollector &);
+
+  void _normalizePath(FHPath &path);
+
+  libwpg::WPGPaintInterface *m_painter;
+  const FHPageInfo &m_pageInfo;
+  std::map<unsigned, FHTransform> m_transforms;
 };
 
 } // namespace libfreehand

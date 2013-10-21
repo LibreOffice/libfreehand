@@ -14,6 +14,7 @@
 #include <vector>
 #include <libwpd/libwpd.h>
 #include <libwpg/libwpg.h>
+#include "FHTypes.h"
 
 #define FH_PAGE_START_X 0x1c24
 #define FH_PAGE_START_Y 0x1c2c
@@ -31,7 +32,7 @@ class FHParser
 public:
   explicit FHParser();
   virtual ~FHParser();
-  bool parse(WPXInputStream *input, FHCollector *collector);
+  bool parse(WPXInputStream *input, libwpg::WPGPaintInterface *painter);
 private:
   FHParser(const FHParser &);
   FHParser &operator=(const FHParser &);
@@ -171,6 +172,12 @@ private:
   std::vector<unsigned short>::size_type m_currentRecord;
   std::vector<long> m_offsets;
   long m_fhTailOffset;
+  FHPageInfo m_pageInfo;
+
+  double m_minX;
+  double m_minY;
+  double m_maxX;
+  double m_maxY;
 };
 
 } // namespace libfreehand

@@ -8,9 +8,9 @@
  */
 
 #include <libwpg/libwpg.h>
-#include "FHContentCollector.h"
+#include "FHCollector.h"
 
-libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *painter, const FHPageInfo &pageInfo) :
+libfreehand::FHCollector::FHCollector(libwpg::WPGPaintInterface *painter, const FHPageInfo &pageInfo) :
   m_painter(painter), m_pageInfo(pageInfo), m_transforms()
 {
   WPXPropertyList propList;
@@ -19,20 +19,20 @@ libfreehand::FHContentCollector::FHContentCollector(libwpg::WPGPaintInterface *p
   m_painter->startGraphics(propList);
 }
 
-libfreehand::FHContentCollector::~FHContentCollector()
+libfreehand::FHCollector::~FHCollector()
 {
   m_painter->endGraphics();
 }
 
-void libfreehand::FHContentCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
+void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
 {
 }
 
-void libfreehand::FHContentCollector::collectMName(unsigned /* recordId */, const WPXString & /* name */)
+void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const WPXString & /* name */)
 {
 }
 
-void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
+void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
     unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path, bool /* evenOdd */)
 {
   if (path.empty())
@@ -59,13 +59,13 @@ void libfreehand::FHContentCollector::collectPath(unsigned /* recordId */, unsig
   m_painter->drawPath(propVec);
 }
 
-void libfreehand::FHContentCollector::collectXform(unsigned recordId,
+void libfreehand::FHCollector::collectXform(unsigned recordId,
     double m11, double m21, double m12, double m22, double m13, double m23)
 {
   m_transforms[recordId] = FHTransform(m11, m21, m12, m22, m13, m23);
 }
 
-void libfreehand::FHContentCollector::_normalizePath(libfreehand::FHPath &path)
+void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
 {
   FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_minX, m_pageInfo.m_maxY);
   path.transform(trafo);

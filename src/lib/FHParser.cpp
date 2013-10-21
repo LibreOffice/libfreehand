@@ -50,7 +50,8 @@ const char *getTokenName(int tokenId)
 
 libfreehand::FHParser::FHParser()
   : m_version(-1), m_dictionary(), m_records(), m_currentRecord(0),
-    m_offsets(), m_fhTailOffset(0)
+    m_offsets(), m_fhTailOffset(0), m_pageInfo(),
+    m_minX(0) , m_minY(0) , m_maxX(0) , m_maxY(0)
 {
 }
 
@@ -58,7 +59,7 @@ libfreehand::FHParser::~FHParser()
 {
 }
 
-bool libfreehand::FHParser::parse(WPXInputStream *input, libfreehand::FHCollector *collector)
+bool libfreehand::FHParser::parse(WPXInputStream *input, libwpg::WPGPaintInterface *painter)
 {
   long dataOffset = input->tell();
   if ('A' != readU8(input))
@@ -82,8 +83,10 @@ bool libfreehand::FHParser::parse(WPXInputStream *input, libfreehand::FHCollecto
   input->seek(dataOffset+12, WPX_SEEK_SET);
 
   FHInternalStream dataStream(input, dataLength-12, m_version >= 9);
-  parseData(&dataStream, collector);
+  parseData(&dataStream, 0);
   dataStream.seek(0, WPX_SEEK_SET);
+  FHCollector contentCollector(painter, m_pageInfo);
+  parseData(&dataStream, &contentCollector);
 
   return true;
 }
@@ -1754,7 +1757,7 @@ void libfreehand::FHParser::readVDict(WPXInputStream *input, libfreehand::FHColl
   }
 }
 
-void libfreehand::FHParser::readVMpObj(WPXInputStream *input, libfreehand::FHCollector *collector)
+void libfreehand::FHParser::readVMpObj(WPXInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(4, WPX_SEEK_CUR);
   unsigned short num = readU16(input);
@@ -1771,30 +1774,40 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input, libfreehand::FHCol
       {
       case FH_PAGE_START_X:
       {
-        double offsetX = _readCoordinate(input);
-        if (collector)
-          collector->collectOffsetX(offsetX);
+        m_minX = _readCoordinate(input) / 72.0;
+        if (m_pageInfo.m_minX > 0.0)
+        {
+          if (m_pageInfo.m_minX > m_minX)
+            m_pageInfo.m_minX = m_minX;
+        }
+        else
+          m_pageInfo.m_minX = m_minX;
         break;
       }
       case FH_PAGE_START_Y:
       {
-        double offsetY = _readCoordinate(input);
-        if (collector)
-          collector->collectOffsetY(offsetY);
+        m_minY = _readCoordinate(input) / 72.0;
+        if (m_pageInfo.m_minY > 0.0)
+        {
+          if (m_pageInfo.m_minY > m_minY)
+            m_pageInfo.m_minY = m_minY;
+        }
+        else
+          m_pageInfo.m_minY = m_minY;
         break;
       }
       case FH_PAGE_WIDTH:
       {
-        double pageWidth = _readCoordinate(input);
-        if (collector)
-          collector->collectPageWidth(pageWidth);
+        m_maxX = m_minX + _readCoordinate(input) / 72.0;
+        if (m_pageInfo.m_maxX < m_maxX)
+          m_pageInfo.m_maxX = m_maxX;
         break;
       }
       case FH_PAGE_HEIGHT:
       {
-        double pageHeight = _readCoordinate(input);
-        if (collector)
-          collector->collectPageHeight(pageHeight);
+        m_maxY = m_minY + _readCoordinate(input) / 72.0;
+        if (m_pageInfo.m_maxY < m_maxY)
+          m_pageInfo.m_maxY = m_maxY;
         break;
       }
       default:
