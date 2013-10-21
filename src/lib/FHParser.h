@@ -38,8 +38,8 @@ private:
   FHParser &operator=(const FHParser &);
 
   void parseDictionary(WPXInputStream *input);
-  void parseListOfRecords(WPXInputStream *input);
-  void parseData(WPXInputStream *input, FHCollector *collector);
+  void parseRecordList(WPXInputStream *input);
+  void parseRecords(WPXInputStream *input, FHCollector *collector);
 
   void readAGDFont(WPXInputStream *input, FHCollector *collector);
   void readAGDSelection(WPXInputStream *input, FHCollector *collector);
@@ -173,11 +173,6 @@ private:
   std::vector<long> m_offsets;
   long m_fhTailOffset;
   FHPageInfo m_pageInfo;
-
-  double m_minX;
-  double m_minY;
-  double m_maxX;
-  double m_maxY;
 };
 
 } // namespace libfreehand

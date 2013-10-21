@@ -50,8 +50,7 @@ const char *getTokenName(int tokenId)
 
 libfreehand::FHParser::FHParser()
   : m_version(-1), m_dictionary(), m_records(), m_currentRecord(0),
-    m_offsets(), m_fhTailOffset(0), m_pageInfo(),
-    m_minX(0) , m_minY(0) , m_maxX(0) , m_maxY(0)
+    m_offsets(), m_fhTailOffset(0), m_pageInfo()
 {
 }
 
@@ -78,15 +77,15 @@ bool libfreehand::FHParser::parse(WPXInputStream *input, libwpg::WPGPaintInterfa
 
   parseDictionary(input);
 
-  parseListOfRecords(input);
+  parseRecordList(input);
 
   input->seek(dataOffset+12, WPX_SEEK_SET);
 
   FHInternalStream dataStream(input, dataLength-12, m_version >= 9);
-  parseData(&dataStream, 0);
+  parseRecords(&dataStream, 0);
   dataStream.seek(0, WPX_SEEK_SET);
   FHCollector contentCollector(painter, m_pageInfo);
-  parseData(&dataStream, &contentCollector);
+  parseRecords(&dataStream, &contentCollector);
 
   return true;
 }
@@ -118,18 +117,18 @@ void libfreehand::FHParser::parseDictionary(WPXInputStream *input)
   }
 }
 
-void libfreehand::FHParser::parseListOfRecords(WPXInputStream *input)
+void libfreehand::FHParser::parseRecordList(WPXInputStream *input)
 {
   unsigned count = readU32(input);
   for (unsigned i = 0; i < count; ++i)
   {
     unsigned id = readU16(input);
     m_records.push_back(id);
-    FH_DEBUG_MSG(("FHParser::parseListOfRecords - ID: 0x%x\n", id));
+    FH_DEBUG_MSG(("FHParser::parseRecordList - ID: 0x%x\n", id));
   }
 }
 
-void libfreehand::FHParser::parseData(WPXInputStream *input, libfreehand::FHCollector *collector)
+void libfreehand::FHParser::parseRecords(WPXInputStream *input, libfreehand::FHCollector *collector)
 {
   for (m_currentRecord = 0; m_currentRecord < m_records.size() && !input->atEOS(); ++m_currentRecord)
   {
@@ -487,13 +486,13 @@ void libfreehand::FHParser::parseData(WPXInputStream *input, libfreehand::FHColl
         readXform(input, collector);
         break;
       default:
-        FH_DEBUG_MSG(("FHParser::parseData UNKNOWN TOKEN\n"));
+        FH_DEBUG_MSG(("FHParser::parseRecords UNKNOWN TOKEN\n"));
         return;
       }
     }
     else
     {
-      FH_DEBUG_MSG(("FHParser::parseData NO SUCH TOKEN IN DICTIONARY\n"));
+      FH_DEBUG_MSG(("FHParser::parseRecords NO SUCH TOKEN IN DICTIONARY\n"));
     }
   }
   m_fhTailOffset = input->tell();
@@ -1763,6 +1762,10 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input, libfreehand::FHCol
   input->seek(4, WPX_SEEK_CUR);
   unsigned short num = readU16(input);
   input->seek(2, WPX_SEEK_CUR);
+  double minX = 0.0;
+  double minY = 0.0;
+  double maxX = 0.0;
+  double maxY = 0.0;
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
@@ -1775,40 +1778,40 @@ void libfreehand::FHParser::readVMpObj(WPXInputStream *input, libfreehand::FHCol
       {
       case FH_PAGE_START_X:
       {
-        m_minX = _readCoordinate(input) / 72.0;
+        minX = _readCoordinate(input) / 72.0;
         if (m_pageInfo.m_minX > 0.0)
         {
-          if (m_pageInfo.m_minX > m_minX)
-            m_pageInfo.m_minX = m_minX;
+          if (m_pageInfo.m_minX > minX)
+            m_pageInfo.m_minX = minX;
         }
         else
-          m_pageInfo.m_minX = m_minX;
+          m_pageInfo.m_minX = minX;
         break;
       }
       case FH_PAGE_START_Y:
       {
-        m_minY = _readCoordinate(input) / 72.0;
+        minY = _readCoordinate(input) / 72.0;
         if (m_pageInfo.m_minY > 0.0)
         {
-          if (m_pageInfo.m_minY > m_minY)
-            m_pageInfo.m_minY = m_minY;
+          if (m_pageInfo.m_minY > minY)
+            m_pageInfo.m_minY = minY;
         }
         else
-          m_pageInfo.m_minY = m_minY;
+          m_pageInfo.m_minY = minY;
         break;
       }
       case FH_PAGE_WIDTH:
       {
-        m_maxX = m_minX + _readCoordinate(input) / 72.0;
-        if (m_pageInfo.m_maxX < m_maxX)
-          m_pageInfo.m_maxX = m_maxX;
+        maxX = minX + _readCoordinate(input) / 72.0;
+        if (m_pageInfo.m_maxX < maxX)
+          m_pageInfo.m_maxX = maxX;
         break;
       }
       case FH_PAGE_HEIGHT:
       {
-        m_maxY = m_minY + _readCoordinate(input) / 72.0;
-        if (m_pageInfo.m_maxY < m_maxY)
-          m_pageInfo.m_maxY = m_maxY;
+        maxY = minY + _readCoordinate(input) / 72.0;
+        if (m_pageInfo.m_maxY < maxY)
+          m_pageInfo.m_maxY = maxY;
         break;
       }
       default:
