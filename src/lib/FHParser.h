@@ -39,7 +39,8 @@ private:
 
   void parseDictionary(WPXInputStream *input);
   void parseRecordList(WPXInputStream *input);
-  void parseRecords(WPXInputStream *input, FHCollector *collector);
+  void parseRecords(WPXInputStream *input, FHCollector *collector = 0);
+  void parseDocument(WPXInputStream *input, FHCollector *collector);
 
   void readAGDFont(WPXInputStream *input, FHCollector *collector);
   void readAGDSelection(WPXInputStream *input, FHCollector *collector);

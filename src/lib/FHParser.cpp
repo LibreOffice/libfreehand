@@ -82,10 +82,10 @@ bool libfreehand::FHParser::parse(WPXInputStream *input, libwpg::WPGPaintInterfa
   input->seek(dataOffset+12, WPX_SEEK_SET);
 
   FHInternalStream dataStream(input, dataLength-12, m_version >= 9);
-  parseRecords(&dataStream, 0);
+  parseRecords(&dataStream);
   dataStream.seek(0, WPX_SEEK_SET);
   FHCollector contentCollector(painter, m_pageInfo);
-  parseRecords(&dataStream, &contentCollector);
+  parseDocument(&dataStream, &contentCollector);
 
   return true;
 }
@@ -500,6 +500,10 @@ void libfreehand::FHParser::parseRecords(WPXInputStream *input, libfreehand::FHC
   readFHTail(input, collector);
 }
 
+void libfreehand::FHParser::parseDocument(WPXInputStream *input, libfreehand::FHCollector *collector)
+{
+  parseRecords(input, collector);
+}
 void libfreehand::FHParser::readAGDFont(WPXInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(4, WPX_SEEK_CUR);
