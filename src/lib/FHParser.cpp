@@ -136,7 +136,8 @@ void libfreehand::FHParser::parseData(WPXInputStream *input, libfreehand::FHColl
     std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(m_records[m_currentRecord]);
     if (iterDict != m_dictionary.end())
     {
-      m_offsets.push_back(input->tell());
+      if (!collector)
+        m_offsets.push_back(input->tell());
       FH_DEBUG_MSG(("Parsing record number 0x%x: %s Offset 0x%lx\n", (unsigned)m_currentRecord+1, getTokenName(iterDict->second), input->tell()));
       switch (iterDict->second)
       {
