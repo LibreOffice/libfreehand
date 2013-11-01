@@ -49,7 +49,8 @@ const char *getTokenName(int tokenId)
 } // anonymous namespace
 
 libfreehand::FHParser::FHParser()
-  : m_version(-1), m_dictionary(), m_records(), m_currentRecord(0),
+  : m_input(0), m_collector(0),
+    m_version(-1), m_dictionary(), m_records(), m_currentRecord(0),
     m_offsets(), m_fhTailOffset(0), m_pageInfo()
 {
 }
