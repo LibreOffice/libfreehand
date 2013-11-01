@@ -35,6 +35,7 @@ libfreehand::FHStringVector::FHStringVector(const FHStringVector &vec)
 
 libfreehand::FHStringVector::~FHStringVector()
 {
+  delete m_pImpl;
 }
 
 libfreehand::FHStringVector &libfreehand::FHStringVector::operator=(const FHStringVector &vec)
