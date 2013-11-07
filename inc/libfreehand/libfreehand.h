@@ -10,8 +10,6 @@
 #ifndef __LIBFREEHAND_H__
 #define __LIBFREEHAND_H__
 
-#include <libwpd/libwpd.h>
-#include <libwpg/libwpg.h>
 #include "FreeHandDocument.h"
 
 #endif

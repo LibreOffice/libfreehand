@@ -31,7 +31,7 @@ public:
     : m_x(x),
       m_y(y) {}
   ~FHMoveToElement() {}
-  void writeOut(WPXPropertyListVector &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -46,7 +46,7 @@ public:
     : m_x(x),
       m_y(y) {}
   ~FHLineToElement() {}
-  void writeOut(WPXPropertyListVector &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -65,7 +65,7 @@ public:
       m_x(x),
       m_y(y) {}
   ~FHCubicBezierToElement() {}
-  void writeOut(WPXPropertyListVector &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -86,7 +86,7 @@ public:
       m_x(x),
       m_y(y) {}
   ~FHQuadraticBezierToElement() {}
-  void writeOut(WPXPropertyListVector &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -108,7 +108,7 @@ public:
       m_x(x),
       m_y(y) {}
   ~FHArcToElement() {}
-  void writeOut(WPXPropertyListVector &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -124,10 +124,10 @@ private:
 } // namespace libfreehand
 
 
-void libfreehand::FHMoveToElement::writeOut(WPXPropertyListVector &vec) const
+void libfreehand::FHMoveToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
-  WPXPropertyList node;
-  node.insert("libwpg:path-action", "M");
+  librevenge::RVNGPropertyList node;
+  node.insert("librevenge:path-action", "M");
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
@@ -143,10 +143,10 @@ libfreehand::FHPathElement *libfreehand::FHMoveToElement::clone()
   return new FHMoveToElement(m_x, m_y);
 }
 
-void libfreehand::FHLineToElement::writeOut(WPXPropertyListVector &vec) const
+void libfreehand::FHLineToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
-  WPXPropertyList node;
-  node.insert("libwpg:path-action", "L");
+  librevenge::RVNGPropertyList node;
+  node.insert("librevenge:path-action", "L");
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
@@ -162,10 +162,10 @@ libfreehand::FHPathElement *libfreehand::FHLineToElement::clone()
   return new FHLineToElement(m_x, m_y);
 }
 
-void libfreehand::FHCubicBezierToElement::writeOut(WPXPropertyListVector &vec) const
+void libfreehand::FHCubicBezierToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
-  WPXPropertyList node;
-  node.insert("libwpg:path-action", "C");
+  librevenge::RVNGPropertyList node;
+  node.insert("librevenge:path-action", "C");
   node.insert("svg:x1", m_x1);
   node.insert("svg:y1", m_y1);
   node.insert("svg:x2", m_x2);
@@ -187,10 +187,10 @@ libfreehand::FHPathElement *libfreehand::FHCubicBezierToElement::clone()
   return new FHCubicBezierToElement(m_x1, m_y1, m_x2, m_y2, m_x, m_y);
 }
 
-void libfreehand::FHQuadraticBezierToElement::writeOut(WPXPropertyListVector &vec) const
+void libfreehand::FHQuadraticBezierToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
-  WPXPropertyList node;
-  node.insert("libwpg:path-action", "Q");
+  librevenge::RVNGPropertyList node;
+  node.insert("librevenge:path-action", "Q");
   node.insert("svg:x1", m_x1);
   node.insert("svg:y1", m_y1);
   node.insert("svg:x", m_x);
@@ -209,15 +209,15 @@ libfreehand::FHPathElement *libfreehand::FHQuadraticBezierToElement::clone()
   return new FHQuadraticBezierToElement(m_x1, m_y1, m_x, m_y);
 }
 
-void libfreehand::FHArcToElement::writeOut(WPXPropertyListVector &vec) const
+void libfreehand::FHArcToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
-  WPXPropertyList node;
-  node.insert("libwpg:path-action", "A");
+  librevenge::RVNGPropertyList node;
+  node.insert("librevenge:path-action", "A");
   node.insert("svg:rx", m_rx);
   node.insert("svg:ry", m_ry);
-  node.insert("libwpg:rotate", m_rotation * 180 / M_PI, WPX_GENERIC);
-  node.insert("libwpg:large-arc", m_largeArc);
-  node.insert("libwpg:sweep", m_sweep);
+  node.insert("librevenge:rotate", m_rotation * 180 / M_PI, librevenge::RVNG_GENERIC);
+  node.insert("librevenge:large-arc", m_largeArc);
+  node.insert("librevenge:sweep", m_sweep);
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
@@ -294,7 +294,7 @@ void libfreehand::FHPath::appendPath(const FHPath &path)
     m_elements.push_back((*iter)->clone());
 }
 
-void libfreehand::FHPath::writeOut(WPXPropertyListVector &vec) const
+void libfreehand::FHPath::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   for (std::vector<FHPathElement *>::const_iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
     (*iter)->writeOut(vec);

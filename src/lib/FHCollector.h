@@ -22,12 +22,12 @@ namespace libfreehand
 class FHCollector
 {
 public:
-  FHCollector(::libwpg::WPGPaintInterface *painter, const FHPageInfo &pageInfo);
+  FHCollector(::librevenge::RVNGDrawingInterface *painter, const FHPageInfo &pageInfo);
   virtual ~FHCollector();
 
   // collector functions
   void collectUString(unsigned recordId, const std::vector<unsigned short> &ustr);
-  void collectMName(unsigned recordId, const WPXString &name);
+  void collectMName(unsigned recordId, const librevenge::RVNGString &name);
   void collectPath(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
                    unsigned short xform, const FHPath &path, bool evenodd);
   void collectXform(unsigned recordId, double m11, double m21,
@@ -44,7 +44,7 @@ private:
 
   void _normalizePath(FHPath &path);
 
-  libwpg::WPGPaintInterface *m_painter;
+  librevenge::RVNGDrawingInterface *m_painter;
   const FHPageInfo &m_pageInfo;
   std::map<unsigned, FHTransform> m_transforms;
 };

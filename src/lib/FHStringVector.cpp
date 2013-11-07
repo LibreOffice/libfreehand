@@ -18,7 +18,7 @@ public:
   FHStringVectorImpl() : m_strings() {}
   FHStringVectorImpl(const FHStringVectorImpl &impl) : m_strings(impl.m_strings) {}
   ~FHStringVectorImpl() {}
-  std::vector<WPXString> m_strings;
+  std::vector<librevenge::RVNGString> m_strings;
 };
 
 } // namespace libfreehand
@@ -56,12 +56,12 @@ bool libfreehand::FHStringVector::empty() const
   return m_pImpl->m_strings.empty();
 }
 
-const WPXString &libfreehand::FHStringVector::operator[](unsigned idx) const
+const librevenge::RVNGString &libfreehand::FHStringVector::operator[](unsigned idx) const
 {
   return m_pImpl->m_strings[idx];
 }
 
-void libfreehand::FHStringVector::append(const WPXString &str)
+void libfreehand::FHStringVector::append(const librevenge::RVNGString &str)
 {
   m_pImpl->m_strings.push_back(str);
 }

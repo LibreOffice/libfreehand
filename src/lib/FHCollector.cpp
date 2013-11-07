@@ -7,28 +7,28 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-#include <libwpg/libwpg.h>
+#include <librevenge/librevenge.h>
 #include "FHCollector.h"
 
-libfreehand::FHCollector::FHCollector(libwpg::WPGPaintInterface *painter, const FHPageInfo &pageInfo) :
+libfreehand::FHCollector::FHCollector(librevenge::RVNGDrawingInterface *painter, const FHPageInfo &pageInfo) :
   m_painter(painter), m_pageInfo(pageInfo), m_transforms()
 {
-  WPXPropertyList propList;
+  librevenge::RVNGPropertyList propList;
   propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
   propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
-  m_painter->startGraphics(propList);
+  m_painter->startPage(propList);
 }
 
 libfreehand::FHCollector::~FHCollector()
 {
-  m_painter->endGraphics();
+  m_painter->endPage();
 }
 
 void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
 {
 }
 
-void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const WPXString & /* name */)
+void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const librevenge::RVNGString & /* name */)
 {
 }
 
@@ -46,14 +46,14 @@ void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned sho
   }
   _normalizePath(fhPath);
 
-  WPXPropertyList propList;
+  librevenge::RVNGPropertyList propList;
   propList.insert("draw:fill", "none");
   propList.insert("draw:stroke", "solid");
   propList.insert("svg:stroke-width", 0.0);
   propList.insert("svg:stroke-color", "#000000");
-  m_painter->setStyle(propList, WPXPropertyListVector());
+  m_painter->setStyle(propList, librevenge::RVNGPropertyListVector());
 
-  WPXPropertyListVector propVec;
+  librevenge::RVNGPropertyListVector propVec;
   fhPath.writeOut(propVec);
 
   m_painter->drawPath(propVec);

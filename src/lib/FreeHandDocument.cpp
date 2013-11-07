@@ -12,7 +12,6 @@
 #include <string.h>
 #include <libfreehand/libfreehand.h>
 #include "FHParser.h"
-#include "FHSVGGenerator.h"
 #include "libfreehand_utils.h"
 
 namespace
@@ -20,10 +19,10 @@ namespace
 
 using namespace libfreehand;
 
-static bool findAGD(WPXInputStream *input)
+static bool findAGD(librevenge::RVNGInputStream *input)
 {
   unsigned agd = readU32(input);
-  input->seek(-4, WPX_SEEK_CUR);
+  input->seek(-4, librevenge::RVNG_SEEK_CUR);
   if (((agd >> 24) & 0xff) == 'A' && ((agd >> 16) & 0xff) == 'G' && ((agd >> 8) & 0xff) == 'D')
   {
     FH_DEBUG_MSG(("Found AGD at offset 0x%lx (FreeHand version %i)\n", input->tell(), (agd & 0xff) - 0x30 + 5));
@@ -32,7 +31,7 @@ static bool findAGD(WPXInputStream *input)
   else
   {
     // parse the document for AGD block
-    while (!input->atEOS())
+    while (!input->isEnd())
     {
       if (0x1c != readU8(input))
         return false;
@@ -47,7 +46,7 @@ static bool findAGD(WPXInputStream *input)
         if (0x080a == opcode)
         {
           agd = readU32(input);
-          input->seek(-4, WPX_SEEK_CUR);
+          input->seek(-4, librevenge::RVNG_SEEK_CUR);
           if (((agd >> 24) & 0xff) == 'A' && ((agd >> 16) & 0xff) == 'G' && ((agd >> 8) & 0xff) == 'D')
           {
             FH_DEBUG_MSG(("Found AGD at offset 0x%lx (FreeHand version %i)\n", input->tell(), (agd & 0xff) - 0x30 + 5));
@@ -55,7 +54,7 @@ static bool findAGD(WPXInputStream *input)
           }
         }
       }
-      input->seek(length, WPX_SEEK_CUR);
+      input->seek(length, librevenge::RVNG_SEEK_CUR);
     }
   }
   return false;
@@ -69,14 +68,14 @@ Analyzes the content of an input stream to see if it can be parsed
 \return A value that indicates whether the content from the input
 stream is a FreeHand Document that libfreehand is able to parse
 */
-bool libfreehand::FreeHandDocument::isSupported(WPXInputStream *input)
+bool libfreehand::FreeHandDocument::isSupported(librevenge::RVNGInputStream *input)
 {
   try
   {
-    input->seek(0, WPX_SEEK_SET);
+    input->seek(0, librevenge::RVNG_SEEK_SET);
     if (findAGD(input))
     {
-      input->seek(0, WPX_SEEK_SET);
+      input->seek(0, librevenge::RVNG_SEEK_SET);
       return true;
     }
   }
@@ -89,17 +88,17 @@ bool libfreehand::FreeHandDocument::isSupported(WPXInputStream *input)
 
 /**
 Parses the input stream content. It will make callbacks to the functions provided by a
-WPGPaintInterface class implementation when needed. This is often commonly called the
+librevenge::RVNGDrawingInterface class implementation when needed. This is often commonly called the
 'main parsing routine'.
 \param input The input stream
-\param painter A WPGPainterInterface implementation
+\param painter A librevenge::RVNGDrawingerInterface implementation
 \return A value that indicates whether the parsing was successful
 */
-bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPaintInterface *painter)
+bool libfreehand::FreeHandDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
 {
   try
   {
-    input->seek(0, WPX_SEEK_SET);
+    input->seek(0, librevenge::RVNG_SEEK_SET);
     if (findAGD(input))
     {
       FHParser parser;
@@ -114,20 +113,6 @@ bool libfreehand::FreeHandDocument::parse(::WPXInputStream *input, libwpg::WPGPa
   {
   }
   return false;
-}
-
-/**
-Parses the input stream content and generates a valid Scalable Vector Graphics
-Provided as a convenience function for applications that support SVG internally.
-\param input The input stream
-\param output The output string whose content is the resulting SVG
-\return A value that indicates whether the SVG generation was successful.
-*/
-bool libfreehand::FreeHandDocument::generateSVG(::WPXInputStream *input, libfreehand::FHStringVector &output)
-{
-  libfreehand::FHSVGGenerator generator(output);
-  bool result = libfreehand::FreeHandDocument::parse(input, &generator);
-  return result;
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

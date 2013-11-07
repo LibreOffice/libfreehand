@@ -11,7 +11,7 @@
 #define __FHPATH_H__
 
 #include <vector>
-#include <libwpd/libwpd.h>
+#include <librevenge/librevenge.h>
 
 namespace libfreehand
 {
@@ -23,7 +23,7 @@ class FHPathElement
 public:
   FHPathElement() {}
   virtual ~FHPathElement() {}
-  virtual void writeOut(WPXPropertyListVector &vec) const = 0;
+  virtual void writeOut(librevenge::RVNGPropertyListVector &vec) const = 0;
   virtual void transform(const FHTransform &trafo) = 0;
   virtual FHPathElement *clone() = 0;
 };
@@ -46,7 +46,7 @@ public:
   void appendClosePath();
   void appendPath(const FHPath &path);
 
-  void writeOut(WPXPropertyListVector &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 

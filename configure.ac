@@ -6,7 +6,7 @@ AC_PREREQ([2.65])
 # Version informations
 # ====================
 m4_define([libfreehand_version_major],[0])
-m4_define([libfreehand_version_minor],[0])
+m4_define([libfreehand_version_minor],[1])
 m4_define([libfreehand_version_micro],[0])
 m4_define([libfreehand_version],[libfreehand_version_major.libfreehand_version_minor.libfreehand_version_micro])
 
@@ -54,24 +54,37 @@ else
 fi
 AC_SUBST(GPERF)
 
-# ===========
-# Find libwpd
-# ===========
-PKG_CHECK_MODULES([WPD],[
-	libwpd-0.9
-	libwpd-stream-0.9
+# ===============
+# Find librevenge
+# ===============
+PKG_CHECK_MODULES([REVENGE],[
+	librevenge-0.0
 ])
-AC_SUBST(WPD_CFLAGS)
-AC_SUBST(WPD_LIBS)
+AC_SUBST([REVENGE_CFLAGS])
+AC_SUBST([REVENGE_LIBS])
 
-# ===========
-# Find libwpg
-# ===========
-PKG_CHECK_MODULES([WPG],[
-	libwpg-0.2
+
+# =====
+# Tools
+# =====
+AC_ARG_ENABLE([tools],
+	[AS_HELP_STRING([--disable-tools], [Build conversion tools])],
+	[enable_tools="$enableval"],
+	[enable_tools=yes]
+)
+AS_IF([test "x$enable_tools" = "xyes"], [
+	PKG_CHECK_MODULES([REVENGE_STREAM],[
+		librevenge-stream-0.0
+	])
+	PKG_CHECK_MODULES([REVENGE_GENERATORS],[
+		librevenge-generators-0.0
+	])
 ])
-AC_SUBST(WPG_CFLAGS)
-AC_SUBST(WPG_LIBS)
+AC_SUBST([REVENGE_STREAM_CFLAGS])
+AC_SUBST([REVENGE_STREAM_LIBS])
+AC_SUBST([REVENGE_GENERATORS_CFLAGS])
+AC_SUBST([REVENGE_GENERATORS_LIBS])
+AM_CONDITIONAL(BUILD_TOOLS, [test "x$enable_tools" = "xyes"])
 
 # =========
 # Find zlib
@@ -272,6 +285,7 @@ AC_MSG_NOTICE([
 Build configuration:
 	debug:           ${enable_debug}
 	docs:            ${build_docs}
+	tools:           ${enable_tools}
 	werror:          ${enable_werror}
 ==============================================================================
 ])

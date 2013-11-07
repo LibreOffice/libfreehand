@@ -10,11 +10,7 @@
 #ifndef __FREEHANDDOCUMENT_H__
 #define __FREEHANDDOCUMENT_H__
 
-#include <libwpd/libwpd.h>
-#include <libwpg/libwpg.h>
-#include "FHStringVector.h"
-
-class WPXInputStream;
+#include <librevenge/librevenge.h>
 
 namespace libfreehand
 {
@@ -22,11 +18,9 @@ class FreeHandDocument
 {
 public:
 
-  static bool isSupported(WPXInputStream *input);
+  static bool isSupported(librevenge::RVNGInputStream *input);
 
-  static bool parse(WPXInputStream *input, libwpg::WPGPaintInterface *painter);
-
-  static bool generateSVG(::WPXInputStream *input, FHStringVector &output);
+  static bool parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter);
 };
 
 } // namespace libfreehand

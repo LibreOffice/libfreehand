@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@
 Description: Library for parsing the FreeHand file format structure
 Version: @VERSION@
-Requires: libwpd-0.9 libwpd-stream-0.9 libwpg-0.2
+Requires: librevenge-0.0
 Libs: -L${libdir} -lfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@
 Cflags: -I${includedir}/libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@

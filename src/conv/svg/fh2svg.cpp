@@ -11,8 +11,8 @@
 #include <sstream>
 #include <stdio.h>
 #include <string.h>
-#include <libwpd-stream/libwpd-stream.h>
-#include <libwpd/libwpd.h>
+#include <librevenge-stream/librevenge-stream.h>
+#include <librevenge/librevenge.h>
 #include <libfreehand/libfreehand.h>
 
 namespace
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   if (!file)
     return printUsage();
 
-  WPXFileStream input(file);
+  librevenge::RVNGFileStream input(file);
 
   if (!libfreehand::FreeHandDocument::isSupported(&input))
   {
@@ -55,14 +55,14 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  libfreehand::FHStringVector output;
-  if (!libfreehand::FreeHandDocument::generateSVG(&input, output))
+  librevenge::RVNGStringVector output;
+  librevenge::RVNGSVGDrawingGenerator generator(output, "");
+  if (!libfreehand::FreeHandDocument::parse(&input, &generator))
   {
     std::cerr << "ERROR: SVG Generation failed!" << std::endl;
     return 1;
   }
-
-  if (output.empty())
+  if (output.empty() || output[0].empty())
   {
     std::cerr << "ERROR: No SVG document generated!" << std::endl;
     return 1;

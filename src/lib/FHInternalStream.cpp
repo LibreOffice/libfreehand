@@ -16,8 +16,8 @@
 
 #define CHUNK 16384
 
-libfreehand::FHInternalStream::FHInternalStream(WPXInputStream *input, unsigned long size, bool compressed) :
-  WPXInputStream(),
+libfreehand::FHInternalStream::FHInternalStream(librevenge::RVNGInputStream *input, unsigned long size, bool compressed) :
+  librevenge::RVNGInputStream(),
   m_offset(0),
   m_buffer()
 {
@@ -112,11 +112,11 @@ const unsigned char *libfreehand::FHInternalStream::read(unsigned long numBytes,
   return &m_buffer[oldOffset];
 }
 
-int libfreehand::FHInternalStream::seek(long offset, WPX_SEEK_TYPE seekType)
+int libfreehand::FHInternalStream::seek(long offset, librevenge::RVNG_SEEK_TYPE seekType)
 {
-  if (seekType == WPX_SEEK_CUR)
+  if (seekType == librevenge::RVNG_SEEK_CUR)
     m_offset += offset;
-  else if (seekType == WPX_SEEK_SET)
+  else if (seekType == librevenge::RVNG_SEEK_SET)
     m_offset = offset;
 
   if (m_offset < 0)
@@ -138,7 +138,7 @@ long libfreehand::FHInternalStream::tell()
   return m_offset;
 }
 
-bool libfreehand::FHInternalStream::atEOS()
+bool libfreehand::FHInternalStream::isEnd()
 {
   if ((long)m_offset >= (long)m_buffer.size())
     return true;

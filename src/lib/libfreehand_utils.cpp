@@ -9,9 +9,9 @@
 
 #include "libfreehand_utils.h"
 
-uint8_t libfreehand::readU8(WPXInputStream *input)
+uint8_t libfreehand::readU8(librevenge::RVNGInputStream *input)
 {
-  if (!input || input->atEOS())
+  if (!input || input->isEnd())
   {
     FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
     throw EndOfStreamException();
@@ -25,14 +25,14 @@ uint8_t libfreehand::readU8(WPXInputStream *input)
   throw EndOfStreamException();
 }
 
-int8_t libfreehand::readS8(WPXInputStream *input)
+int8_t libfreehand::readS8(librevenge::RVNGInputStream *input)
 {
   return (int8_t)readU8(input);
 }
 
-uint16_t libfreehand::readU16(WPXInputStream *input)
+uint16_t libfreehand::readU16(librevenge::RVNGInputStream *input)
 {
-  if (!input || input->atEOS())
+  if (!input || input->isEnd())
   {
     FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
     throw EndOfStreamException();
@@ -47,14 +47,14 @@ uint16_t libfreehand::readU16(WPXInputStream *input)
   throw EndOfStreamException();
 }
 
-int16_t libfreehand::readS16(WPXInputStream *input)
+int16_t libfreehand::readS16(librevenge::RVNGInputStream *input)
 {
   return (int16_t)readU16(input);
 }
 
-uint32_t libfreehand::readU32(WPXInputStream *input)
+uint32_t libfreehand::readU32(librevenge::RVNGInputStream *input)
 {
-  if (!input || input->atEOS())
+  if (!input || input->isEnd())
   {
     FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
     throw EndOfStreamException();
@@ -69,7 +69,7 @@ uint32_t libfreehand::readU32(WPXInputStream *input)
   throw EndOfStreamException();
 }
 
-int32_t libfreehand::readS32(WPXInputStream *input)
+int32_t libfreehand::readS32(librevenge::RVNGInputStream *input)
 {
   return (int32_t)readU32(input);
 }
