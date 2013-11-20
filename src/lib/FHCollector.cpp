@@ -56,7 +56,9 @@ void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned sho
   librevenge::RVNGPropertyListVector propVec;
   fhPath.writeOut(propVec);
 
-  m_painter->drawPath(propVec);
+  librevenge::RVNGPropertyList pList;
+  pList.insert("svg:d", propVec);
+  m_painter->drawPath(pList);
 }
 
 void libfreehand::FHCollector::collectXform(unsigned recordId,
