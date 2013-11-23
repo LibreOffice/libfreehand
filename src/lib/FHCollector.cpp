@@ -51,7 +51,7 @@ void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned sho
   propList.insert("draw:stroke", "solid");
   propList.insert("svg:stroke-width", 0.0);
   propList.insert("svg:stroke-color", "#000000");
-  m_painter->setStyle(propList, librevenge::RVNGPropertyListVector());
+  m_painter->setStyle(propList);
 
   librevenge::RVNGPropertyListVector propVec;
   fhPath.writeOut(propVec);
