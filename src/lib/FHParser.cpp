@@ -24,7 +24,7 @@ namespace
 static int getTokenId(const char *name)
 {
   const fhtoken *token = Perfect_Hash::in_word_set(name, strlen(name));
-  if(token)
+  if (token)
     return token->tokenId;
   else
     return FH_TOKEN_INVALID;
@@ -33,12 +33,12 @@ static int getTokenId(const char *name)
 #ifdef DEBUG
 const char *getTokenName(int tokenId)
 {
-  if(tokenId >= FH_TOKEN_COUNT)
+  if (tokenId >= FH_TOKEN_COUNT)
     return 0;
   const fhtoken *currentToken = wordlist;
-  while(currentToken != wordlist+sizeof(wordlist)/sizeof(*wordlist))
+  while (currentToken != wordlist+sizeof(wordlist)/sizeof(*wordlist))
   {
-    if(currentToken->tokenId == tokenId)
+    if (currentToken->tokenId == tokenId)
       return currentToken->name;
     ++currentToken;
   }
