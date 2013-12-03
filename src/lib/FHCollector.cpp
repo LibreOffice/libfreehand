@@ -16,12 +16,14 @@ libfreehand::FHCollector::FHCollector(librevenge::RVNGDrawingInterface *painter,
   librevenge::RVNGPropertyList propList;
   propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
   propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
+  m_painter->startDocument(librevenge::RVNGPropertyList());
   m_painter->startPage(propList);
 }
 
 libfreehand::FHCollector::~FHCollector()
 {
   m_painter->endPage();
+  m_painter->endDocument();
 }
 
 void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
