@@ -35,7 +35,7 @@ void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const libre
 }
 
 void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
-    unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path, bool /* evenOdd */)
+                                           unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path, bool /* evenOdd */)
 {
   if (path.empty())
     return;
@@ -64,7 +64,7 @@ void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned sho
 }
 
 void libfreehand::FHCollector::collectXform(unsigned recordId,
-    double m11, double m21, double m12, double m22, double m13, double m23)
+                                            double m11, double m21, double m12, double m22, double m13, double m23)
 {
   m_transforms[recordId] = FHTransform(m11, m21, m12, m22, m13, m23);
 }
