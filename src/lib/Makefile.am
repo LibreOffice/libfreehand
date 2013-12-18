@@ -11,6 +11,7 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_include_HEADERS = \
 	$(top_srcdir)/inc/libfreehand/FreeHandDocument.h
 
 AM_CXXFLAGS = \
+	-DLIBFREEHAND_BUILD=1 \
 	-I$(top_srcdir)/inc \
 	$(REVENGE_CFLAGS) \
 	$(ZLIB_CFLAGS) \

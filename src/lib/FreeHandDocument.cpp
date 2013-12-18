@@ -68,7 +68,7 @@ Analyzes the content of an input stream to see if it can be parsed
 \return A value that indicates whether the content from the input
 stream is a FreeHand Document that libfreehand is able to parse
 */
-bool libfreehand::FreeHandDocument::isSupported(librevenge::RVNGInputStream *input)
+FHAPI bool libfreehand::FreeHandDocument::isSupported(librevenge::RVNGInputStream *input)
 {
   try
   {
@@ -94,7 +94,7 @@ librevenge::RVNGDrawingInterface class implementation when needed. This is often
 \param painter A librevenge::RVNGDrawingerInterface implementation
 \return A value that indicates whether the parsing was successful
 */
-bool libfreehand::FreeHandDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
+FHAPI bool libfreehand::FreeHandDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
 {
   try
   {

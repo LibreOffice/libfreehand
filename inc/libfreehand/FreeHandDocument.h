@@ -12,15 +12,25 @@
 
 #include <librevenge/librevenge.h>
 
+#ifdef DLL_EXPORT
+#ifdef LIBFREEHAND_BUILD
+#define FHAPI __declspec(dllexport)
+#else
+#define FHAPI __declspec(dllimport)
+#endif
+#else
+#define FHAPI
+#endif
+
 namespace libfreehand
 {
 class FreeHandDocument
 {
 public:
 
-  static bool isSupported(librevenge::RVNGInputStream *input);
+  static FHAPI bool isSupported(librevenge::RVNGInputStream *input);
 
-  static bool parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter);
+  static FHAPI bool parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter);
 };
 
 } // namespace libfreehand
