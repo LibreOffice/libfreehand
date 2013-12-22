@@ -35,6 +35,10 @@ public:
   {
     return 0;
   }
+  virtual bool existsSubStream(const char *)
+  {
+    return false;
+  }
   virtual librevenge::RVNGInputStream *getSubStreamByName(const char *)
   {
     return 0;
