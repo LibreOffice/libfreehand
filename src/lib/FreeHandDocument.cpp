@@ -70,6 +70,9 @@ stream is a FreeHand Document that libfreehand is able to parse
 */
 FHAPI bool libfreehand::FreeHandDocument::isSupported(librevenge::RVNGInputStream *input)
 {
+  if (!input)
+    return false;
+
   try
   {
     input->seek(0, librevenge::RVNG_SEEK_SET);
@@ -96,6 +99,9 @@ librevenge::RVNGDrawingInterface class implementation when needed. This is often
 */
 FHAPI bool libfreehand::FreeHandDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
 {
+  if (!input || !painter)
+    return false;
+
   try
   {
     input->seek(0, librevenge::RVNG_SEEK_SET);
