@@ -18,8 +18,12 @@
 #else
 #define FHAPI __declspec(dllimport)
 #endif
+#else // !DLL_EXPORT
+#ifdef LIBFREEHAND_VISIBILITY
+#define FHAPI __attribute__((visibility("default")))
 #else
 #define FHAPI
+#endif
 #endif
 
 namespace libfreehand
