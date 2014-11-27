@@ -1286,6 +1286,12 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
     FH_DEBUG_MSG(("Caught EndOfStreamException, continuing\n"));
   }
 
+  if (path.empty())
+  {
+    FH_DEBUG_MSG(("No path was read\n"));
+    return;
+  }
+
   FHPath fhPath;
   fhPath.appendMoveTo(path[0][0].first / 72.0, path[0][0].second / 72.0);
 
