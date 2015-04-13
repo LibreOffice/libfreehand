@@ -47,33 +47,27 @@ const char *getTokenName(int tokenId)
   return 0;
 }
 
-static void _appendUCS4(librevenge::RVNGString &text, UChar32 ucs4Character)
-{
-  unsigned char outbuf[U8_MAX_LENGTH+1];
-  int i = 0;
-  U8_APPEND_UNSAFE(&outbuf[0], i, ucs4Character);
-  outbuf[i] = 0;
-
-  text.append((char *)outbuf);
-}
-
-void _appendCharacters(librevenge::RVNGString &text, std::vector<unsigned short> characters)
+static void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned short> characters)
 {
   if (characters.empty())
     return;
 
   unsigned short *s = &characters[0];
-  int i = 0;
+  int j = 0;
   int length = characters.size();
   UChar32 c;
 
-  while (i < length)
+  while (j < length)
   {
-    U16_NEXT(s, i, length, c)
-    _appendUCS4(text, c);
+    U16_NEXT(s, j, length, c)
+    unsigned char outbuf[U8_MAX_LENGTH+1];
+    int i = 0;
+    U8_APPEND_UNSAFE(&outbuf[0], i, c);
+    outbuf[i] = 0;
+
+    text.append((char *)outbuf);
   }
 }
-
 
 #endif
 
@@ -1778,14 +1772,14 @@ void libfreehand::FHParser::readUString(librevenge::RVNGInputStream *input, libf
     for (unsigned short i = 0; i < length && 0 != (character = readU16(input)); i++)
       ustr.push_back(character);
   }
-#ifdef DEBUG
+
   librevenge::RVNGString str;
-  _appendCharacters(str, ustr);
+  _appendUTF16(str, ustr);
+
   FH_DEBUG_MSG(("FHParser::readUString %s\n", str.cstr()));
-#endif
   input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
   if (collector)
-    collector->collectUString(m_currentRecord+1, ustr);
+    collector->collectUString(m_currentRecord+1, str);
 }
 
 void libfreehand::FHParser::readVDict(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

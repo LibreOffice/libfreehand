@@ -26,7 +26,7 @@ libfreehand::FHCollector::~FHCollector()
   m_painter->endDocument();
 }
 
-void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const std::vector<unsigned short> & /* ustr */)
+void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const librevenge::RVNGString & /* str */)
 {
 }
 
