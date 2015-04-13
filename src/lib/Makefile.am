@@ -15,6 +15,7 @@ AM_CXXFLAGS = \
 	-I$(top_srcdir)/inc \
 	$(REVENGE_CFLAGS) \
 	$(ZLIB_CFLAGS) \
+	$(ICU_CFLAGS) \
 	$(DEBUG_CXXFLAGS)
 
 generated_files = \

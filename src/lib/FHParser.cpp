@@ -10,6 +10,8 @@
 #include <sstream>
 #include <string>
 #include <string.h>
+#include <unicode/utf8.h>
+#include <unicode/utf16.h>
 #include "FHParser.h"
 #include "FHCollector.h"
 #include "FHInternalStream.h"
@@ -44,6 +46,35 @@ const char *getTokenName(int tokenId)
   }
   return 0;
 }
+
+static void _appendUCS4(librevenge::RVNGString &text, UChar32 ucs4Character)
+{
+  unsigned char outbuf[U8_MAX_LENGTH+1];
+  int i = 0;
+  U8_APPEND_UNSAFE(&outbuf[0], i, ucs4Character);
+  outbuf[i] = 0;
+
+  text.append((char *)outbuf);
+}
+
+void _appendCharacters(librevenge::RVNGString &text, std::vector<unsigned short> characters)
+{
+  if (characters.empty())
+    return;
+
+  unsigned short *s = &characters[0];
+  int i = 0;
+  int length = characters.size();
+  UChar32 c;
+
+  while (i < length)
+  {
+    U16_NEXT(s, i, length, c)
+    _appendUCS4(text, c);
+  }
+}
+
+
 #endif
 
 } // anonymous namespace
@@ -1749,8 +1780,7 @@ void libfreehand::FHParser::readUString(librevenge::RVNGInputStream *input, libf
   }
 #ifdef DEBUG
   librevenge::RVNGString str;
-  for (std::vector<unsigned short>::const_iterator iter = ustr.begin(); iter != ustr.end(); ++iter)
-    str.append((char)*iter);
+  _appendCharacters(str, ustr);
   FH_DEBUG_MSG(("FHParser::readUString %s\n", str.cstr()));
 #endif
   input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
