@@ -34,7 +34,7 @@ void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const libre
 {
 }
 
-void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned short /* graphicStyle */,
+void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned short /* graphicStyle */,
                                            unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path, bool /* evenOdd */)
 {
   if (path.empty())
@@ -48,7 +48,7 @@ void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned sho
   }
   _normalizePath(fhPath);
 
-  _outputPath(fhPath);
+  m_paths[recordId] = fhPath;
 }
 
 void libfreehand::FHCollector::collectXform(unsigned recordId,
@@ -78,6 +78,12 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path)
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
   m_painter->drawPath(pList);
+}
+
+void libfreehand::FHCollector::outputContent()
+{
+  for (std::map<unsigned, FHPath>::const_iterator iter = m_paths.begin(); iter != m_paths.end(); ++iter)
+    _outputPath(iter->second);
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

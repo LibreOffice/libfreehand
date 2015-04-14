@@ -38,7 +38,7 @@ public:
   void collectPageWidth(double) {}
   void collectPageHeight(double) {}
 
-  void outputContent() {}
+  void outputContent();
 
 private:
   FHCollector(const FHCollector &);
