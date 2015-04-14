@@ -10,20 +10,13 @@
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
 
-libfreehand::FHCollector::FHCollector(librevenge::RVNGDrawingInterface *painter, const FHPageInfo &pageInfo) :
-  m_painter(painter), m_pageInfo(pageInfo), m_transforms()
+libfreehand::FHCollector::FHCollector(const FHPageInfo &pageInfo) :
+  m_pageInfo(pageInfo), m_transforms(), m_paths(), m_uStrings(), m_mNames()
 {
-  librevenge::RVNGPropertyList propList;
-  propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
-  propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
-  m_painter->startDocument(librevenge::RVNGPropertyList());
-  m_painter->startPage(propList);
 }
 
 libfreehand::FHCollector::~FHCollector()
 {
-  m_painter->endPage();
-  m_painter->endDocument();
 }
 
 void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const librevenge::RVNGString & /* str */)
@@ -39,6 +32,7 @@ void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned short /* 
 {
   if (path.empty())
     return;
+
   FHPath fhPath(path);
   if (xform)
   {
@@ -63,27 +57,39 @@ void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
   path.transform(trafo);
 }
 
-void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path)
+void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::librevenge::RVNGDrawingInterface *painter)
 {
   librevenge::RVNGPropertyList propList;
   propList.insert("draw:fill", "none");
   propList.insert("draw:stroke", "solid");
   propList.insert("svg:stroke-width", 0.0);
   propList.insert("svg:stroke-color", "#000000");
-  m_painter->setStyle(propList);
+  painter->setStyle(propList);
 
   librevenge::RVNGPropertyListVector propVec;
   path.writeOut(propVec);
 
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
-  m_painter->drawPath(pList);
+  painter->drawPath(pList);
 }
 
-void libfreehand::FHCollector::outputContent()
+void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface *painter)
 {
+  if (!painter)
+    return;
+
+  painter->startDocument(librevenge::RVNGPropertyList());
+  librevenge::RVNGPropertyList propList;
+  propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
+  propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
+  painter->startPage(propList);
   for (std::map<unsigned, FHPath>::const_iterator iter = m_paths.begin(); iter != m_paths.end(); ++iter)
-    _outputPath(iter->second);
+  {
+    _outputPath(iter->second, painter);
+  }
+  painter->endPage();
+  painter->endDocument();
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

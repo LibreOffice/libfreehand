@@ -110,9 +110,9 @@ bool libfreehand::FHParser::parse(librevenge::RVNGInputStream *input, librevenge
   FHInternalStream dataStream(input, dataLength-12, m_version >= 9);
   parseRecords(&dataStream);
   dataStream.seek(0, librevenge::RVNG_SEEK_SET);
-  FHCollector contentCollector(painter, m_pageInfo);
+  FHCollector contentCollector(m_pageInfo);
   parseDocument(&dataStream, &contentCollector);
-  contentCollector.outputContent();
+  contentCollector.outputContent(painter);
 
   return true;
 }

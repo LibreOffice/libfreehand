@@ -22,7 +22,7 @@ namespace libfreehand
 class FHCollector
 {
 public:
-  FHCollector(::librevenge::RVNGDrawingInterface *painter, const FHPageInfo &pageInfo);
+  FHCollector(const FHPageInfo &pageInfo);
   virtual ~FHCollector();
 
   // collector functions
@@ -38,16 +38,15 @@ public:
   void collectPageWidth(double) {}
   void collectPageHeight(double) {}
 
-  void outputContent();
+  void outputContent(::librevenge::RVNGDrawingInterface *painter);
 
 private:
   FHCollector(const FHCollector &);
   FHCollector &operator=(const FHCollector &);
 
   void _normalizePath(FHPath &path);
-  void _outputPath(const FHPath &path);
+  void _outputPath(const FHPath &path, ::librevenge::RVNGDrawingInterface *painter);
 
-  librevenge::RVNGDrawingInterface *m_painter;
   const FHPageInfo &m_pageInfo;
   std::map<unsigned, FHTransform> m_transforms;
   std::map<unsigned, FHPath> m_paths;
