@@ -38,15 +38,21 @@ public:
   void collectPageWidth(double) {}
   void collectPageHeight(double) {}
 
+  void outputContent() {}
+
 private:
   FHCollector(const FHCollector &);
   FHCollector &operator=(const FHCollector &);
 
   void _normalizePath(FHPath &path);
+  void _outputPath(const FHPath &path);
 
   librevenge::RVNGDrawingInterface *m_painter;
   const FHPageInfo &m_pageInfo;
   std::map<unsigned, FHTransform> m_transforms;
+  std::map<unsigned, FHPath> m_paths;
+  std::map<unsigned, librevenge::RVNGString> m_uStrings;
+  std::map<unsigned, librevenge::RVNGString> m_mNames;
 };
 
 } // namespace libfreehand

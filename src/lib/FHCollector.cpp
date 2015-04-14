@@ -48,19 +48,7 @@ void libfreehand::FHCollector::collectPath(unsigned /* recordId */, unsigned sho
   }
   _normalizePath(fhPath);
 
-  librevenge::RVNGPropertyList propList;
-  propList.insert("draw:fill", "none");
-  propList.insert("draw:stroke", "solid");
-  propList.insert("svg:stroke-width", 0.0);
-  propList.insert("svg:stroke-color", "#000000");
-  m_painter->setStyle(propList);
-
-  librevenge::RVNGPropertyListVector propVec;
-  fhPath.writeOut(propVec);
-
-  librevenge::RVNGPropertyList pList;
-  pList.insert("svg:d", propVec);
-  m_painter->drawPath(pList);
+  _outputPath(fhPath);
 }
 
 void libfreehand::FHCollector::collectXform(unsigned recordId,
@@ -73,6 +61,23 @@ void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
 {
   FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_minX, m_pageInfo.m_maxY);
   path.transform(trafo);
+}
+
+void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path)
+{
+  librevenge::RVNGPropertyList propList;
+  propList.insert("draw:fill", "none");
+  propList.insert("draw:stroke", "solid");
+  propList.insert("svg:stroke-width", 0.0);
+  propList.insert("svg:stroke-color", "#000000");
+  m_painter->setStyle(propList);
+
+  librevenge::RVNGPropertyListVector propVec;
+  path.writeOut(propVec);
+
+  librevenge::RVNGPropertyList pList;
+  pList.insert("svg:d", propVec);
+  m_painter->drawPath(pList);
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
