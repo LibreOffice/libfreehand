@@ -32,21 +32,6 @@ static int getTokenId(const char *name)
     return FH_TOKEN_INVALID;
 }
 
-#ifdef DEBUG
-const char *getTokenName(int tokenId)
-{
-  if (tokenId >= FH_TOKEN_COUNT)
-    return 0;
-  const fhtoken *currentToken = wordlist;
-  while (currentToken != wordlist+sizeof(wordlist)/sizeof(*wordlist))
-  {
-    if (currentToken->tokenId == tokenId)
-      return currentToken->name;
-    ++currentToken;
-  }
-  return 0;
-}
-
 static void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned short> characters)
 {
   if (characters.empty())
@@ -67,6 +52,21 @@ static void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned shor
 
     text.append((char *)outbuf);
   }
+}
+
+#ifdef DEBUG
+const char *getTokenName(int tokenId)
+{
+  if (tokenId >= FH_TOKEN_COUNT)
+    return 0;
+  const fhtoken *currentToken = wordlist;
+  while (currentToken != wordlist+sizeof(wordlist)/sizeof(*wordlist))
+  {
+    if (currentToken->tokenId == tokenId)
+      return currentToken->name;
+    ++currentToken;
+  }
+  return 0;
 }
 
 #endif
