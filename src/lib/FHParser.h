@@ -170,8 +170,6 @@ private:
   std::map<unsigned short, int> m_dictionary;
   std::vector<unsigned short> m_records;
   std::vector<unsigned short>::size_type m_currentRecord;
-  std::vector<long> m_offsets;
-  long m_fhTailOffset;
   FHPageInfo m_pageInfo;
 };
 

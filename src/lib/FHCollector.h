@@ -11,6 +11,7 @@
 #define __FHCOLLECTOR_H__
 
 #include <map>
+#include <librevenge/librevenge.h>
 #include "FHCollector.h"
 #include "FHTransform.h"
 #include "FHTypes.h"
@@ -22,21 +23,19 @@ namespace libfreehand
 class FHCollector
 {
 public:
-  FHCollector(const FHPageInfo &pageInfo);
+  FHCollector();
   virtual ~FHCollector();
 
   // collector functions
   void collectUString(unsigned recordId, const librevenge::RVNGString &str);
   void collectMName(unsigned recordId, const librevenge::RVNGString &name);
   void collectPath(unsigned recordId, unsigned short graphicStyle, unsigned short layer,
-                   unsigned short xform, const FHPath &path, bool evenodd);
+                   const FHPath &path, bool evenodd);
   void collectXform(unsigned recordId, double m11, double m21,
                     double m12, double m22, double m13, double m23);
+  void collectFHTail(unsigned recordId, unsigned blockId, unsigned propLstId, unsigned fontId);
 
-  void collectOffsetX(double) {}
-  void collectOffsetY(double) {}
-  void collectPageWidth(double) {}
-  void collectPageHeight(double) {}
+  void collectPageInfo(const FHPageInfo &pageInfo);
 
   void outputContent(::librevenge::RVNGDrawingInterface *painter);
 
@@ -47,11 +46,12 @@ private:
   void _normalizePath(FHPath &path);
   void _outputPath(const FHPath &path, ::librevenge::RVNGDrawingInterface *painter);
 
-  const FHPageInfo &m_pageInfo;
+  FHPageInfo m_pageInfo;
   std::map<unsigned, FHTransform> m_transforms;
   std::map<unsigned, FHPath> m_paths;
   std::map<unsigned, librevenge::RVNGString> m_uStrings;
   std::map<unsigned, librevenge::RVNGString> m_mNames;
+  unsigned m_fhTailBlockId;
 };
 
 } // namespace libfreehand

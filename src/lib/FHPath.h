@@ -32,7 +32,7 @@ public:
 class FHPath : public FHPathElement
 {
 public:
-  FHPath() : m_elements(), m_isClosed(false) {}
+  FHPath() : m_elements(), m_isClosed(false), m_xFormId(0) {}
   FHPath(const FHPath &path);
   ~FHPath();
 
@@ -45,6 +45,7 @@ public:
   void appendArcTo(double rx, double ry, double rotation, bool longAngle, bool sweep, double x, double y);
   void appendClosePath();
   void appendPath(const FHPath &path);
+  void setXFormId(unsigned short xFormId);
 
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
@@ -53,10 +54,12 @@ public:
   void clear();
   bool empty() const;
   bool isClosed() const;
+  unsigned short getXFormId() const;
 
 private:
   std::vector<FHPathElement *> m_elements;
   bool m_isClosed;
+  unsigned short m_xFormId;
 };
 
 } // namespace libfreehand

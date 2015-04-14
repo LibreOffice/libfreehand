@@ -10,8 +10,8 @@
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
 
-libfreehand::FHCollector::FHCollector(const FHPageInfo &pageInfo) :
-  m_pageInfo(pageInfo), m_transforms(), m_paths(), m_uStrings(), m_mNames()
+libfreehand::FHCollector::FHCollector() :
+  m_pageInfo(), m_transforms(), m_paths(), m_uStrings(), m_mNames(), m_fhTailBlockId(0)
 {
 }
 
@@ -28,27 +28,23 @@ void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const libre
 }
 
 void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned short /* graphicStyle */,
-                                           unsigned short /* layer */, unsigned short xform, const libfreehand::FHPath &path, bool /* evenOdd */)
+                                           unsigned short /* layer */, const libfreehand::FHPath &path, bool /* evenOdd */)
 {
   if (path.empty())
     return;
 
-  FHPath fhPath(path);
-  if (xform)
-  {
-    std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(xform);
-    if (iter != m_transforms.end())
-      fhPath.transform(iter->second);
-  }
-  _normalizePath(fhPath);
-
-  m_paths[recordId] = fhPath;
+  m_paths[recordId] = path;
 }
 
 void libfreehand::FHCollector::collectXform(unsigned recordId,
                                             double m11, double m21, double m12, double m22, double m13, double m23)
 {
   m_transforms[recordId] = FHTransform(m11, m21, m12, m22, m13, m23);
+}
+
+void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, unsigned blockId, unsigned /* propLstId */, unsigned /* fontId */)
+{
+  m_fhTailBlockId = blockId;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -59,6 +55,9 @@ void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
 
 void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::librevenge::RVNGDrawingInterface *painter)
 {
+  if (path.empty())
+    return;
+
   librevenge::RVNGPropertyList propList;
   propList.insert("draw:fill", "none");
   propList.insert("draw:stroke", "solid");
@@ -66,12 +65,28 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::li
   propList.insert("svg:stroke-color", "#000000");
   painter->setStyle(propList);
 
+  FHPath fhPath(path);
+  unsigned short xform = fhPath.getXFormId();
+
+  if (xform)
+  {
+    std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(xform);
+    if (iter != m_transforms.end())
+      fhPath.transform(iter->second);
+  }
+  _normalizePath(fhPath);
+
   librevenge::RVNGPropertyListVector propVec;
-  path.writeOut(propVec);
+  fhPath.writeOut(propVec);
 
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
   painter->drawPath(pList);
+}
+
+void libfreehand::FHCollector::collectPageInfo(const FHPageInfo &pageInfo)
+{
+  m_pageInfo = pageInfo;
 }
 
 void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface *painter)

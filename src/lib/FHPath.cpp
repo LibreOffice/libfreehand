@@ -294,6 +294,11 @@ void libfreehand::FHPath::appendPath(const FHPath &path)
     m_elements.push_back((*iter)->clone());
 }
 
+void libfreehand::FHPath::setXFormId(unsigned short xFormId)
+{
+  m_xFormId = xFormId;
+}
+
 void libfreehand::FHPath::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   for (std::vector<FHPathElement *>::const_iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
@@ -328,6 +333,11 @@ bool libfreehand::FHPath::empty() const
 bool libfreehand::FHPath::isClosed() const
 {
   return m_isClosed;
+}
+
+unsigned short libfreehand::FHPath::getXFormId() const
+{
+  return m_xFormId;
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
