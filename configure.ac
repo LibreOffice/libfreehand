@@ -112,12 +112,10 @@ PKG_CHECK_MODULES([ICU],[icu-i18n],[
 	AC_MSG_CHECKING([ICU installation])
 	AS_IF([${ICU_CONFIG} --cflags >/dev/null 2>&1],[
 		ICU_CFLAGS=`${ICU_CONFIG} --cppflags-searchpath --cxxflags`
-		ICU_LIBS=`${ICU_CONFIG} --ldflags`
 		AC_MSG_RESULT([found])],[
 		AC_MSG_ERROR([libicu config program icu-config not found])])]
 )
 AC_SUBST(ICU_CFLAGS)
-AC_SUBST(ICU_LIBS)
 
 # =================================
 # Libtool/Version Makefile settings
