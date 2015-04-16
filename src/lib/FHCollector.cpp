@@ -162,18 +162,7 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup &group, :
         {
           std::map<unsigned, FHCompositePath>::const_iterator iterCompo = m_compositePaths.find(*iterVec);
           if (iterCompo != m_compositePaths.end())
-          {
-            std::vector<unsigned> paths;
-            if (_findListElements(paths, iterCompo->second.m_elementsId))
-            {
-              for (std::vector<unsigned>::const_iterator pathIter = paths.begin(); pathIter != paths.end(); ++pathIter)
-              {
-                std::map<unsigned, FHPath>::const_iterator iterPath = m_paths.find(*pathIter);
-                if (iterPath != m_paths.end())
-                  _outputPath(iterPath->second, painter);
-              }
-            }
-          }
+            _outputCompositePath(iterCompo->second, painter);
         }
       }
     }
@@ -263,19 +252,25 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNG
       {
         std::map<unsigned, FHCompositePath>::const_iterator iterCompo = m_compositePaths.find(*iterVec);
         if (iterCompo != m_compositePaths.end())
-        {
-          std::vector<unsigned> paths;
-          if (_findListElements(paths, iterCompo->second.m_elementsId))
-          {
-            for (std::vector<unsigned>::const_iterator pathIter = paths.begin(); pathIter != paths.end(); ++pathIter)
-            {
-              std::map<unsigned, FHPath>::const_iterator iterPath = m_paths.find(*pathIter);
-              if (iterPath != m_paths.end())
-                _outputPath(iterPath->second, painter);
-            }
-          }
-        }
+          _outputCompositePath(iterCompo->second, painter);
       }
+    }
+  }
+}
+
+void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHCompositePath &compositePath, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter)
+    return;
+
+  std::vector<unsigned> elements;
+  if (_findListElements(elements, compositePath.m_elementsId))
+  {
+    for (std::vector<unsigned>::const_iterator iter = elements.begin(); iter != elements.end(); ++iter)
+    {
+      std::map<unsigned, FHPath>::const_iterator iterPath = m_paths.find(*iter);
+      if (iterPath != m_paths.end())
+        _outputPath(iterPath->second, painter);
     }
   }
 }

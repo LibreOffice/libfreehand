@@ -52,6 +52,7 @@ private:
   void _outputPath(const FHPath &path, ::librevenge::RVNGDrawingInterface *painter);
   void _outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputGroup(const FHGroup &group, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputCompositePath(const FHCompositePath &compositePath, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
 
