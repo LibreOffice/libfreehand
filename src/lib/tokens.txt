@@ -24,6 +24,7 @@ CustomProc
 Data
 DataList
 DateTime
+DisplayText
 DuetFilter
 Element
 ElemList

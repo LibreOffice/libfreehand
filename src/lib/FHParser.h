@@ -66,6 +66,7 @@ private:
   void readDataList(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readData(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readDateTime(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readDisplayText(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readDuetFilter(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readElement(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readElemList(librevenge::RVNGInputStream *input, FHCollector *collector);
