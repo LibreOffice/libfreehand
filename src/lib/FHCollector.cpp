@@ -125,6 +125,12 @@ void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface 
     return;
   }
 
+  painter->startDocument(librevenge::RVNGPropertyList());
+  librevenge::RVNGPropertyList propList;
+  propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
+  propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
+  painter->startPage(propList);
+
   unsigned defaultLayerId = m_block.second.m_defaultLayerId;
   std::map<unsigned, FHLayer>::const_iterator layerIter = m_layers.find(defaultLayerId);
   if (layerIter == m_layers.end())
@@ -132,7 +138,18 @@ void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface 
     FH_DEBUG_MSG(("ERROR: Could not find the referenced default layer\n"));
     return;
   }
-  unsigned layerElementsListId = layerIter->second.m_elementsId;
+
+  _outputLayer(layerIter->second, painter);
+  painter->endPage();
+  painter->endDocument();
+}
+
+void libfreehand::FHCollector::_outputLayer(const libfreehand::FHLayer &layer, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter)
+    return;
+
+  unsigned layerElementsListId = layer.m_elementsId;
   if (!layerElementsListId)
   {
     FH_DEBUG_MSG(("ERROR: Layer points to invalid element list\n"));
@@ -145,11 +162,6 @@ void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface 
     return;
   }
 
-  painter->startDocument(librevenge::RVNGPropertyList());
-  librevenge::RVNGPropertyList propList;
-  propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
-  propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
-  painter->startPage(propList);
   for (std::vector<unsigned>::const_iterator iterVec = listIter->second.m_elements.begin(); iterVec != listIter->second.m_elements.end(); ++iterVec)
   {
     std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(*iterVec);
@@ -158,8 +170,7 @@ void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface 
       _outputPath(iter->second, painter);
     }
   }
-  painter->endPage();
-  painter->endDocument();
+
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

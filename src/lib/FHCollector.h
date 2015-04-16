@@ -47,6 +47,7 @@ private:
 
   void _normalizePath(FHPath &path);
   void _outputPath(const FHPath &path, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputLayer(const FHLayer &layer, ::librevenge::RVNGDrawingInterface *painter);
 
   FHPageInfo m_pageInfo;
   FHTail m_fhTail;
