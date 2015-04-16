@@ -54,6 +54,7 @@ static void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned shor
   }
 }
 
+
 #ifdef DEBUG
 const char *getTokenName(int tokenId)
 {
@@ -596,28 +597,46 @@ void libfreehand::FHParser::readBendFilter(librevenge::RVNGInputStream *input, l
 
 void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
+  unsigned layerListId = 0;
+  unsigned defaultLayerId = 0;
   if (m_version == 10)
   {
     readU16(input);
-    for (unsigned i = 21; i; --i)
-      _readRecordId(input);
+    for (unsigned i = 1; i < 22; ++i)
+      _readBlockInformation(input, i, layerListId, defaultLayerId);
     input->seek(1, librevenge::RVNG_SEEK_CUR);
+    _readRecordId(input);
+    _readRecordId(input);
+  }
+  else if (m_version == 8)
+  {
+    for (unsigned i = 0; i < 12; ++i)
+      _readBlockInformation(input, i, layerListId, defaultLayerId);
+    input->seek(14, librevenge::RVNG_SEEK_CUR);
+  }
+  else if (m_version < 8)
+  {
+    for (unsigned i = 0; i < 11; ++i)
+      _readBlockInformation(input, i, layerListId, defaultLayerId);
+    input->seek(10, librevenge::RVNG_SEEK_CUR);
+    _readRecordId(input);
     _readRecordId(input);
     _readRecordId(input);
   }
   else
   {
-    for (unsigned i = 12; i; --i)
-      _readRecordId(input);
+    for (unsigned i = 0; i < 12; ++i)
+      _readBlockInformation(input, i, layerListId, defaultLayerId);
     input->seek(14, librevenge::RVNG_SEEK_CUR);
     for (unsigned j = 3; j; --j)
       _readRecordId(input);
     input->seek(1, librevenge::RVNG_SEEK_CUR);
     for (unsigned k = 4; k; --k)
       _readRecordId(input);
+    if (m_version < 10)
+      input->seek(-6, librevenge::RVNG_SEEK_CUR);
   }
-  if (m_version < 10)
-    input->seek(-6, librevenge::RVNG_SEEK_CUR);
+  FH_DEBUG_MSG(("Parsing Block: layerListId 0x%x, defaultLayerId 0x%x\n", layerListId, defaultLayerId));
 }
 
 void libfreehand::FHParser::readBrushList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1947,6 +1966,16 @@ double libfreehand::FHParser::_readCoordinate(librevenge::RVNGInputStream *input
   double value = (double)readS16(input);
   value += (double)readU16(input) / 65536.0;
   return value;
+}
+
+void libfreehand::FHParser::_readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId, unsigned &defaultLayerId)
+{
+  if (i == 5)
+    layerListId = _readRecordId(input);
+  else if (i == 6)
+    defaultLayerId = _readRecordId(input);
+  else
+    _readRecordId(input);
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
