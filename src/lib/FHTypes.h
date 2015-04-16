@@ -48,6 +48,12 @@ struct FHList
   FHList() : m_listType(0), m_elements() {}
 };
 
+struct FHLayer
+{
+  unsigned m_graphicStyleId;
+  unsigned m_elementsId;
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

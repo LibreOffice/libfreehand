@@ -964,13 +964,16 @@ void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, 
     input->seek(4, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
+  FHLayer layer;
+  layer.m_graphicStyleId = _readRecordId(input);
   input->seek(10, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
+  layer.m_elementsId = _readRecordId(input);
   _readRecordId(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectLayer(m_currentRecord+1, layer);
 }
 
 void libfreehand::FHParser::readLensFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

@@ -12,7 +12,8 @@
 #include "libfreehand_utils.h"
 
 libfreehand::FHCollector::FHCollector() :
-  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists()
+  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(),
+  m_layers()
 {
 }
 
@@ -67,6 +68,11 @@ void libfreehand::FHCollector::collectBlock(unsigned recordId, unsigned layerLis
 void libfreehand::FHCollector::collectList(unsigned recordId, const libfreehand::FHList &lst)
 {
   m_lists[recordId] = lst;
+}
+
+void libfreehand::FHCollector::collectLayer(unsigned recordId, const libfreehand::FHLayer &layer)
+{
+  m_layers[recordId] = layer;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)

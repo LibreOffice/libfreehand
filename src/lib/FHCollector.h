@@ -36,6 +36,7 @@ public:
   void collectFHTail(unsigned recordId, unsigned blockId, unsigned propLstId, unsigned fontId);
   void collectBlock(unsigned recordId, unsigned layerListId, unsigned defaultLayerId);
   void collectList(unsigned recordId, const FHList &lst);
+  void collectLayer(unsigned recordId, const FHLayer &layer);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -55,6 +56,7 @@ private:
   std::map<unsigned, FHPath> m_paths;
   std::map<unsigned, librevenge::RVNGString> m_strings;
   std::map<unsigned, FHList> m_lists;
+  std::map<unsigned, FHLayer> m_layers;
 };
 
 } // namespace libfreehand
