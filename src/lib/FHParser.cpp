@@ -184,7 +184,7 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
     readBlock(input, collector);
     break;
   case FH_BRUSHLIST:
-    readBrushList(input, collector);
+    readList(input, collector);
     break;
   case FH_BRUSH:
     readBrush(input, collector);
@@ -636,15 +636,6 @@ void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfre
   FH_DEBUG_MSG(("Parsing Block: layerListId 0x%x, defaultLayerId 0x%x\n", layerListId, defaultLayerId));
 }
 
-void libfreehand::FHParser::readBrushList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
-{
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
-  unsigned short size = readU16(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
-  for (unsigned short i = 0; i < size; ++i)
-    _readRecordId(input);
-}
-
 void libfreehand::FHParser::readBrush(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   _readRecordId(input);
@@ -1067,15 +1058,19 @@ void libfreehand::FHParser::readMDict(librevenge::RVNGInputStream *input, libfre
   }
 }
 
-void libfreehand::FHParser::readList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readList(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  input->seek(6, librevenge::RVNG_SEEK_CUR);
+  FHList lst;
+  lst.m_listType = readU16(input);
   for (unsigned short i = 0; i < size; ++i)
-    _readRecordId(input);
+    lst.m_elements.push_back(_readRecordId(input));
   if (m_version < 9)
     input->seek(2*(size2-size),librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectList(m_currentRecord+1, lst);
 }
 
 void libfreehand::FHParser::readMName(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

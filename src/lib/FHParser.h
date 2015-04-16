@@ -38,7 +38,7 @@ private:
   void parseDictionary(librevenge::RVNGInputStream *input);
   void parseRecordList(librevenge::RVNGInputStream *input);
   void parseRecord(librevenge::RVNGInputStream *input, FHCollector *collector, int recordId);
-  void parseRecords(librevenge::RVNGInputStream *input, FHCollector *collector = 0);
+  void parseRecords(librevenge::RVNGInputStream *input, FHCollector *collector);
   void parseDocument(librevenge::RVNGInputStream *input, FHCollector *collector);
 
   void readAGDFont(librevenge::RVNGInputStream *input, FHCollector *collector);
@@ -49,7 +49,6 @@ private:
   void readBasicLine(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBendFilter(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBlock(librevenge::RVNGInputStream *input, FHCollector *collector);
-  void readBrushList(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBrush(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBrushStroke(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBrushTip(librevenge::RVNGInputStream *input, FHCollector *collector);

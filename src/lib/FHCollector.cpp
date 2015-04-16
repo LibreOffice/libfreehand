@@ -12,7 +12,7 @@
 #include "libfreehand_utils.h"
 
 libfreehand::FHCollector::FHCollector() :
-  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_uStrings(), m_mNames()
+  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists()
 {
 }
 
@@ -20,12 +20,19 @@ libfreehand::FHCollector::~FHCollector()
 {
 }
 
-void libfreehand::FHCollector::collectUString(unsigned /* recordId */, const librevenge::RVNGString & /* str */)
+void libfreehand::FHCollector::collectPageInfo(const FHPageInfo &pageInfo)
 {
+  m_pageInfo = pageInfo;
 }
 
-void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const librevenge::RVNGString & /* name */)
+void libfreehand::FHCollector::collectUString(unsigned recordId, const librevenge::RVNGString &str)
 {
+  m_strings[recordId] = str;
+}
+
+void libfreehand::FHCollector::collectMName(unsigned recordId, const librevenge::RVNGString &name)
+{
+  m_strings[recordId] = name;
 }
 
 void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned /* graphicStyle */, unsigned /* layer */,
@@ -55,6 +62,11 @@ void libfreehand::FHCollector::collectBlock(unsigned recordId, unsigned layerLis
   if (m_block.first && m_block.first != recordId)
     FH_DEBUG_MSG(("FHCollector::collectBlock -- WARNING: Several \"Block\" records in the file\n"));
   m_block = std::make_pair(recordId, FHBlock(layerListId, defaultLayerId));
+}
+
+void libfreehand::FHCollector::collectList(unsigned recordId, const libfreehand::FHList &lst)
+{
+  m_lists[recordId] = lst;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -92,11 +104,6 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::li
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
   painter->drawPath(pList);
-}
-
-void libfreehand::FHCollector::collectPageInfo(const FHPageInfo &pageInfo)
-{
-  m_pageInfo = pageInfo;
 }
 
 void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface *painter)

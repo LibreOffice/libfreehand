@@ -35,6 +35,7 @@ public:
                     double m12, double m22, double m13, double m23);
   void collectFHTail(unsigned recordId, unsigned blockId, unsigned propLstId, unsigned fontId);
   void collectBlock(unsigned recordId, unsigned layerListId, unsigned defaultLayerId);
+  void collectList(unsigned recordId, const FHList &lst);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -52,8 +53,8 @@ private:
   std::pair<unsigned, FHBlock> m_block;
   std::map<unsigned, FHTransform> m_transforms;
   std::map<unsigned, FHPath> m_paths;
-  std::map<unsigned, librevenge::RVNGString> m_uStrings;
-  std::map<unsigned, librevenge::RVNGString> m_mNames;
+  std::map<unsigned, librevenge::RVNGString> m_strings;
+  std::map<unsigned, FHList> m_lists;
 };
 
 } // namespace libfreehand
