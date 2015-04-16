@@ -11,7 +11,7 @@
 #include "FHCollector.h"
 
 libfreehand::FHCollector::FHCollector() :
-  m_pageInfo(), m_transforms(), m_paths(), m_uStrings(), m_mNames(), m_fhTailBlockId(0)
+  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_uStrings(), m_mNames()
 {
 }
 
@@ -42,9 +42,16 @@ void libfreehand::FHCollector::collectXform(unsigned recordId,
   m_transforms[recordId] = FHTransform(m11, m21, m12, m22, m13, m23);
 }
 
-void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, unsigned blockId, unsigned /* propLstId */, unsigned /* fontId */)
+void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, unsigned blockId, unsigned propLstId, unsigned fontId)
 {
-  m_fhTailBlockId = blockId;
+  m_fhTail.m_blockId = blockId;
+  m_fhTail.m_propLstId = propLstId;
+  m_fhTail.m_fontId = fontId;
+}
+
+void libfreehand::FHCollector::collectBlock(unsigned recordId, unsigned layerListId, unsigned defaultLayerId)
+{
+  m_block = std::make_pair(recordId, FHBlock(layerListId, defaultLayerId));
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)

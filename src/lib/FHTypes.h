@@ -27,8 +27,10 @@ struct FHPageInfo
 struct FHBlock
 {
   unsigned m_layerListId;
-  unsigned m_layerId;
-  FHBlock() : m_layerListId(0), m_layerId(0) {}
+  unsigned m_defaultLayerId;
+  FHBlock() : m_layerListId(0), m_defaultLayerId(0) {}
+  FHBlock(unsigned layerListId, unsigned defaultLayerId)
+    : m_layerListId(layerListId), m_defaultLayerId(defaultLayerId) {}
 };
 
 struct FHTail
