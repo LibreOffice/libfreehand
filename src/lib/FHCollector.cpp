@@ -105,11 +105,8 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::li
       fhPath.transform(iter->second);
   }
   std::stack<FHTransform> groupTransforms = m_currentTransforms;
-  while (!groupTransforms.empty())
-  {
-    fhPath.transform(groupTransforms.top());
-    groupTransforms.pop();
-  }
+  if (!m_currentTransforms.empty())
+    fhPath.transform(m_currentTransforms.top());
   _normalizePath(fhPath);
 
   librevenge::RVNGPropertyListVector propVec;
