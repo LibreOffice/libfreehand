@@ -26,14 +26,9 @@ void libfreehand::FHCollector::collectPageInfo(const FHPageInfo &pageInfo)
   m_pageInfo = pageInfo;
 }
 
-void libfreehand::FHCollector::collectUString(unsigned recordId, const librevenge::RVNGString &str)
+void libfreehand::FHCollector::collectString(unsigned recordId, const librevenge::RVNGString &str)
 {
   m_strings[recordId] = str;
-}
-
-void libfreehand::FHCollector::collectMName(unsigned recordId, const librevenge::RVNGString &name)
-{
-  m_strings[recordId] = name;
 }
 
 void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned /* graphicStyle */, unsigned /* layer */,
@@ -117,14 +112,49 @@ void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface 
   if (!painter)
     return;
 
+  if (!m_fhTail.m_blockId || m_fhTail.m_blockId != m_block.first)
+  {
+    FH_DEBUG_MSG(("WARNING: FHTail points to an invalid Block ID\n"));
+    m_fhTail.m_blockId = m_block.first;
+  }
+  if (!m_fhTail.m_blockId)
+  {
+    FH_DEBUG_MSG(("ERROR: Block record is absent from this file\n"));
+    return;
+  }
+
+  unsigned defaultLayerId = m_block.second.m_defaultLayerId;
+  std::map<unsigned, FHLayer>::const_iterator layerIter = m_layers.find(defaultLayerId);
+  if (layerIter == m_layers.end())
+  {
+    FH_DEBUG_MSG(("ERROR: Could not find the referenced default layer\n"));
+    return;
+  }
+  unsigned layerElementsListId = layerIter->second.m_elementsId;
+  if (!layerElementsListId)
+  {
+    FH_DEBUG_MSG(("ERROR: Layer points to invalid element list\n"));
+    return;
+  }
+  std::map<unsigned, FHList>::const_iterator listIter = m_lists.find(layerElementsListId);
+  if (listIter == m_lists.end())
+  {
+    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
+    return;
+  }
+
   painter->startDocument(librevenge::RVNGPropertyList());
   librevenge::RVNGPropertyList propList;
   propList.insert("svg:height", m_pageInfo.m_maxY - m_pageInfo.m_minY);
   propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
   painter->startPage(propList);
-  for (std::map<unsigned, FHPath>::const_iterator iter = m_paths.begin(); iter != m_paths.end(); ++iter)
+  for (std::vector<unsigned>::const_iterator iterVec = listIter->second.m_elements.begin(); iterVec != listIter->second.m_elements.end(); ++iterVec)
   {
-    _outputPath(iter->second, painter);
+    std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(*iterVec);
+    if (iter != m_paths.end())
+    {
+      _outputPath(iter->second, painter);
+    }
   }
   painter->endPage();
   painter->endDocument();

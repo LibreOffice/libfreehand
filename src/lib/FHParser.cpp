@@ -1093,7 +1093,7 @@ void libfreehand::FHParser::readMName(librevenge::RVNGInputStream *input, libfre
   FH_DEBUG_MSG(("FHParser::readMName %s\n", name.cstr()));
   input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
   if (collector)
-    collector->collectMName(m_currentRecord+1, name);
+    collector->collectString(m_currentRecord+1, name);
 }
 
 void libfreehand::FHParser::readMpObject(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1107,7 +1107,7 @@ void libfreehand::FHParser::readMQuickDict(librevenge::RVNGInputStream *input, l
   input->seek(5+size*4, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMString(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readMString(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   long startPosition = input->tell();
   unsigned short size = readU16(input);
@@ -1118,6 +1118,8 @@ void libfreehand::FHParser::readMString(librevenge::RVNGInputStream *input, libf
     str.append((char)character);
   FH_DEBUG_MSG(("FHParser::readMString %s\n", str.cstr()));
   input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
+  if (collector)
+    collector->collectString(m_currentRecord+1, str);
 }
 
 void libfreehand::FHParser::readMultiBlend(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1806,7 +1808,7 @@ void libfreehand::FHParser::readUString(librevenge::RVNGInputStream *input, libf
   FH_DEBUG_MSG(("FHParser::readUString %i (%s)\n", length, str.cstr()));
   input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
   if (collector)
-    collector->collectUString(m_currentRecord+1, str);
+    collector->collectString(m_currentRecord+1, str);
 }
 
 void libfreehand::FHParser::readVDict(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

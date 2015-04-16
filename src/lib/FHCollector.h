@@ -27,8 +27,7 @@ public:
   virtual ~FHCollector();
 
   // collector functions
-  void collectUString(unsigned recordId, const librevenge::RVNGString &str);
-  void collectMName(unsigned recordId, const librevenge::RVNGString &name);
+  void collectString(unsigned recordId, const librevenge::RVNGString &str);
   void collectPath(unsigned recordId, unsigned graphicStyle, unsigned layer,
                    const FHPath &path, bool evenodd);
   void collectXform(unsigned recordId, double m11, double m21,
