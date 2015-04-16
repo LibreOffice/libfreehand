@@ -56,7 +56,9 @@ void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, unsigned b
 void libfreehand::FHCollector::collectBlock(unsigned recordId, const libfreehand::FHBlock &block)
 {
   if (m_block.first && m_block.first != recordId)
+  {
     FH_DEBUG_MSG(("FHCollector::collectBlock -- WARNING: Several \"Block\" records in the file\n"));
+  }
   m_block = std::make_pair(recordId, block);
 }
 
