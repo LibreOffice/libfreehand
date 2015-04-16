@@ -9,6 +9,7 @@
 
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
+#include "libfreehand_utils.h"
 
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_uStrings(), m_mNames()
@@ -51,6 +52,8 @@ void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, unsigned b
 
 void libfreehand::FHCollector::collectBlock(unsigned recordId, unsigned layerListId, unsigned defaultLayerId)
 {
+  if (m_block.first && m_block.first != recordId)
+    FH_DEBUG_MSG(("FHCollector::collectBlock -- WARNING: Several \"Block\" records in the file\n"));
   m_block = std::make_pair(recordId, FHBlock(layerListId, defaultLayerId));
 }
 
