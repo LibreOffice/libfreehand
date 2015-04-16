@@ -87,13 +87,13 @@ libfreehand::FHParser::~FHParser()
 bool libfreehand::FHParser::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
 {
   long dataOffset = input->tell();
-  if ('A' != readU8(input))
+  unsigned agd = readU32(input);
+  if (((agd >> 24) & 0xff) == 'A' && ((agd >> 16) & 0xff) == 'G' && ((agd >> 8) & 0xff) == 'D')
+    m_version = (agd & 0xff) - 0x30 + 5;
+  else if (((agd >> 24) & 0xff) == 'F' && ((agd >> 16) & 0xff) == 'H' && ((agd >> 8) & 0xff) == '3')
+    m_version = 3;
+  else
     return false;
-  if ('G' != readU8(input))
-    return false;
-  if ('D' != readU8(input))
-    return false;
-  m_version = readU8(input) - 0x30 + 5;
 
   // Skip a dword
   input->seek(4, librevenge::RVNG_SEEK_CUR);
