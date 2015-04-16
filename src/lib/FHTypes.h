@@ -62,6 +62,13 @@ struct FHGroup
   FHGroup() : m_graphicStyleId(0), m_elementsId(0), m_xFormId(0) {}
 };
 
+struct FHCompositePath
+{
+  unsigned m_graphicStyleId;
+  unsigned m_elementsId;
+  FHCompositePath() : m_graphicStyleId(0), m_elementsId(0) {}
+};
+
 
 } // namespace libfreehand
 

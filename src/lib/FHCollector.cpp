@@ -13,7 +13,7 @@
 
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(),
-  m_layers(), m_groups(), m_currentTransforms()
+  m_layers(), m_groups(), m_currentTransforms(), m_compositePaths()
 {
 }
 
@@ -75,6 +75,11 @@ void libfreehand::FHCollector::collectLayer(unsigned recordId, const libfreehand
 void libfreehand::FHCollector::collectGroup(unsigned recordId, const libfreehand::FHGroup &group)
 {
   m_groups[recordId] = group;
+}
+
+void libfreehand::FHCollector::collectCompositePath(unsigned recordId, const libfreehand::FHCompositePath &compositePath)
+{
+  m_compositePaths[recordId] = compositePath;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -147,15 +152,28 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup &group, :
     {
       std::map<unsigned, FHGroup>::const_iterator iterGroup = m_groups.find(*iterVec);
       if (iterGroup != m_groups.end())
-      {
         _outputGroup(iterGroup->second, painter);
-      }
       else
       {
         std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(*iterVec);
         if (iter != m_paths.end())
-        {
           _outputPath(iter->second, painter);
+        else
+        {
+          std::map<unsigned, FHCompositePath>::const_iterator iterCompo = m_compositePaths.find(*iterVec);
+          if (iterCompo != m_compositePaths.end())
+          {
+            std::vector<unsigned> paths;
+            if (_findListElements(paths, iterCompo->second.m_elementsId))
+            {
+              for (std::vector<unsigned>::const_iterator pathIter = paths.begin(); pathIter != paths.end(); ++pathIter)
+              {
+                std::map<unsigned, FHPath>::const_iterator iterPath = m_paths.find(*pathIter);
+                if (iterPath != m_paths.end())
+                  _outputPath(iterPath->second, painter);
+              }
+            }
+          }
         }
       }
     }
@@ -235,15 +253,28 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNG
   {
     std::map<unsigned, FHGroup>::const_iterator iterGroup = m_groups.find(*iterVec);
     if (iterGroup != m_groups.end())
-    {
       _outputGroup(iterGroup->second, painter);
-    }
     else
     {
       std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(*iterVec);
       if (iter != m_paths.end())
-      {
         _outputPath(iter->second, painter);
+      else
+      {
+        std::map<unsigned, FHCompositePath>::const_iterator iterCompo = m_compositePaths.find(*iterVec);
+        if (iterCompo != m_compositePaths.end())
+        {
+          std::vector<unsigned> paths;
+          if (_findListElements(paths, iterCompo->second.m_elementsId))
+          {
+            for (std::vector<unsigned>::const_iterator pathIter = paths.begin(); pathIter != paths.end(); ++pathIter)
+            {
+              std::map<unsigned, FHPath>::const_iterator iterPath = m_paths.find(*pathIter);
+              if (iterPath != m_paths.end())
+                _outputPath(iterPath->second, painter);
+            }
+          }
+        }
       }
     }
   }

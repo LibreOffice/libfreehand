@@ -38,6 +38,7 @@ public:
   void collectList(unsigned recordId, const FHList &lst);
   void collectLayer(unsigned recordId, const FHLayer &layer);
   void collectGroup(unsigned recordId, const FHGroup &group);
+  void collectCompositePath(unsigned recordId, const FHCompositePath &compositePath);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -64,6 +65,7 @@ private:
   std::map<unsigned, FHLayer> m_layers;
   std::map<unsigned, FHGroup> m_groups;
   std::stack<FHTransform> m_currentTransforms;
+  std::map<unsigned, FHCompositePath> m_compositePaths;
 };
 
 } // namespace libfreehand

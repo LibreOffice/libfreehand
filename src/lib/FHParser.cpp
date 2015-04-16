@@ -705,12 +705,15 @@ void libfreehand::FHParser::readColor6(librevenge::RVNGInputStream *input, libfr
   input->seek(length, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readCompositePath(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readCompositePath(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
+  FHCompositePath compositePath;
+  compositePath.m_graphicStyleId = _readRecordId(input);
   _readRecordId(input);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
+  compositePath.m_elementsId = _readRecordId(input);
+  if (collector)
+    collector->collectCompositePath(m_currentRecord+1, compositePath);
 }
 
 void libfreehand::FHParser::readConeFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
