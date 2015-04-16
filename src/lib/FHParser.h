@@ -125,6 +125,7 @@ private:
   void readPerspectiveGrid(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPolygonFigure(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readProcedure(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readProcessColor(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPropLst(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPSLine(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readRadialFill(librevenge::RVNGInputStream *input, FHCollector *collector);

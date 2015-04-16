@@ -82,6 +82,7 @@ PerspectiveEnvelope
 PerspectiveGrid
 PolygonFigure
 Procedure
+ProcessColor
 PropLst
 PSLine
 RadialFill

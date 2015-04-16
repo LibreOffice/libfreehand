@@ -411,6 +411,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
   case FH_PROCEDURE:
     readProcedure(input, collector);
     break;
+  case FH_PROCESSCOLOR:
+    readProcessColor(input, collector);
+    break;
   case FH_PROPLST:
     readPropLst(input, collector);
     break;
@@ -1420,6 +1423,11 @@ void libfreehand::FHParser::readPolygonFigure(librevenge::RVNGInputStream *input
 void libfreehand::FHParser::readProcedure(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(4, librevenge::RVNG_SEEK_CUR);
+}
+
+void libfreehand::FHParser::readProcessColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+{
+  input->seek(22, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
