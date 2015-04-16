@@ -10,6 +10,8 @@
 #ifndef __FHTYPES_H__
 #define __FHTYPES_H__
 
+#include <vector>
+
 namespace libfreehand
 {
 
@@ -20,6 +22,28 @@ struct FHPageInfo
   double m_maxX;
   double m_maxY;
   FHPageInfo() : m_minX(0.0), m_minY(0.0), m_maxX(0.0), m_maxY(0.0) {}
+};
+
+struct FHBlock
+{
+  unsigned m_layerListId;
+  unsigned m_layerId;
+  FHBlock() : m_layerListId(0), m_layerId(0) {}
+};
+
+struct FHTail
+{
+  unsigned m_blockId;
+  unsigned m_propLstId;
+  unsigned m_fontId;
+  FHTail() : m_blockId(0), m_propLstId(0), m_fontId(0) {}
+};
+
+struct FHList
+{
+  unsigned m_listType;
+  std::vector<unsigned> m_elements;
+  FHList() : m_listType(0), m_elements() {}
 };
 
 } // namespace libfreehand

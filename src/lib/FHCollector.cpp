@@ -27,8 +27,8 @@ void libfreehand::FHCollector::collectMName(unsigned /* recordId */, const libre
 {
 }
 
-void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned short /* graphicStyle */,
-                                           unsigned short /* layer */, const libfreehand::FHPath &path, bool /* evenOdd */)
+void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned /* graphicStyle */, unsigned /* layer */,
+                                           const libfreehand::FHPath &path, bool /* evenOdd */)
 {
   if (path.empty())
     return;
