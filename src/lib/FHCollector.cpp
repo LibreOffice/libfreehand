@@ -131,25 +131,36 @@ void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface 
   propList.insert("svg:width", m_pageInfo.m_maxX - m_pageInfo.m_minX);
   painter->startPage(propList);
 
-  unsigned defaultLayerId = m_block.second.m_defaultLayerId;
-  std::map<unsigned, FHLayer>::const_iterator layerIter = m_layers.find(defaultLayerId);
-  if (layerIter == m_layers.end())
-  {
-    FH_DEBUG_MSG(("ERROR: Could not find the referenced default layer\n"));
-    return;
-  }
+  unsigned layerListId = m_block.second.m_layerListId;
 
-  _outputLayer(layerIter->second, painter);
+  std::map<unsigned, FHList>::const_iterator listIter = m_lists.find(layerListId);
+  if (listIter != m_lists.end())
+  {
+    for (std::vector<unsigned>::const_iterator iterVec = listIter->second.m_elements.begin(); iterVec != listIter->second.m_elements.end(); ++iterVec)
+    {
+      _outputLayer(*iterVec, painter);
+    }
+  }
   painter->endPage();
   painter->endDocument();
 }
 
-void libfreehand::FHCollector::_outputLayer(const libfreehand::FHLayer &layer, ::librevenge::RVNGDrawingInterface *painter)
+void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter)
 {
   if (!painter)
     return;
 
-  unsigned layerElementsListId = layer.m_elementsId;
+  std::map<unsigned, FHLayer>::const_iterator layerIter = m_layers.find(layerId);
+  if (layerIter == m_layers.end())
+  {
+    FH_DEBUG_MSG(("ERROR: Could not find the referenced layer\n"));
+    return;
+  }
+
+  if (layerIter->second.m_visibility != 3)
+    return;
+
+  unsigned layerElementsListId = layerIter->second.m_elementsId;
   if (!layerElementsListId)
   {
     FH_DEBUG_MSG(("ERROR: Layer points to invalid element list\n"));

@@ -27,10 +27,8 @@ struct FHPageInfo
 struct FHBlock
 {
   unsigned m_layerListId;
-  unsigned m_defaultLayerId;
-  FHBlock() : m_layerListId(0), m_defaultLayerId(0) {}
-  FHBlock(unsigned layerListId, unsigned defaultLayerId)
-    : m_layerListId(layerListId), m_defaultLayerId(defaultLayerId) {}
+  FHBlock() : m_layerListId(0) {}
+  FHBlock(unsigned layerListId) : m_layerListId(layerListId) {}
 };
 
 struct FHTail
@@ -52,6 +50,7 @@ struct FHLayer
 {
   unsigned m_graphicStyleId;
   unsigned m_elementsId;
+  unsigned m_visibility;
 };
 
 } // namespace libfreehand

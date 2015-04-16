@@ -595,12 +595,11 @@ void libfreehand::FHParser::readBendFilter(librevenge::RVNGInputStream *input, l
 void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned layerListId = 0;
-  unsigned defaultLayerId = 0;
   if (m_version == 10)
   {
     readU16(input);
     for (unsigned i = 1; i < 22; ++i)
-      _readBlockInformation(input, i, layerListId, defaultLayerId);
+      _readBlockInformation(input, i, layerListId);
     input->seek(1, librevenge::RVNG_SEEK_CUR);
     _readRecordId(input);
     _readRecordId(input);
@@ -608,13 +607,13 @@ void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfre
   else if (m_version == 8)
   {
     for (unsigned i = 0; i < 12; ++i)
-      _readBlockInformation(input, i, layerListId, defaultLayerId);
+      _readBlockInformation(input, i, layerListId);
     input->seek(14, librevenge::RVNG_SEEK_CUR);
   }
   else if (m_version < 8)
   {
     for (unsigned i = 0; i < 11; ++i)
-      _readBlockInformation(input, i, layerListId, defaultLayerId);
+      _readBlockInformation(input, i, layerListId);
     input->seek(10, librevenge::RVNG_SEEK_CUR);
     _readRecordId(input);
     _readRecordId(input);
@@ -623,7 +622,7 @@ void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfre
   else
   {
     for (unsigned i = 0; i < 12; ++i)
-      _readBlockInformation(input, i, layerListId, defaultLayerId);
+      _readBlockInformation(input, i, layerListId);
     input->seek(14, librevenge::RVNG_SEEK_CUR);
     for (unsigned j = 3; j; --j)
       _readRecordId(input);
@@ -633,10 +632,10 @@ void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfre
     if (m_version < 10)
       input->seek(-6, librevenge::RVNG_SEEK_CUR);
   }
-  FH_DEBUG_MSG(("Parsing Block: layerListId 0x%x, defaultLayerId 0x%x\n", layerListId, defaultLayerId));
+  FH_DEBUG_MSG(("Parsing Block: layerListId 0x%x\n", layerListId));
   if (collector)
   {
-    FHBlock block(layerListId, defaultLayerId);
+    FHBlock block(layerListId);
     collector->collectBlock(m_currentRecord+1, block);
   }
 }
@@ -976,7 +975,8 @@ void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfre
   input->seek(10, librevenge::RVNG_SEEK_CUR);
   layer.m_elementsId = _readRecordId(input);
   _readRecordId(input);
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  layer.m_visibility = readU16(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectLayer(m_currentRecord+1, layer);
 }
@@ -1976,12 +1976,10 @@ double libfreehand::FHParser::_readCoordinate(librevenge::RVNGInputStream *input
   return value;
 }
 
-void libfreehand::FHParser::_readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId, unsigned &defaultLayerId)
+void libfreehand::FHParser::_readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId)
 {
   if (i == 5)
     layerListId = _readRecordId(input);
-  else if (i == 6)
-    defaultLayerId = _readRecordId(input);
   else
     _readRecordId(input);
 }
