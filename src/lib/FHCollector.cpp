@@ -58,11 +58,11 @@ void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, unsigned b
   m_fhTail.m_fontId = fontId;
 }
 
-void libfreehand::FHCollector::collectBlock(unsigned recordId, unsigned layerListId, unsigned defaultLayerId)
+void libfreehand::FHCollector::collectBlock(unsigned recordId, const libfreehand::FHBlock &block)
 {
   if (m_block.first && m_block.first != recordId)
     FH_DEBUG_MSG(("FHCollector::collectBlock -- WARNING: Several \"Block\" records in the file\n"));
-  m_block = std::make_pair(recordId, FHBlock(layerListId, defaultLayerId));
+  m_block = std::make_pair(recordId, block);
 }
 
 void libfreehand::FHCollector::collectList(unsigned recordId, const libfreehand::FHList &lst)

@@ -592,7 +592,7 @@ void libfreehand::FHParser::readBendFilter(librevenge::RVNGInputStream *input, l
   input->seek(10, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned layerListId = 0;
   unsigned defaultLayerId = 0;
@@ -634,6 +634,11 @@ void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfre
       input->seek(-6, librevenge::RVNG_SEEK_CUR);
   }
   FH_DEBUG_MSG(("Parsing Block: layerListId 0x%x, defaultLayerId 0x%x\n", layerListId, defaultLayerId));
+  if (collector)
+  {
+    FHBlock block(layerListId, defaultLayerId);
+    collector->collectBlock(m_currentRecord+1, block);
+  }
 }
 
 void libfreehand::FHParser::readBrush(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

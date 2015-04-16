@@ -34,7 +34,7 @@ public:
   void collectXform(unsigned recordId, double m11, double m21,
                     double m12, double m22, double m13, double m23);
   void collectFHTail(unsigned recordId, unsigned blockId, unsigned propLstId, unsigned fontId);
-  void collectBlock(unsigned recordId, unsigned layerListId, unsigned defaultLayerId);
+  void collectBlock(unsigned recordId, const FHBlock &block);
   void collectList(unsigned recordId, const FHList &lst);
   void collectLayer(unsigned recordId, const FHLayer &layer);
 
