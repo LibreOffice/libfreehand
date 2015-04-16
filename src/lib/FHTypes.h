@@ -51,7 +51,17 @@ struct FHLayer
   unsigned m_graphicStyleId;
   unsigned m_elementsId;
   unsigned m_visibility;
+  FHLayer() : m_graphicStyleId(0), m_elementsId(0), m_visibility(0) {}
 };
+
+struct FHGroup
+{
+  unsigned m_graphicStyleId;
+  unsigned m_elementsId;
+  unsigned m_xFormId;
+  FHGroup() : m_graphicStyleId(0), m_elementsId(0), m_xFormId(0) {}
+};
+
 
 } // namespace libfreehand
 

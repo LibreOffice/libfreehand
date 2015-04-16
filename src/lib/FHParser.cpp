@@ -920,13 +920,16 @@ void libfreehand::FHParser::readGraphicStyle(librevenge::RVNGInputStream *input,
     input->seek(4, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readGroup(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readGroup(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
+  FHGroup group;
+  group.m_graphicStyleId = _readRecordId(input);
   _readRecordId(input);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
+  group.m_elementsId = _readRecordId(input);
+  group.m_xFormId = _readRecordId(input);
+  if (collector)
+    collector->collectGroup(m_currentRecord+1, group);
 }
 
 void libfreehand::FHParser::readGuides(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

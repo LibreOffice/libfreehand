@@ -11,6 +11,7 @@
 #define __FHCOLLECTOR_H__
 
 #include <map>
+#include <stack>
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
 #include "FHTransform.h"
@@ -36,6 +37,7 @@ public:
   void collectBlock(unsigned recordId, const FHBlock &block);
   void collectList(unsigned recordId, const FHList &lst);
   void collectLayer(unsigned recordId, const FHLayer &layer);
+  void collectGroup(unsigned recordId, const FHGroup &group);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -48,6 +50,9 @@ private:
   void _normalizePath(FHPath &path);
   void _outputPath(const FHPath &path, ::librevenge::RVNGDrawingInterface *painter);
   void _outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputGroup(const FHGroup &group, ::librevenge::RVNGDrawingInterface *painter);
+
+  bool _findListElements(std::vector<unsigned> &elements, unsigned id);
 
   FHPageInfo m_pageInfo;
   FHTail m_fhTail;
@@ -57,6 +62,8 @@ private:
   std::map<unsigned, librevenge::RVNGString> m_strings;
   std::map<unsigned, FHList> m_lists;
   std::map<unsigned, FHLayer> m_layers;
+  std::map<unsigned, FHGroup> m_groups;
+  std::stack<FHTransform> m_currentTransforms;
 };
 
 } // namespace libfreehand
