@@ -105,7 +105,6 @@ private:
   void readMasterPageSymbolClass(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readMasterPageSymbolInstance(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readMDict(librevenge::RVNGInputStream *input, FHCollector *collector);
-  void readMList(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readMName(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readMpObject(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readMQuickDict(librevenge::RVNGInputStream *input, FHCollector *collector);

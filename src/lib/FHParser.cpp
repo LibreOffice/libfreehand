@@ -349,7 +349,7 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
     readMDict(input, collector);
     break;
   case FH_MLIST:
-    readMList(input, collector);
+    readList(input, collector);
     break;
   case FH_MNAME:
     readMName(input, collector);
@@ -558,8 +558,11 @@ void libfreehand::FHParser::readAGDSelection(librevenge::RVNGInputStream *input,
 
 void libfreehand::FHParser::readArrowPath(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  input->seek(21, librevenge::RVNG_SEEK_CUR);
-  unsigned size = readU8(input);
+  if (m_version > 8)
+    input->seek(20, librevenge::RVNG_SEEK_CUR);
+  unsigned size = readU16(input);
+  if (m_version <= 8)
+    input->seek(20, librevenge::RVNG_SEEK_CUR);
   input->seek(size*27+8, librevenge::RVNG_SEEK_CUR);
 }
 
@@ -577,17 +580,8 @@ void libfreehand::FHParser::readBasicFill(librevenge::RVNGInputStream *input, li
 
 void libfreehand::FHParser::readBasicLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  readU16(input); // clr
-  readU16(input); // dash
-  readU16(input); // larr
-  readU16(input); // rarr
-  readU16(input); // mit
-  readU16(input); // mitf
-  readU16(input); // w
-  input->seek(3, librevenge::RVNG_SEEK_CUR);
-  readU8(input); // overprint
-  readU8(input); // join
-  readU8(input); // cap
+  _readRecordId(input);
+  input->seek(18, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readBendFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -802,8 +796,11 @@ void libfreehand::FHParser::readElemList(librevenge::RVNGInputStream *input, lib
 
 void libfreehand::FHParser::readElemPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  if (m_version > 8)
+    input->seek(2, librevenge::RVNG_SEEK_CUR);
   unsigned short size = readU16(input);
+  if (m_version <= 8)
+    input->seek(2, librevenge::RVNG_SEEK_CUR);
   input->seek(6, librevenge::RVNG_SEEK_CUR);
   for (unsigned short i = 0; i < size*2; ++i)
     _readRecordId(input);
@@ -1019,17 +1016,6 @@ void libfreehand::FHParser::readLineTable(librevenge::RVNGInputStream *input, li
   }
 }
 
-void libfreehand::FHParser::readList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
-{
-  unsigned short size2 = readU16(input);
-  unsigned short size = readU16(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
-  for (unsigned short i = 0; i < size; ++i)
-    _readRecordId(input);
-  if (m_version < 9)
-    input->seek((size2-size)*2, librevenge::RVNG_SEEK_CUR);
-}
-
 void libfreehand::FHParser::readMasterPageDocMan(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(4, librevenge::RVNG_SEEK_CUR);
@@ -1078,15 +1064,15 @@ void libfreehand::FHParser::readMDict(librevenge::RVNGInputStream *input, libfre
   }
 }
 
-void libfreehand::FHParser::readMList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  unsigned short flag = readU16(input);
+  unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
   for (unsigned short i = 0; i < size; ++i)
     _readRecordId(input);
   if (m_version < 9)
-    input->seek((flag-size)*2, librevenge::RVNG_SEEK_CUR);
+    input->seek(2*(size2-size),librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readMName(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -1574,9 +1560,13 @@ void libfreehand::FHParser::readSpotColor6(librevenge::RVNGInputStream *input, l
 
 void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  if (m_version > 8)
+    input->seek(2, librevenge::RVNG_SEEK_CUR);
   unsigned short size = readU16(input);
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (m_version <= 8)
+    input->seek(2, librevenge::RVNG_SEEK_CUR);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input);
   _readRecordId(input);
   for (unsigned short i = 0; i < size*2; ++i)
     _readRecordId(input);
@@ -1790,14 +1780,19 @@ void libfreehand::FHParser::readUString(librevenge::RVNGInputStream *input, libf
   unsigned short character = 0;
   if (length)
   {
-    for (unsigned short i = 0; i < length && 0 != (character = readU16(input)); i++)
+    for (unsigned short i = 0; i < length; i++)
+    {
+      character = readU16(input);
+      if (!character)
+        break;
       ustr.push_back(character);
+    }
   }
 
   librevenge::RVNGString str;
   _appendUTF16(str, ustr);
 
-  FH_DEBUG_MSG(("FHParser::readUString %s\n", str.cstr()));
+  FH_DEBUG_MSG(("FHParser::readUString %i (%s)\n", length, str.cstr()));
   input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
   if (collector)
     collector->collectUString(m_currentRecord+1, str);
