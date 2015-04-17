@@ -862,11 +862,21 @@ void libfreehand::FHParser::readFHDocHeader(librevenge::RVNGInputStream *input, 
 
 void libfreehand::FHParser::readFHTail(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  unsigned blockId = _readRecordId(input);
-  unsigned propLstId = _readRecordId(input);
-  unsigned fontId = _readRecordId(input);
+  FH_DEBUG_MSG(("Reading FHTail fake record\n"));
+  FHTail fhTail;
+  long startPosition = input->tell();
+  fhTail.m_blockId = _readRecordId(input);
+  fhTail.m_propLstId = _readRecordId(input);
+  fhTail.m_fontId = _readRecordId(input);
+  input->seek(0x1a+startPosition, librevenge::RVNG_SEEK_SET);
+  fhTail.m_pageInfo.m_maxX = _readCoordinate(input) / 72.0;
+  fhTail.m_pageInfo.m_maxY = _readCoordinate(input) / 72.0;
+  input->seek(0x32+startPosition, librevenge::RVNG_SEEK_SET);
+  fhTail.m_pageInfo.m_minX = fhTail.m_pageInfo.m_maxX - _readCoordinate(input) / 72.0;
+  fhTail.m_pageInfo.m_minY = fhTail.m_pageInfo.m_maxY - _readCoordinate(input) / 72.0;
+
   if (collector)
-    collector->collectFHTail(m_currentRecord+1, blockId, propLstId, fontId);
+    collector->collectFHTail(m_currentRecord+1, fhTail);
 }
 
 void libfreehand::FHParser::readFigure(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1474,11 +1484,13 @@ void libfreehand::FHParser::readProcessColor(librevenge::RVNGInputStream *input,
 
 void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   for (unsigned short i = 0; i < size*2; ++i)
     _readRecordId(input);
+  if (m_version < 9)
+    input->seek((size2 - size)*4, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readPSLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

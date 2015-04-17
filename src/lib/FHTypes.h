@@ -36,7 +36,8 @@ struct FHTail
   unsigned m_blockId;
   unsigned m_propLstId;
   unsigned m_fontId;
-  FHTail() : m_blockId(0), m_propLstId(0), m_fontId(0) {}
+  FHPageInfo m_pageInfo;
+  FHTail() : m_blockId(0), m_propLstId(0), m_fontId(0), m_pageInfo() {}
 };
 
 struct FHList

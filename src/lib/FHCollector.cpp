@@ -11,9 +11,12 @@
 #include "FHCollector.h"
 #include "libfreehand_utils.h"
 
+#define FH_UNINITIALIZED(pI) \
+  FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
+
 libfreehand::FHCollector::FHCollector() :
-  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(),
-  m_layers(), m_groups(), m_currentTransforms(), m_compositePaths()
+  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(),
+  m_lists(), m_layers(), m_groups(), m_currentTransforms(), m_compositePaths()
 {
 }
 
@@ -46,11 +49,9 @@ void libfreehand::FHCollector::collectXform(unsigned recordId,
   m_transforms[recordId] = FHTransform(m11, m21, m12, m22, m13, m23);
 }
 
-void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, unsigned blockId, unsigned propLstId, unsigned fontId)
+void libfreehand::FHCollector::collectFHTail(unsigned /* recordId */, const FHTail &fhTail)
 {
-  m_fhTail.m_blockId = blockId;
-  m_fhTail.m_propLstId = propLstId;
-  m_fhTail.m_fontId = fontId;
+  m_fhTail = fhTail;
 }
 
 void libfreehand::FHCollector::collectBlock(unsigned recordId, const libfreehand::FHBlock &block)
@@ -188,6 +189,9 @@ void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface 
     FH_DEBUG_MSG(("ERROR: Block record is absent from this file\n"));
     return;
   }
+
+  if (FH_UNINITIALIZED(m_pageInfo))
+    m_pageInfo = m_fhTail.m_pageInfo;
 
   painter->startDocument(librevenge::RVNGPropertyList());
   librevenge::RVNGPropertyList propList;
