@@ -1874,15 +1874,18 @@ void libfreehand::FHParser::readTransformFilter(librevenge::RVNGInputStream *inp
   input->seek(39, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readTString(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTString(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
   input->seek(16, librevenge::RVNG_SEEK_CUR);
+  std::vector<unsigned> elements;
   for (unsigned short i = 0; i < size; ++i)
-    _readRecordId(input);
+    elements.push_back(_readRecordId(input));
   if (m_version < 9)
     input->seek((size2-size)*2, librevenge::RVNG_SEEK_CUR);
+  if (collector && !elements.empty())
+    collector->collectTString(m_currentRecord+1, elements);
 }
 
 void libfreehand::FHParser::readUString(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

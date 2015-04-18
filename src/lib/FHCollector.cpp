@@ -83,6 +83,11 @@ void libfreehand::FHCollector::collectCompositePath(unsigned recordId, const lib
   m_compositePaths[recordId] = compositePath;
 }
 
+void libfreehand::FHCollector::collectTString(unsigned recordId, const std::vector<unsigned> &elements)
+{
+  m_tStrings[recordId] = elements;
+}
+
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
 {
   FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_minX, m_pageInfo.m_maxY);
