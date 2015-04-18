@@ -89,9 +89,11 @@ void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
   path.transform(trafo);
 }
 
-void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::librevenge::RVNGDrawingInterface *painter)
+void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::librevenge::RVNGDrawingInterface *painter)
 {
-  if (path.empty())
+  if (!painter)
+    return;
+  if (!path || path->empty())
     return;
 
   librevenge::RVNGPropertyList propList;
@@ -101,7 +103,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::li
   propList.insert("svg:stroke-color", "#000000");
   painter->setStyle(propList);
 
-  FHPath fhPath(path);
+  FHPath fhPath(*path);
   unsigned short xform = fhPath.getXFormId();
 
   if (xform)
@@ -123,14 +125,16 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath &path, ::li
   painter->drawPath(pList);
 }
 
-void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup &group, ::librevenge::RVNGDrawingInterface *painter)
+void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, ::librevenge::RVNGDrawingInterface *painter)
 {
   if (!painter)
     return;
+  if (!group)
+    return;
 
-  if (group.m_xFormId)
+  if (group->m_xFormId)
   {
-    std::map<unsigned, FHTransform>::const_iterator iterTransform = m_transforms.find(group.m_xFormId);
+    std::map<unsigned, FHTransform>::const_iterator iterTransform = m_transforms.find(group->m_xFormId);
     if (iterTransform != m_transforms.end())
       m_currentTransforms.push(iterTransform->second);
     else
@@ -140,7 +144,7 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup &group, :
     m_currentTransforms.push(libfreehand::FHTransform());
 
   std::vector<unsigned> elements;
-  if (!_findListElements(elements, group.m_elementsId))
+  if (!_findListElements(elements, group->m_elementsId))
   {
     FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
     return;
@@ -151,21 +155,9 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup &group, :
     painter->openGroup(::librevenge::RVNGPropertyList());
     for (std::vector<unsigned>::const_iterator iterVec = elements.begin(); iterVec != elements.end(); ++iterVec)
     {
-      std::map<unsigned, FHGroup>::const_iterator iterGroup = m_groups.find(*iterVec);
-      if (iterGroup != m_groups.end())
-        _outputGroup(iterGroup->second, painter);
-      else
-      {
-        std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(*iterVec);
-        if (iter != m_paths.end())
-          _outputPath(iter->second, painter);
-        else
-        {
-          std::map<unsigned, FHCompositePath>::const_iterator iterCompo = m_compositePaths.find(*iterVec);
-          if (iterCompo != m_compositePaths.end())
-            _outputCompositePath(iterCompo->second, painter);
-        }
-      }
+      _outputGroup(_findGroup(*iterVec), painter);
+      _outputPath(_findPath(*iterVec), painter);
+      _outputCompositePath(_findCompositePath(*iterVec), painter);
     }
     painter->closeGroup();
   }
@@ -244,38 +236,24 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNG
 
   for (std::vector<unsigned>::const_iterator iterVec = elements.begin(); iterVec != elements.end(); ++iterVec)
   {
-    std::map<unsigned, FHGroup>::const_iterator iterGroup = m_groups.find(*iterVec);
-    if (iterGroup != m_groups.end())
-      _outputGroup(iterGroup->second, painter);
-    else
-    {
-      std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(*iterVec);
-      if (iter != m_paths.end())
-        _outputPath(iter->second, painter);
-      else
-      {
-        std::map<unsigned, FHCompositePath>::const_iterator iterCompo = m_compositePaths.find(*iterVec);
-        if (iterCompo != m_compositePaths.end())
-          _outputCompositePath(iterCompo->second, painter);
-      }
-    }
+    _outputGroup(_findGroup(*iterVec), painter);
+    _outputPath(_findPath(*iterVec), painter);
+    _outputCompositePath(_findCompositePath(*iterVec), painter);
   }
 }
 
-void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHCompositePath &compositePath, ::librevenge::RVNGDrawingInterface *painter)
+void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter)
 {
   if (!painter)
     return;
+  if (!compositePath)
+    return;
 
   std::vector<unsigned> elements;
-  if (_findListElements(elements, compositePath.m_elementsId))
+  if (_findListElements(elements, compositePath->m_elementsId))
   {
     for (std::vector<unsigned>::const_iterator iter = elements.begin(); iter != elements.end(); ++iter)
-    {
-      std::map<unsigned, FHPath>::const_iterator iterPath = m_paths.find(*iter);
-      if (iterPath != m_paths.end())
-        _outputPath(iterPath->second, painter);
-    }
+      _outputPath(_findPath(*iter), painter);
   }
 }
 
@@ -288,6 +266,30 @@ bool libfreehand::FHCollector::_findListElements(std::vector<unsigned> &elements
   return true;
 }
 
+
+const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
+{
+  std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(id);
+  if (iter != m_paths.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHGroup *libfreehand::FHCollector::_findGroup(unsigned id)
+{
+  std::map<unsigned, FHGroup>::const_iterator iter = m_groups.find(id);
+  if (iter != m_groups.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHCompositePath *libfreehand::FHCollector::_findCompositePath(unsigned id)
+{
+  std::map<unsigned, FHCompositePath>::const_iterator iter = m_compositePaths.find(id);
+  if (iter != m_compositePaths.end())
+    return &(iter->second);
+  return 0;
+}
 
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

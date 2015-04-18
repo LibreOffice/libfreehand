@@ -49,12 +49,16 @@ private:
   FHCollector &operator=(const FHCollector &);
 
   void _normalizePath(FHPath &path);
-  void _outputPath(const FHPath &path, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputPath(const FHPath *path, ::librevenge::RVNGDrawingInterface *painter);
   void _outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputGroup(const FHGroup &group, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputCompositePath(const FHCompositePath &compositePath, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputCompositePath(const FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
+
+  const FHPath *_findPath(unsigned id);
+  const FHGroup *_findGroup(unsigned id);
+  const FHCompositePath *_findCompositePath(unsigned id);
 
   FHPageInfo m_pageInfo;
   FHTail m_fhTail;
