@@ -32,12 +32,12 @@ static int getTokenId(const char *name)
     return FH_TOKEN_INVALID;
 }
 
-static void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned short> characters)
+static void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned short> &characters)
 {
   if (characters.empty())
     return;
 
-  unsigned short *s = &characters[0];
+  const unsigned short *s = &characters[0];
   int j = 0;
   int length = characters.size();
 
@@ -1360,7 +1360,7 @@ void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfree
     path.appendClosePath();
   }
   path.setXFormId(xform);
-  if (collector)
+  if (collector && !path.empty())
     collector->collectPath(m_currentRecord+1, graphicStyle, layer, path, true);
 }
 
@@ -1466,7 +1466,7 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
     fhPath.appendClosePath();
   }
 
-  if (collector)
+  if (collector && !fhPath.empty())
     collector->collectPath(m_currentRecord+1, graphicStyle, 0, fhPath, evenOdd);
 }
 
@@ -1540,7 +1540,7 @@ void libfreehand::FHParser::readPolygonFigure(librevenge::RVNGInputStream *input
   path.appendClosePath();
   input->seek(8, librevenge::RVNG_SEEK_CUR);
   path.setXFormId(xform);
-  if (collector)
+  if (collector && !path.empty())
     collector->collectPath(m_currentRecord+1, graphicStyle, layer, path, evenodd);
 }
 
@@ -1669,7 +1669,7 @@ void libfreehand::FHParser::readRectangle(librevenge::RVNGInputStream *input, li
   path.appendClosePath();
 
   path.setXFormId(xform);
-  if (collector)
+  if (collector && !path.empty())
     collector->collectPath(m_currentRecord+1, graphicStyle, layer, path, true);
 }
 
@@ -1783,11 +1783,21 @@ void libfreehand::FHParser::readTEffect(librevenge::RVNGInputStream *input, libf
   }
 }
 
-void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short size = readU16(input);
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
-  input->seek(size*4, librevenge::RVNG_SEEK_CUR);
+  unsigned short length = readU16(input);
+  std::vector<unsigned short> characters;
+  for (unsigned i = 0; i < length; ++i)
+    characters.push_back(readU16(input));
+  input->seek(size*4 - length*2, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectTextBlok(m_currentRecord+1, characters);
+#ifdef DEBUG
+  librevenge::RVNGString text;
+  _appendUTF16(text, characters);
+  FH_DEBUG_MSG(("FHParser::readTextBlock %s\n", text.cstr()));
+#endif
 }
 
 void libfreehand::FHParser::readTextColumn(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

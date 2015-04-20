@@ -16,7 +16,7 @@
 
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(), m_layers(),
-  m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs()
+  m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks()
 {
 }
 
@@ -37,9 +37,6 @@ void libfreehand::FHCollector::collectString(unsigned recordId, const librevenge
 void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned /* graphicStyle */, unsigned /* layer */,
                                            const libfreehand::FHPath &path, bool /* evenOdd */)
 {
-  if (path.empty())
-    return;
-
   m_paths[recordId] = path;
 }
 
@@ -96,6 +93,11 @@ void libfreehand::FHCollector::collectAGDFont(unsigned recordId, const FHAGDFont
 void libfreehand::FHCollector::collectParagraph(unsigned recordId, const FHParagraph &paragraph)
 {
   m_paragraphs[recordId] = paragraph;
+}
+
+void libfreehand::FHCollector::collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters)
+{
+  m_textBloks[recordId]  = characters;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
