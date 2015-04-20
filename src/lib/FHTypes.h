@@ -70,6 +70,21 @@ struct FHCompositePath
   FHCompositePath() : m_graphicStyleId(0), m_elementsId(0) {}
 };
 
+struct FHParagraph
+{
+  unsigned m_paragraphStyleId;
+  unsigned m_textBlokId;
+  std::vector<std::pair<unsigned, unsigned> > m_characterStyleIds;
+  FHParagraph() : m_paragraphStyleId(0), m_textBlokId(0), m_characterStyleIds() {}
+};
+
+struct FHAGDFont
+{
+  unsigned m_fontNameId;
+  unsigned m_fontStyle;
+  double m_fontSize;
+  FHAGDFont() : m_fontNameId(0), m_fontStyle(0), m_fontSize(12.0) {}
+};
 
 } // namespace libfreehand
 

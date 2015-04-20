@@ -15,8 +15,8 @@
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
 
 libfreehand::FHCollector::FHCollector() :
-  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(),
-  m_lists(), m_layers(), m_groups(), m_currentTransforms(), m_compositePaths()
+  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(), m_layers(),
+  m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts()
 {
 }
 
@@ -86,6 +86,11 @@ void libfreehand::FHCollector::collectCompositePath(unsigned recordId, const lib
 void libfreehand::FHCollector::collectTString(unsigned recordId, const std::vector<unsigned> &elements)
 {
   m_tStrings[recordId] = elements;
+}
+
+void libfreehand::FHCollector::collectAGDFont(unsigned recordId, const FHAGDFont &font)
+{
+  m_fonts[recordId] = font;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)

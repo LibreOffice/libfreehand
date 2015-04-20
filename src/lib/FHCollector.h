@@ -40,6 +40,7 @@ public:
   void collectGroup(unsigned recordId, const FHGroup &group);
   void collectCompositePath(unsigned recordId, const FHCompositePath &compositePath);
   void collectTString(unsigned recordId, const std::vector<unsigned> &elements);
+  void collectAGDFont(unsigned recordId, const FHAGDFont &font);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -73,6 +74,7 @@ private:
   std::stack<FHTransform> m_currentTransforms;
   std::map<unsigned, FHCompositePath> m_compositePaths;
   std::map<unsigned, std::vector<unsigned> > m_tStrings;
+  std::map<unsigned, FHAGDFont> m_fonts;
 };
 
 } // namespace libfreehand

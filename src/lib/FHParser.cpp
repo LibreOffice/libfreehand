@@ -590,20 +590,36 @@ void libfreehand::FHParser::parseDocument(librevenge::RVNGInputStream *input, li
   collector->collectPageInfo(m_pageInfo);
 }
 
-void libfreehand::FHParser::readAGDFont(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readAGDFont(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short num = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FHAGDFont font;
   for (unsigned short i = 0; i < num; ++i)
   {
-    unsigned short key = readU16(input);
-    input->seek(2, librevenge::RVNG_SEEK_CUR);
-    if (key == 2)
-      _readRecordId(input);
-    else
-      input->seek(4, librevenge::RVNG_SEEK_CUR);
+    unsigned key = readU32(input);
+    switch (key)
+    {
+    case FH_AGD_FONT_NAME:
+      font.m_fontNameId = _readRecordId(input);
+      break;
+    case FH_AGD_STYLE:
+      font.m_fontStyle = readU32(input);
+      break;
+    case FH_AGD_SIZE:
+      font.m_fontSize = _readCoordinate(input);
+      break;
+    default:
+      if ((key & 0x20000) == 0x20000)
+        _readRecordId(input);
+      else
+        input->seek(4, librevenge::RVNG_SEEK_CUR);
+      break;
+    }
   }
+  if (collector)
+    collector->collectAGDFont(m_currentRecord+1, font);
 }
 
 void libfreehand::FHParser::readAGDSelection(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
