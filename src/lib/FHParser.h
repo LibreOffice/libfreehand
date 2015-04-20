@@ -20,7 +20,7 @@
 #define FH_PAGE_WIDTH 0x1c34
 #define FH_PAGE_HEIGHT 0x1c3c
 
-#define FH_AGD_FONT_NAME 0x20e11
+#define FH_AGD_FONT_NAME 0x0e11
 #define FH_AGD_STYLE 0x0e1b
 #define FH_AGD_SIZE 0x0e24
 

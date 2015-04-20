@@ -595,7 +595,7 @@ void libfreehand::FHParser::readAGDFont(librevenge::RVNGInputStream *input, libf
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned key = readU32(input);
-    switch (key)
+    switch (key & 0xffff)
     {
     case FH_AGD_FONT_NAME:
       font.m_fontNameId = _readRecordId(input);
@@ -607,7 +607,7 @@ void libfreehand::FHParser::readAGDFont(librevenge::RVNGInputStream *input, libf
       font.m_fontSize = _readCoordinate(input);
       break;
     default:
-      if ((key & 0x20000) == 0x20000)
+      if ((key >> 4) == 2)
         _readRecordId(input);
       else
         input->seek(4, librevenge::RVNG_SEEK_CUR);
