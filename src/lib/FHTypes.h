@@ -86,6 +86,15 @@ struct FHAGDFont
   FHAGDFont() : m_fontNameId(0), m_fontStyle(0), m_fontSize(12.0) {}
 };
 
+struct FHTextObject
+{
+  unsigned m_graphicStyleId;
+  unsigned m_xFormId;
+  unsigned m_tStringId;
+  unsigned m_vmpObjId;
+  FHTextObject() : m_graphicStyleId(0), m_xFormId(0), m_tStringId(0), m_vmpObjId(0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

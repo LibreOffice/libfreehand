@@ -10,6 +10,7 @@
 #ifndef __LIBFREEHAND_UTILS_H__
 #define __LIBFREEHAND_UTILS_H__
 
+#include <vector>
 #include <stdio.h>
 #include <string>
 #include <math.h>
@@ -83,6 +84,9 @@ uint32_t readU32(librevenge::RVNGInputStream *input);
 int8_t readS8(librevenge::RVNGInputStream *input);
 int16_t readS16(librevenge::RVNGInputStream *input);
 int32_t readS32(librevenge::RVNGInputStream *input);
+
+void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned short> &characters);
+void _appendMacRoman(librevenge::RVNGString &text, unsigned char character);
 
 class EndOfStreamException
 {

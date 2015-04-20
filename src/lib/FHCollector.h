@@ -43,6 +43,7 @@ public:
   void collectAGDFont(unsigned recordId, const FHAGDFont &font);
   void collectParagraph(unsigned recordId, const FHParagraph &paragraph);
   void collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters);
+  void collectTextObject(unsigned recordId, const FHTextObject &textObject);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -79,6 +80,7 @@ private:
   std::map<unsigned, FHAGDFont> m_fonts;
   std::map<unsigned, FHParagraph> m_paragraphs;
   std::map<unsigned, std::vector<unsigned short> > m_textBloks;
+  std::map<unsigned, FHTextObject> m_textObjects;
 };
 
 } // namespace libfreehand
