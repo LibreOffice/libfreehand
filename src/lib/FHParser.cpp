@@ -1364,18 +1364,24 @@ void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfree
     collector->collectPath(m_currentRecord+1, graphicStyle, layer, path, true);
 }
 
-void libfreehand::FHParser::readParagraph(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readParagraph(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   input->seek(2, librevenge::RVNG_SEEK_CUR);
   unsigned short size = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
+  FHParagraph paragraph;
+  paragraph.m_paraStyleId = _readRecordId(input);
+  paragraph.m_textBlokId = _readRecordId(input);
   for (unsigned short i = 0; i < size; ++i)
   {
-    _readRecordId(input);
-    input->seek(22, librevenge::RVNG_SEEK_CUR);
+    std::pair<unsigned, unsigned> charStyleId;
+    charStyleId.first = readU16(input);
+    charStyleId.second = _readRecordId(input);
+    paragraph.m_charStyleIds.push_back(charStyleId);
+    input->seek(20, librevenge::RVNG_SEEK_CUR);
   }
+  if (collector)
+    collector->collectParagraph(m_currentRecord+1, paragraph);
 }
 
 void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

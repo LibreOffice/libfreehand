@@ -72,10 +72,10 @@ struct FHCompositePath
 
 struct FHParagraph
 {
-  unsigned m_paragraphStyleId;
+  unsigned m_paraStyleId;
   unsigned m_textBlokId;
-  std::vector<std::pair<unsigned, unsigned> > m_characterStyleIds;
-  FHParagraph() : m_paragraphStyleId(0), m_textBlokId(0), m_characterStyleIds() {}
+  std::vector<std::pair<unsigned, unsigned> > m_charStyleIds;
+  FHParagraph() : m_paraStyleId(0), m_textBlokId(0), m_charStyleIds() {}
 };
 
 struct FHAGDFont

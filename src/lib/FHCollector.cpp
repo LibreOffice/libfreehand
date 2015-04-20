@@ -16,7 +16,7 @@
 
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(), m_layers(),
-  m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts()
+  m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs()
 {
 }
 
@@ -91,6 +91,11 @@ void libfreehand::FHCollector::collectTString(unsigned recordId, const std::vect
 void libfreehand::FHCollector::collectAGDFont(unsigned recordId, const FHAGDFont &font)
 {
   m_fonts[recordId] = font;
+}
+
+void libfreehand::FHCollector::collectParagraph(unsigned recordId, const FHParagraph &paragraph)
+{
+  m_paragraphs[recordId] = paragraph;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
