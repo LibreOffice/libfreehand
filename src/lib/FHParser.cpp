@@ -525,13 +525,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
     readTextBlok(input, collector);
     break;
   case FH_TEXTCOLUMN:
-    readTextColumn(input, collector);
-    break;
   case FH_TEXTINPATH:
-    readTextInPath(input, collector);
-    break;
   case FH_TFONPATH:
-    readTFOnPath(input, collector);
+    readTextObject(input, collector);
     break;
   case FH_TILEFILL:
     readTileFill(input, collector);
@@ -1800,64 +1796,7 @@ void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, lib
 #endif
 }
 
-void libfreehand::FHParser::readTextColumn(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
-{
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
-  unsigned short num = readU16(input);
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-
-  for (unsigned short i = 0; i < num; ++i)
-  {
-    unsigned short key = readU16(input);
-    if (key == 2)
-    {
-      input->seek(2, librevenge::RVNG_SEEK_CUR);
-      _readRecordId(input);
-    }
-    else
-      input->seek(6, librevenge::RVNG_SEEK_CUR);
-  }
-}
-
-void libfreehand::FHParser::readTextInPath(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
-{
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
-  unsigned short num = readU16(input);
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-  unsigned flag = readU32(input);
-  if (flag == 0xffffffff)
-    input->seek(-2, librevenge::RVNG_SEEK_CUR);
-  else
-    input->seek(-4, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-
-  for (unsigned short i = 0; i < num; ++i)
-  {
-    unsigned short key = readU16(input);
-    if (key == 2)
-    {
-      input->seek(2, librevenge::RVNG_SEEK_CUR);
-      _readRecordId(input);
-    }
-    else
-      input->seek(6, librevenge::RVNG_SEEK_CUR);
-  }
-}
-
-void libfreehand::FHParser::readTFOnPath(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short num = readU16(input);
