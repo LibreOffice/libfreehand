@@ -291,10 +291,13 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
     return;
   double xmid = textObject->m_startX + textObject->m_width / 2.0;
   double ymid = textObject->m_startY + textObject->m_height / 2.0;
-  double x0 = 0.0;
-  double y0 = 0.0;
-  double x1 = 1.0;
-  double y1 = 0.0;
+
+  double xa = textObject->m_startX;
+  double ya = textObject->m_startY;
+  double xb = textObject->m_startX + textObject->m_width;
+  double yb = textObject->m_startY + textObject->m_height;
+  double xc = xa;
+  double yc = yb;
   unsigned xFormId = textObject->m_xFormId;
   if (xFormId)
   {
@@ -302,21 +305,24 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
     if (trafo)
     {
       trafo->applyToPoint(xmid, ymid);
-      trafo->applyToPoint(x0, y0);
-      trafo->applyToPoint(x1, y1);
+      trafo->applyToPoint(xa, ya);
+      trafo->applyToPoint(xb, yb);
+      trafo->applyToPoint(xc, yc);
     }
   }
   _normalizePoint(xmid, ymid);
-  _normalizePoint(x0, y0);
-  _normalizePoint(x1, y1);
-  double rotation = atan2(y1-y0, x1-x0);
-  printf("Fridrich %f\n", rotation);
+  _normalizePoint(xa, ya);
+  _normalizePoint(xb, yb);
+  _normalizePoint(xc, yc);
+  double rotation = atan2(yb-yc, xb-xc);
+  double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
+  double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
 
   ::librevenge::RVNGPropertyList textObjectProps;
   textObjectProps.insert("svg:x", xmid - textObject->m_width / 2.0);
-  textObjectProps.insert("svg:y", ymid - textObject->m_height / 2.0);
-  textObjectProps.insert("svg:height", textObject->m_height);
-  textObjectProps.insert("svg:width", textObject->m_width);
+  textObjectProps.insert("svg:y", ymid + textObject->m_height / 2.0);
+  textObjectProps.insert("svg:height", height);
+  textObjectProps.insert("svg:width", width);
   textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
   painter->startTextObject(textObjectProps);
 
