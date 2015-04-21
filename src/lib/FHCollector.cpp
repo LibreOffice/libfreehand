@@ -307,6 +307,13 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
       trafo->applyToPoint(xc, yc);
     }
   }
+  std::stack<FHTransform> groupTransforms = m_currentTransforms;
+  if (!m_currentTransforms.empty())
+  {
+    m_currentTransforms.top().applyToPoint(xa, ya);
+    m_currentTransforms.top().applyToPoint(xb, yb);
+    m_currentTransforms.top().applyToPoint(xc, yc);
+  }
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
