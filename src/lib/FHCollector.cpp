@@ -321,7 +321,8 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   textObjectProps.insert("svg:y", ymid + textObject->m_height / 2.0);
   textObjectProps.insert("svg:height", height);
   textObjectProps.insert("svg:width", width);
-  textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
+  if (!FH_ALMOST_ZERO(rotation))
+    textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
   painter->startTextObject(textObjectProps);
 
   const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
