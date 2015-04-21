@@ -143,11 +143,13 @@ AS_CASE([$host],
 		LIBFREEHAND_WIN32_RESOURCE=libfreehand-win32res.lo
 		FH2RAW_WIN32_RESOURCE=fh2raw-win32res.lo
 		FH2SVG_WIN32_RESOURCE=fh2svg-win32res.lo
+		FH2TEXT_WIN32_RESOURCE=fh2text-win32res.lo
 	], [
 		native_win32=no
 		LIBFREEHAND_WIN32_RESOURCE=
 		FH2RAW_WIN32_RESOURCE=
 		FH2SVG_WIN32_RESOURCE=
+		FH2TEXT_WIN32_RESOURCE=
 	]
 )
 AC_MSG_RESULT([$native_win32])
@@ -155,6 +157,7 @@ AM_CONDITIONAL(OS_WIN32, [test "x$native_win32" = "xyes"])
 AC_SUBST(LIBFREEHAND_WIN32_RESOURCE)
 AC_SUBST(FH2RAW_WIN32_RESOURCE)
 AC_SUBST(FH2SVG_WIN32_RESOURCE)
+AC_SUBST(FH2TEXT_WIN32_RESOURCE)
 
 AC_MSG_CHECKING([for Win32 platform in general])
 AS_CASE([$host],
@@ -302,6 +305,8 @@ src/conv/raw/Makefile
 src/conv/raw/fh2raw.rc
 src/conv/svg/Makefile
 src/conv/svg/fh2svg.rc
+src/conv/text/Makefile
+src/conv/text/fh2text.rc
 src/lib/Makefile
 src/lib/libfreehand.rc
 inc/Makefile

@@ -20,7 +20,7 @@ namespace
 
 int printUsage()
 {
-  printf("Usage: vsd2svg [OPTION] <FreeHand Document>\n");
+  printf("Usage: fh2svg [OPTION] <FreeHand Document>\n");
   printf("\n");
   printf("Options:\n");
   printf("--help                Shows this help message\n");

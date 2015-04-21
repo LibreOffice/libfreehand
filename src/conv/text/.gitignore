@@ -1,0 +1,11 @@
+.deps
+.libs
+*.lo
+*.la
+Makefile
+Makefile.in
+fh2text
+fh2text.exe
+fh2text
+fh2text.exe
+*.rc
