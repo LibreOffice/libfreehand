@@ -11,6 +11,10 @@
 #include "FHCollector.h"
 #include "libfreehand_utils.h"
 
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 #define FH_UNINITIALIZED(pI) \
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
 
@@ -287,20 +291,33 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
     return;
   double xmid = textObject->m_startX + textObject->m_width / 2.0;
   double ymid = textObject->m_startY + textObject->m_height / 2.0;
+  double x0 = 0.0;
+  double y0 = 0.0;
+  double x1 = 1.0;
+  double y1 = 0.0;
   unsigned xFormId = textObject->m_xFormId;
   if (xFormId)
   {
     const FHTransform *trafo = _findTransform(xFormId);
     if (trafo)
+    {
       trafo->applyToPoint(xmid, ymid);
+      trafo->applyToPoint(x0, y0);
+      trafo->applyToPoint(x1, y1);
+    }
   }
   _normalizePoint(xmid, ymid);
+  _normalizePoint(x0, y0);
+  _normalizePoint(x1, y1);
+  double rotation = atan2(y1-y0, x1-x0);
+  printf("Fridrich %f\n", rotation);
 
   ::librevenge::RVNGPropertyList textObjectProps;
   textObjectProps.insert("svg:x", xmid - textObject->m_width / 2.0);
   textObjectProps.insert("svg:y", ymid - textObject->m_height / 2.0);
   textObjectProps.insert("svg:height", textObject->m_height);
   textObjectProps.insert("svg:width", textObject->m_width);
+  textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
   painter->startTextObject(textObjectProps);
 
   const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
