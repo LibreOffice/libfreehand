@@ -289,8 +289,6 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
 {
   if (!painter || !textObject)
     return;
-  double xmid = textObject->m_startX + textObject->m_width / 2.0;
-  double ymid = textObject->m_startY + textObject->m_height / 2.0;
 
   double xa = textObject->m_startX;
   double ya = textObject->m_startY;
@@ -304,19 +302,19 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
     const FHTransform *trafo = _findTransform(xFormId);
     if (trafo)
     {
-      trafo->applyToPoint(xmid, ymid);
       trafo->applyToPoint(xa, ya);
       trafo->applyToPoint(xb, yb);
       trafo->applyToPoint(xc, yc);
     }
   }
-  _normalizePoint(xmid, ymid);
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
   double rotation = atan2(yb-yc, xb-xc);
   double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
   double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
+  double xmid = (xa + xb) / 2.0;
+  double ymid = (ya + yb) / 2.0;
 
   ::librevenge::RVNGPropertyList textObjectProps;
   textObjectProps.insert("svg:x", xmid - textObject->m_width / 2.0);
