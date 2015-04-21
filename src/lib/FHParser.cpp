@@ -1741,6 +1741,18 @@ void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, l
     unsigned key = readU32(input);
     switch (key & 0xffff)
     {
+    case FH_DIMENTSION_HEIGHT:
+      textObject.m_height = _readCoordinate(input) / 72.0;
+      break;
+    case FH_DIMENSION_LEFT:
+      textObject.m_startX = _readCoordinate(input) / 72.0;
+      break;
+    case FH_DIMENSION_TOP:
+      textObject.m_startY = _readCoordinate(input) / 72.0;
+      break;
+    case FH_DIMENSION_WIDTH:
+      textObject.m_width = _readCoordinate(input) / 72.0;
+      break;
     default:
       if ((key >> 16) == 2)
         _readRecordId(input);

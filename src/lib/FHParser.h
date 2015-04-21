@@ -24,6 +24,22 @@
 #define FH_AGD_STYLE 0x0e1b
 #define FH_AGD_SIZE 0x0e24
 
+#define FH_DISLAY_BODER 0x1302
+#define FH_INSET_BOTTOM 0x130c
+#define FH_DIMENTSION_HEIGHT 0x131c
+#define FH_DIMENSION_LEFT 0x134c
+#define FH_INSET_LEFT 0x1354
+#define FH_INSET_RIGHT 0x13ac
+#define FH_DIMENSION_TOP 0x13dc
+#define FH_INSET_TOP 0x13e4
+#define FH_DIMENSION_WIDTH 0x140c
+#define FH_LINETABLE_ID 0x1369
+#define FH_EFFECT_NAME 0x1a91
+#define FH_UNDERLINE_COLOR_ID 0x1ab9
+#define FH_UNDERLINE_DASH_ID 0x1ac1
+#define FH_UNDERLINE_POSITION 0x1acc
+#define FH_STROKE_WIDTH 0x1ad4
+
 namespace libfreehand
 {
 

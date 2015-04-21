@@ -54,16 +54,27 @@ private:
   FHCollector &operator=(const FHCollector &);
 
   void _normalizePath(FHPath &path);
+  void _normalizePoint(double &x, double &y);
   void _outputPath(const FHPath *path, ::librevenge::RVNGDrawingInterface *painter);
   void _outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
   void _outputCompositePath(const FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputTextObject(const FHTextObject *textObject, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
+                      unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
+  void _appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId);
+  const std::vector<unsigned> *_findTStringElements(unsigned id);
 
   const FHPath *_findPath(unsigned id);
   const FHGroup *_findGroup(unsigned id);
   const FHCompositePath *_findCompositePath(unsigned id);
+  const FHTextObject *_findTextObject(unsigned id);
+  const FHTransform *_findTransform(unsigned id);
+  const FHParagraph *_findParagraph(unsigned id);
+  const std::vector<unsigned short> *_findTextBlok(unsigned id);
 
   FHPageInfo m_pageInfo;
   FHTail m_fhTail;

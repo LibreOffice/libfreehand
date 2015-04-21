@@ -112,11 +112,15 @@ void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
   path.transform(trafo);
 }
 
+void libfreehand::FHCollector::_normalizePoint(double &x, double &y)
+{
+  FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_minX, m_pageInfo.m_maxY);
+  trafo.applyToPoint(x, y);
+}
+
 void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::librevenge::RVNGDrawingInterface *painter)
 {
-  if (!painter)
-    return;
-  if (!path || path->empty())
+  if (!painter || !path || path->empty())
     return;
 
   librevenge::RVNGPropertyList propList;
@@ -131,9 +135,9 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
 
   if (xform)
   {
-    std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(xform);
-    if (iter != m_transforms.end())
-      fhPath.transform(iter->second);
+    const FHTransform *trafo = _findTransform(xform);
+    if (trafo)
+      fhPath.transform(*trafo);
   }
   std::stack<FHTransform> groupTransforms = m_currentTransforms;
   if (!m_currentTransforms.empty())
@@ -150,9 +154,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
 
 void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, ::librevenge::RVNGDrawingInterface *painter)
 {
-  if (!painter)
-    return;
-  if (!group)
+  if (!painter || !group)
     return;
 
   if (group->m_xFormId)
@@ -262,14 +264,13 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNG
     _outputGroup(_findGroup(*iterVec), painter);
     _outputPath(_findPath(*iterVec), painter);
     _outputCompositePath(_findCompositePath(*iterVec), painter);
+    _outputTextObject(_findTextObject(*iterVec), painter);
   }
 }
 
 void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter)
 {
-  if (!painter)
-    return;
-  if (!compositePath)
+  if (!painter || !compositePath)
     return;
 
   std::vector<unsigned> elements;
@@ -278,6 +279,81 @@ void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHComposi
     for (std::vector<unsigned>::const_iterator iter = elements.begin(); iter != elements.end(); ++iter)
       _outputPath(_findPath(*iter), painter);
   }
+}
+
+void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject *textObject, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !textObject)
+    return;
+  double xmid = textObject->m_startX + textObject->m_width / 2.0;
+  double ymid = textObject->m_startY + textObject->m_height / 2.0;
+  unsigned xFormId = textObject->m_xFormId;
+  if (xFormId)
+  {
+    const FHTransform *trafo = _findTransform(xFormId);
+    if (trafo)
+      trafo->applyToPoint(xmid, ymid);
+  }
+  _normalizePoint(xmid, ymid);
+
+  ::librevenge::RVNGPropertyList textObjectProps;
+  textObjectProps.insert("svg:x", xmid - textObject->m_width / 2.0);
+  textObjectProps.insert("svg:y", ymid - textObject->m_height / 2.0);
+  textObjectProps.insert("svg:height", textObject->m_height);
+  textObjectProps.insert("svg:width", textObject->m_width);
+  painter->startTextObject(textObjectProps);
+
+  const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
+  if (elements && !elements->empty())
+  {
+    for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
+      _outputParagraph(_findParagraph(*iter), painter);
+  }
+
+  painter->endTextObject();
+}
+
+void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !paragraph)
+    return;
+  painter->openParagraph(librevenge::RVNGPropertyList());
+
+  std::map<unsigned, std::vector<unsigned short> >::const_iterator iter = m_textBloks.find(paragraph->m_textBlokId);
+  if (iter != m_textBloks.end())
+  {
+
+    for (std::vector<std::pair<unsigned, unsigned> >::size_type i = 0; i < paragraph->m_charStyleIds.size(); ++i)
+    {
+      _outputTextRun(&(iter->second), paragraph->m_charStyleIds[i].first,
+                     (i+1 < paragraph->m_charStyleIds.size() ? paragraph->m_charStyleIds[i+1].first : iter->second.size()) - paragraph->m_charStyleIds[i].first,
+                     paragraph->m_charStyleIds[i].second, painter);
+    }
+
+  }
+
+  painter->closeParagraph();
+}
+
+void libfreehand::FHCollector::_outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
+                                              unsigned /* charStyleId */, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !characters || characters->empty())
+    return;
+  librevenge::RVNGPropertyList propList;
+  propList.insert("fo:font-name", "Arial");
+  propList.insert("fo:font-size", 10.0, librevenge::RVNG_POINT);
+  painter->openSpan(propList);
+  std::vector<unsigned short> tmpChars;
+  for (unsigned i = offset; i < length+offset && i < characters->size(); ++i)
+    tmpChars.push_back((*characters)[i]);
+  if (!tmpChars.empty())
+  {
+    librevenge::RVNGString text;
+    _appendUTF16(text, tmpChars);
+    painter->insertText(text);
+  }
+  painter->closeSpan();
 }
 
 bool libfreehand::FHCollector::_findListElements(std::vector<unsigned> &elements, unsigned id)
@@ -289,6 +365,20 @@ bool libfreehand::FHCollector::_findListElements(std::vector<unsigned> &elements
   return true;
 }
 
+void libfreehand::FHCollector::_appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId)
+{
+  std::map<unsigned, FHAGDFont>::const_iterator iter = m_fonts.find(agdFontId);
+  if (iter == m_fonts.end())
+    return;
+  const FHAGDFont &font = iter->second;
+  if (font.m_fontNameId)
+  {
+    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(font.m_fontNameId);
+    if (iterString != m_strings.end())
+      propList.insert("fo:font-name", iterString->second);
+  }
+  propList.insert("fo:font-size", font.m_fontSize, librevenge::RVNG_POINT);
+}
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
 {
@@ -314,5 +404,36 @@ const libfreehand::FHCompositePath *libfreehand::FHCollector::_findCompositePath
   return 0;
 }
 
+const libfreehand::FHTextObject *libfreehand::FHCollector::_findTextObject(unsigned id)
+{
+  std::map<unsigned, FHTextObject>::const_iterator iter = m_textObjects.find(id);
+  if (iter != m_textObjects.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHTransform *libfreehand::FHCollector::_findTransform(unsigned id)
+{
+  std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(id);
+  if (iter != m_transforms.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHParagraph *libfreehand::FHCollector::_findParagraph(unsigned id)
+{
+  std::map<unsigned, FHParagraph>::const_iterator iter = m_paragraphs.find(id);
+  if (iter != m_paragraphs.end())
+    return &(iter->second);
+  return 0;
+}
+
+const std::vector<unsigned> *libfreehand::FHCollector::_findTStringElements(unsigned id)
+{
+  std::map<unsigned, std::vector<unsigned> >::const_iterator iter = m_tStrings.find(id);
+  if (iter != m_tStrings.end())
+    return &(iter->second);
+  return 0;
+}
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

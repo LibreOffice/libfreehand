@@ -11,6 +11,7 @@
 #define __FHTYPES_H__
 
 #include <vector>
+#include "FHPath.h"
 
 namespace libfreehand
 {
@@ -92,7 +93,14 @@ struct FHTextObject
   unsigned m_xFormId;
   unsigned m_tStringId;
   unsigned m_vmpObjId;
-  FHTextObject() : m_graphicStyleId(0), m_xFormId(0), m_tStringId(0), m_vmpObjId(0) {}
+  double m_startX;
+  double m_startY;
+  double m_width;
+  double m_height;
+
+  FHTextObject()
+    : m_graphicStyleId(0), m_xFormId(0), m_tStringId(0), m_vmpObjId(0),
+      m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0) {}
 };
 
 } // namespace libfreehand
