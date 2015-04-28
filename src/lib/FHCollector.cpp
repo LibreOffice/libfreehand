@@ -125,9 +125,14 @@ void libfreehand::FHCollector::collectColor(unsigned recordId, const FHRGBColor 
   m_colors[recordId] = color;
 }
 
-void libfreehand::FHCollector::collectBasicFill(unsigned recordId, unsigned colorId)
+void libfreehand::FHCollector::collectBasicFill(unsigned recordId, const FHBasicFill &fill)
 {
-  m_basicFills[recordId] = colorId;
+  m_basicFills[recordId] = fill;
+}
+
+void libfreehand::FHCollector::collectBasicLine(unsigned recordId, const FHBasicLine &line)
+{
+  m_basicLines[recordId] = line;
 }
 
 void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropList &propertyList)
@@ -454,10 +459,10 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
     _appendFontProperties(propList, charProps.m_fontId);
   if (charProps.m_textColorId)
   {
-    std::map<unsigned, unsigned>::const_iterator iterBasicFill = m_basicFills.find(charProps.m_textColorId);
-    if (iterBasicFill != m_basicFills.end())
+    std::map<unsigned, FHBasicFill>::const_iterator iterBasicFill = m_basicFills.find(charProps.m_textColorId);
+    if (iterBasicFill != m_basicFills.end() && iterBasicFill->second.m_colorId)
     {
-      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(iterBasicFill->second);
+      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(iterBasicFill->second.m_colorId);
       if (iterColor != m_colors.end())
         propList.insert("fo:color", getColorString(iterColor->second));
     }

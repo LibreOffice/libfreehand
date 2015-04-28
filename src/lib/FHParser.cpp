@@ -571,16 +571,25 @@ void libfreehand::FHParser::readAttributeHolder(librevenge::RVNGInputStream *inp
 
 void libfreehand::FHParser::readBasicFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  unsigned colorId = _readRecordId(input);
+  FHBasicFill fill;
+  fill.m_colorId = _readRecordId(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   if (collector)
-    collector->collectBasicFill(m_currentRecord+1, colorId);
+    collector->collectBasicFill(m_currentRecord+1, fill);
 }
 
-void libfreehand::FHParser::readBasicLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readBasicLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  input->seek(18, librevenge::RVNG_SEEK_CUR);
+  FHBasicLine line;
+  line.m_colorId = _readRecordId(input);
+  line.m_linePatternId = _readRecordId(input);
+  line.m_startArrowId = _readRecordId(input);
+  line.m_endArrowId = _readRecordId(input);
+  line.m_mitter = _readCoordinate(input);
+  line.m_width = _readCoordinate(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectBasicLine(m_currentRecord+1, line);
 }
 
 void libfreehand::FHParser::readBendFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

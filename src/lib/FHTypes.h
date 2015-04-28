@@ -134,6 +134,25 @@ struct FHPropList
     : m_parentId(0), m_elements() {}
 };
 
+struct FHBasicLine
+{
+  unsigned m_colorId;
+  unsigned m_linePatternId;
+  unsigned m_startArrowId;
+  unsigned m_endArrowId;
+  double m_mitter;
+  double m_width;
+  FHBasicLine()
+    : m_colorId(0), m_linePatternId(0), m_startArrowId(0),
+      m_endArrowId(0), m_mitter(0.0), m_width(0.0) {}
+};
+
+struct FHBasicFill
+{
+  unsigned m_colorId;
+  FHBasicFill() : m_colorId(0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

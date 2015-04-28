@@ -51,7 +51,8 @@ public:
   void collectPageInfo(const FHPageInfo &pageInfo);
 
   void collectColor(unsigned recordId, const FHRGBColor &color);
-  void collectBasicFill(unsigned recordId, unsigned colorId);
+  void collectBasicFill(unsigned recordId, const FHBasicFill &fill);
+  void collectBasicLine(unsigned recordId, const FHBasicLine &line);
 
   void outputContent(::librevenge::RVNGDrawingInterface *painter);
 
@@ -103,8 +104,9 @@ private:
   std::map<unsigned, FHTextObject> m_textObjects;
   std::map<unsigned, FHCharProperties> m_charProperties;
   std::map<unsigned, FHRGBColor> m_colors;
-  std::map<unsigned, unsigned> m_basicFills;
+  std::map<unsigned, FHBasicFill> m_basicFills;
   std::map<unsigned, FHPropList> m_propertyLists;
+  std::map<unsigned, FHBasicLine> m_basicLines;
 };
 
 } // namespace libfreehand
