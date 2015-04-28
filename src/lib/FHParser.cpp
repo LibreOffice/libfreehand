@@ -1127,7 +1127,10 @@ void libfreehand::FHParser::readMName(librevenge::RVNGInputStream *input, libfre
   FH_DEBUG_MSG(("FHParser::readMName %s\n", name.cstr()));
   input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
   if (collector)
+  {
     collector->collectString(m_currentRecord+1, name);
+    collector->collectName(m_currentRecord+1, name);
+  }
 }
 
 void libfreehand::FHParser::readMpObject(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

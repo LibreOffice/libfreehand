@@ -19,8 +19,8 @@
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
 
 libfreehand::FHCollector::FHCollector() :
-  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(), m_layers(),
-  m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
+  m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
+  m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
   m_textObjects(), m_charProperties(), m_colors(), m_basicFills()
 {
 }
@@ -37,6 +37,11 @@ void libfreehand::FHCollector::collectPageInfo(const FHPageInfo &pageInfo)
 void libfreehand::FHCollector::collectString(unsigned recordId, const librevenge::RVNGString &str)
 {
   m_strings[recordId] = str;
+}
+
+void libfreehand::FHCollector::collectName(unsigned recordId, const librevenge::RVNGString &name)
+{
+  m_names[name] = recordId;
 }
 
 void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned /* graphicStyle */, unsigned /* layer */,

@@ -29,6 +29,7 @@ public:
 
   // collector functions
   void collectString(unsigned recordId, const librevenge::RVNGString &str);
+  void collectName(unsigned recordId, const librevenge::RVNGString &str);
   void collectPath(unsigned recordId, unsigned graphicStyle, unsigned layer,
                    const FHPath &path, bool evenodd);
   void collectXform(unsigned recordId, double m11, double m21,
@@ -88,6 +89,7 @@ private:
   std::map<unsigned, FHTransform> m_transforms;
   std::map<unsigned, FHPath> m_paths;
   std::map<unsigned, librevenge::RVNGString> m_strings;
+  std::map<librevenge::RVNGString, unsigned> m_names;
   std::map<unsigned, FHList> m_lists;
   std::map<unsigned, FHLayer> m_layers;
   std::map<unsigned, FHGroup> m_groups;
