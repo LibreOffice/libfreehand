@@ -411,6 +411,10 @@ void libfreehand::FHCollector::_appendFontProperties(::librevenge::RVNGPropertyL
       propList.insert("fo:font-name", iterString->second);
   }
   propList.insert("fo:font-size", font.m_fontSize, librevenge::RVNG_POINT);
+  if (font.m_fontStyle & 1)
+    propList.insert("fo:font-weight", "bold");
+  if (font.m_fontStyle & 2)
+    propList.insert("fo:font-style", "italic");
 }
 
 void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId)

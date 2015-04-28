@@ -15,6 +15,8 @@
 #include <librevenge/librevenge.h>
 #include "FHTypes.h"
 
+// VMpObj properties
+
 #define FH_NAME 0x0321
 #define FH_UID 0x065b
 #define FH_TEXT_ALIGN 0x15e3
@@ -44,6 +46,8 @@
 #define FH_PAGE_START_Y2 0x1c84
 #define FH_PAGE_WIDTH 0x1c34
 #define FH_PAGE_HEIGHT 0x1c3c
+
+// AGDFont properties
 
 #define FH_AGD_FONT_NAME 0x0e11
 #define FH_AGD_STYLE 0x0e1b
