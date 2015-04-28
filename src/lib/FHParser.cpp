@@ -569,10 +569,12 @@ void libfreehand::FHParser::readAttributeHolder(librevenge::RVNGInputStream *inp
   _readRecordId(input);
 }
 
-void libfreehand::FHParser::readBasicFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readBasicFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
+  unsigned colorId = _readRecordId(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectBasicFill(m_currentRecord+1, colorId);
 }
 
 void libfreehand::FHParser::readBasicLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1606,15 +1608,21 @@ void libfreehand::FHParser::readSpotColor(librevenge::RVNGInputStream *input, li
   input->seek(26, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readSpotColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readSpotColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short size = readU16(input);
   _readRecordId(input);
+  FHRGBColor color;
+  color.m_red = readU16(input);
+  color.m_green = readU16(input);
+  color.m_blue = readU16(input);
   if (m_version < 10)
-    input->seek(22, librevenge::RVNG_SEEK_CUR);
+    input->seek(16, librevenge::RVNG_SEEK_CUR);
   else
-    input->seek(24, librevenge::RVNG_SEEK_CUR);
+    input->seek(18, librevenge::RVNG_SEEK_CUR);
   input->seek(size*4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectColor(m_currentRecord+1, color);
 }
 
 void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

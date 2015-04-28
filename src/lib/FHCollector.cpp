@@ -21,7 +21,7 @@
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(), m_layers(),
   m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
-  m_textObjects(), m_charProperties()
+  m_textObjects(), m_charProperties(), m_colors(), m_basicFills()
 {
 }
 
@@ -113,6 +113,16 @@ void libfreehand::FHCollector::collectTextObject(unsigned recordId, const FHText
 void libfreehand::FHCollector::collectCharProps(unsigned recordId, const FHCharProperties &charProps)
 {
   m_charProperties[recordId] = charProps;
+}
+
+void libfreehand::FHCollector::collectColor(unsigned recordId, const FHRGBColor &color)
+{
+  m_colors[recordId] = color;
+}
+
+void libfreehand::FHCollector::collectBasicFill(unsigned recordId, unsigned colorId)
+{
+  m_basicFills[recordId] = colorId;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -432,6 +442,16 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
   propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
   if (charProps.m_fontId)
     _appendFontProperties(propList, charProps.m_fontId);
+  if (charProps.m_textColorId)
+  {
+    std::map<unsigned, unsigned>::const_iterator iterBasicFill = m_basicFills.find(charProps.m_textColorId);
+    if (iterBasicFill != m_basicFills.end())
+    {
+      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(iterBasicFill->second);
+      if (iterColor != m_colors.end())
+        propList.insert("fo:color", getColorString(iterColor->second));
+    }
+  }
 }
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
@@ -488,6 +508,13 @@ const std::vector<unsigned> *libfreehand::FHCollector::_findTStringElements(unsi
   if (iter != m_tStrings.end())
     return &(iter->second);
   return 0;
+}
+
+::librevenge::RVNGString libfreehand::FHCollector::getColorString(const libfreehand::FHRGBColor &color)
+{
+  ::librevenge::RVNGString colorString;
+  colorString.sprintf("#%.2x%.2x%.2x", color.m_red >> 8, color.m_green >> 8, color.m_blue >> 8);
+  return colorString;
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

@@ -117,6 +117,15 @@ struct FHCharProperties
     : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0) {}
 };
 
+struct FHRGBColor
+{
+  unsigned short m_red;
+  unsigned short m_green;
+  unsigned short m_blue;
+  FHRGBColor()
+    : m_red(0), m_green(0), m_blue(0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */
