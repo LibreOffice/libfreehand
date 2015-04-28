@@ -1970,6 +1970,13 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
       charProps->m_fontNameId = _readRecordId(input);
       break;
     }
+    case FH_HOR_SCALE:
+    {
+      if (!charProps)
+        charProps = new libfreehand::FHCharProperties();
+      charProps->m_horizontalScale = _readCoordinate(input);
+      break;
+    }
     default:
       if (key == 2)
         _readRecordId(input);

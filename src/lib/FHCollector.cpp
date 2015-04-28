@@ -467,6 +467,7 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
         propList.insert("fo:color", getColorString(iterColor->second));
     }
   }
+  propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
 }
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)

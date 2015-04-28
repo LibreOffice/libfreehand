@@ -110,11 +110,12 @@ struct FHParaProperties
 struct FHCharProperties
 {
   unsigned m_textColorId;
-  unsigned m_fontSize;
+  double m_fontSize;
   unsigned m_fontNameId;
   unsigned m_fontId;
+  double m_horizontalScale;
   FHCharProperties()
-    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0) {}
+    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0), m_horizontalScale(1.0) {}
 };
 
 struct FHRGBColor
