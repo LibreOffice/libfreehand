@@ -15,8 +15,33 @@
 #include <librevenge/librevenge.h>
 #include "FHTypes.h"
 
+#define FH_NAME 0x0321
+#define FH_UID 0x065b
+#define FH_TEXT_ALIGN 0x15e3
+#define FH_SPC_LETTER_MAX 0x161c
+#define FH_SPC_WORD_MAX 0x1624
+#define FH_SPC_LETTER_MIN 0x1634
+#define FH_SPC_WORD_MIN 0x163c
+#define FH_SPC_LETTER_OPT 0x164c
+#define FH_SPC_WORD_OPT 0x1654
+#define FH_PARA_SPC_BELLOW 0x1684
+#define FH_PARA_SPC_ABOVE 0x168c
+#define FH_TAB_TABLE_ID 0x1691
+#define FH_BASELN_SHIFT 0x169c
+#define FH_TEFFECT_ID 0x16b1
+#define FH_TXT_COLOR_ID 0x16b9
+#define FH_FONT_ID 0x16c1
+#define FH_HOR_SCALE 0x16d4
+#define FH_LEADING 0x16dc
+#define FH_LEADING_TYPE 0x16e3
+#define FH_RNG_KERN 0x16ec
+#define FH_FONT_SIZE 0x1734
+#define FH_FONT_NAME 0x1739
+#define FH_NEXT_STYLE 0x1749
 #define FH_PAGE_START_X 0x1c24
 #define FH_PAGE_START_Y 0x1c2c
+#define FH_PAGE_START_X2 0x1c7c
+#define FH_PAGE_START_Y2 0x1c84
 #define FH_PAGE_WIDTH 0x1c34
 #define FH_PAGE_HEIGHT 0x1c3c
 

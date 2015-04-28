@@ -1846,7 +1846,7 @@ void libfreehand::FHParser::readVDict(librevenge::RVNGInputStream *input, libfre
   }
 }
 
-void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short num = readU16(input);
@@ -1855,58 +1855,100 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
   double minY = 0.0;
   double maxX = 0.0;
   double maxY = 0.0;
+  libfreehand::FHCharProperties *charProps = 0;
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
     unsigned short rec = readU16(input);
-    if (key == 2)
-      _readRecordId(input);
-    else
+    switch (rec)
     {
-      switch (rec)
+    case FH_PAGE_START_X:
+    case FH_PAGE_START_X2:
+    {
+      minX = _readCoordinate(input) / 72.0;
+      if (m_pageInfo.m_minX > 0.0)
       {
-      case FH_PAGE_START_X:
-      {
-        minX = _readCoordinate(input) / 72.0;
-        if (m_pageInfo.m_minX > 0.0)
-        {
-          if (m_pageInfo.m_minX > minX)
-            m_pageInfo.m_minX = minX;
-        }
-        else
+        if (m_pageInfo.m_minX > minX)
           m_pageInfo.m_minX = minX;
-        break;
       }
-      case FH_PAGE_START_Y:
-      {
-        minY = _readCoordinate(input) / 72.0;
-        if (m_pageInfo.m_minY > 0.0)
-        {
-          if (m_pageInfo.m_minY > minY)
-            m_pageInfo.m_minY = minY;
-        }
-        else
-          m_pageInfo.m_minY = minY;
-        break;
-      }
-      case FH_PAGE_WIDTH:
-      {
-        maxX = minX + _readCoordinate(input) / 72.0;
-        if (m_pageInfo.m_maxX < maxX)
-          m_pageInfo.m_maxX = maxX;
-        break;
-      }
-      case FH_PAGE_HEIGHT:
-      {
-        maxY = minY + _readCoordinate(input) / 72.0;
-        if (m_pageInfo.m_maxY < maxY)
-          m_pageInfo.m_maxY = maxY;
-        break;
-      }
-      default:
-        input->seek(4, librevenge::RVNG_SEEK_CUR);
-      }
+      else
+        m_pageInfo.m_minX = minX;
+      break;
     }
+    case FH_PAGE_START_Y:
+    case FH_PAGE_START_Y2:
+    {
+      minY = _readCoordinate(input) / 72.0;
+      if (m_pageInfo.m_minY > 0.0)
+      {
+        if (m_pageInfo.m_minY > minY)
+          m_pageInfo.m_minY = minY;
+      }
+      else
+        m_pageInfo.m_minY = minY;
+      break;
+    }
+    case FH_PAGE_WIDTH:
+    {
+      maxX = minX + _readCoordinate(input) / 72.0;
+      if (m_pageInfo.m_maxX < maxX)
+        m_pageInfo.m_maxX = maxX;
+      break;
+    }
+    case FH_PAGE_HEIGHT:
+    {
+      maxY = minY + _readCoordinate(input) / 72.0;
+      if (m_pageInfo.m_maxY < maxY)
+        m_pageInfo.m_maxY = maxY;
+      break;
+    }
+    case FH_TEFFECT_ID:
+    {
+      if (!charProps)
+        charProps = new libfreehand::FHCharProperties();
+      _readRecordId(input);
+      break;
+    }
+    case FH_TXT_COLOR_ID:
+    {
+      if (!charProps)
+        charProps = new libfreehand::FHCharProperties();
+      charProps->m_textColorId = _readRecordId(input);
+      break;
+    }
+    case FH_FONT_ID:
+    {
+      if (!charProps)
+        charProps = new libfreehand::FHCharProperties();
+      charProps->m_fontId = _readRecordId(input);
+      break;
+    }
+    case FH_FONT_SIZE:
+    {
+      if (!charProps)
+        charProps = new libfreehand::FHCharProperties();
+      charProps->m_fontSize = _readCoordinate(input);
+      break;
+    }
+    case FH_FONT_NAME:
+    {
+      if (!charProps)
+        charProps = new libfreehand::FHCharProperties();
+      charProps->m_fontNameId = _readRecordId(input);
+      break;
+    }
+    default:
+      if (key == 2)
+        _readRecordId(input);
+      else
+        input->seek(4, librevenge::RVNG_SEEK_CUR);
+    }
+  }
+  if (charProps)
+  {
+    if (collector)
+      collector->collectCharProps(m_currentRecord+1, *charProps);
+    delete charProps;
   }
 }
 

@@ -21,7 +21,7 @@
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_lists(), m_layers(),
   m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
-  m_textObjects()
+  m_textObjects(), m_charProperties()
 {
 }
 
@@ -108,6 +108,11 @@ void libfreehand::FHCollector::collectTextBlok(unsigned recordId, const std::vec
 void libfreehand::FHCollector::collectTextObject(unsigned recordId, const FHTextObject &textObject)
 {
   m_textObjects[recordId] = textObject;
+}
+
+void libfreehand::FHCollector::collectCharProps(unsigned recordId, const FHCharProperties &charProps)
+{
+  m_charProperties[recordId] = charProps;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -365,13 +370,12 @@ void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *
 }
 
 void libfreehand::FHCollector::_outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
-                                              unsigned /* charStyleId */, ::librevenge::RVNGDrawingInterface *painter)
+                                              unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter)
 {
   if (!painter || !characters || characters->empty())
     return;
   librevenge::RVNGPropertyList propList;
-  propList.insert("fo:font-name", "Arial");
-  propList.insert("fo:font-size", 10.0, librevenge::RVNG_POINT);
+  _appendCharacterProperties(propList, charStyleId);
   painter->openSpan(propList);
   std::vector<unsigned short> tmpChars;
   for (unsigned i = offset; i < length+offset && i < characters->size(); ++i)
@@ -407,6 +411,23 @@ void libfreehand::FHCollector::_appendFontProperties(::librevenge::RVNGPropertyL
       propList.insert("fo:font-name", iterString->second);
   }
   propList.insert("fo:font-size", font.m_fontSize, librevenge::RVNG_POINT);
+}
+
+void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId)
+{
+  std::map<unsigned, FHCharProperties>::const_iterator iter = m_charProperties.find(charPropsId);
+  if (iter == m_charProperties.end())
+    return;
+  const FHCharProperties &charProps = iter->second;
+  if (charProps.m_fontNameId)
+  {
+    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(charProps.m_fontNameId);
+    if (iterString != m_strings.end())
+      propList.insert("fo:font-name", iterString->second);
+  }
+  propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
+  if (charProps.m_fontId)
+    _appendFontProperties(propList, charProps.m_fontId);
 }
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)

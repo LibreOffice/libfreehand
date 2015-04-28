@@ -46,6 +46,7 @@ public:
   void collectTextObject(unsigned recordId, const FHTextObject &textObject);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
+  void collectCharProps(unsigned recordId, const FHCharProperties &charProps);
 
   void outputContent(::librevenge::RVNGDrawingInterface *painter);
 
@@ -65,6 +66,7 @@ private:
                       unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
+  void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);
   void _appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
@@ -92,6 +94,7 @@ private:
   std::map<unsigned, FHParagraph> m_paragraphs;
   std::map<unsigned, std::vector<unsigned short> > m_textBloks;
   std::map<unsigned, FHTextObject> m_textObjects;
+  std::map<unsigned, FHCharProperties> m_charProperties;
 };
 
 } // namespace libfreehand

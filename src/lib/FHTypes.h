@@ -103,6 +103,20 @@ struct FHTextObject
       m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0) {}
 };
 
+struct FHParaProperties
+{
+};
+
+struct FHCharProperties
+{
+  unsigned m_textColorId;
+  unsigned m_fontSize;
+  unsigned m_fontNameId;
+  unsigned m_fontId;
+  FHCharProperties()
+    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */
