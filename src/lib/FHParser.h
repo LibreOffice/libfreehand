@@ -210,6 +210,7 @@ private:
   unsigned _xformCalc(unsigned char var1, unsigned char var2);
 
   double _readCoordinate(librevenge::RVNGInputStream *input);
+  FHRGBColor _readColor(librevenge::RVNGInputStream *input);
   void _readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId);
 
   librevenge::RVNGInputStream *m_input;

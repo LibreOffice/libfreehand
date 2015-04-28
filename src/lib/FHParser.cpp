@@ -1612,10 +1612,7 @@ void libfreehand::FHParser::readSpotColor6(librevenge::RVNGInputStream *input, l
 {
   unsigned short size = readU16(input);
   _readRecordId(input);
-  FHRGBColor color;
-  color.m_red = readU16(input);
-  color.m_green = readU16(input);
-  color.m_blue = readU16(input);
+  FHRGBColor color = _readColor(input);
   if (m_version < 10)
     input->seek(16, librevenge::RVNG_SEEK_CUR);
   else
@@ -1784,12 +1781,17 @@ void libfreehand::FHParser::readTintColor(librevenge::RVNGInputStream *input, li
   input->seek(20, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readTintColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTintColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
   _readRecordId(input);
+  FHRGBColor color = _readColor(input);
   if (m_version < 10)
-    input->seek(-2, librevenge::RVNG_SEEK_CUR);
-  input->seek(36, librevenge::RVNG_SEEK_CUR);
+    input->seek(26, librevenge::RVNG_SEEK_CUR);
+  else
+    input->seek(28, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectColor(m_currentRecord+1, color);
 }
 
 void libfreehand::FHParser::readTransformFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -2043,6 +2045,15 @@ double libfreehand::FHParser::_readCoordinate(librevenge::RVNGInputStream *input
   double value = (double)readS16(input);
   value += (double)readU16(input) / 65536.0;
   return value;
+}
+
+libfreehand::FHRGBColor libfreehand::FHParser::_readColor(librevenge::RVNGInputStream *input)
+{
+  FHRGBColor tmpColor;
+  tmpColor.m_red = readU16(input);
+  tmpColor.m_green = readU16(input);
+  tmpColor.m_blue = readU16(input);
+  return tmpColor;
 }
 
 void libfreehand::FHParser::_readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId)
