@@ -682,12 +682,13 @@ void libfreehand::FHParser::readCollector(librevenge::RVNGInputStream *input, li
   input->seek(4, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   input->seek(1, librevenge::RVNG_SEEK_CUR);
   unsigned char var = readU8(input);
   _readRecordId(input);
-  input->seek(10, librevenge::RVNG_SEEK_CUR);
+  FHRGBColor color = _readColor(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
   _readRecordId(input);
   unsigned length = 12;
   if (var == 4)
@@ -699,6 +700,8 @@ void libfreehand::FHParser::readColor6(librevenge::RVNGInputStream *input, libfr
   if (m_version < 10)
     length -= 2;
   input->seek(length, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectColor(m_currentRecord+1, color);
 }
 
 void libfreehand::FHParser::readCompositePath(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
