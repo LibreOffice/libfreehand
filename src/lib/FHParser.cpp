@@ -818,13 +818,7 @@ void libfreehand::FHParser::readElemPropLst(librevenge::RVNGInputStream *input, 
   FHPropList propertyList;
   propertyList.m_parentId = _readRecordId(input);
   _readRecordId(input);
-  for (unsigned short i = 0; i < size; ++i)
-  {
-    unsigned nameId = _readRecordId(input);
-    unsigned valueId = _readRecordId(input);
-    if (nameId && valueId)
-      propertyList.m_elements[nameId] = valueId;
-  }
+  _readPropLstElements(input, propertyList, size);
   if (collector)
     collector->collectPropList(m_currentRecord+1, propertyList);
 }
@@ -1495,15 +1489,17 @@ void libfreehand::FHParser::readProcessColor(librevenge::RVNGInputStream *input,
   input->seek(22, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
-  for (unsigned short i = 0; i < size*2; ++i)
-    _readRecordId(input);
+  FHPropList propertyList;
+  _readPropLstElements(input, propertyList, size);
   if (m_version < 9)
     input->seek((size2 - size)*4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectPropList(m_currentRecord+1, propertyList);
 }
 
 void libfreehand::FHParser::readPSLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1638,7 +1634,7 @@ void libfreehand::FHParser::readSpotColor6(librevenge::RVNGInputStream *input, l
     collector->collectColor(m_currentRecord+1, color);
 }
 
-void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   if (m_version > 8)
     input->seek(2, librevenge::RVNG_SEEK_CUR);
@@ -1646,10 +1642,12 @@ void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input,
   if (m_version <= 8)
     input->seek(2, librevenge::RVNG_SEEK_CUR);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FHPropList propertyList;
+  propertyList.m_parentId = _readRecordId(input);
   _readRecordId(input);
-  _readRecordId(input);
-  for (unsigned short i = 0; i < size*2; ++i)
-    _readRecordId(input);
+  _readPropLstElements(input, propertyList, size);
+  if (collector)
+    collector->collectPropList(m_currentRecord, propertyList);
 }
 
 void libfreehand::FHParser::readSwfImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -2078,6 +2076,17 @@ void libfreehand::FHParser::_readBlockInformation(librevenge::RVNGInputStream *i
     layerListId = _readRecordId(input);
   else
     _readRecordId(input);
+}
+
+void libfreehand::FHParser::_readPropLstElements(librevenge::RVNGInputStream *input, FHPropList &propertyList, unsigned size)
+{
+  for (unsigned i = 0; i < size; ++i)
+  {
+    unsigned nameId = _readRecordId(input);
+    unsigned valueId = _readRecordId(input);
+    if (nameId && valueId)
+      propertyList.m_elements[nameId] = valueId;
+  }
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

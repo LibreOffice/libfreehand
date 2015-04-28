@@ -211,6 +211,7 @@ private:
 
   double _readCoordinate(librevenge::RVNGInputStream *input);
   FHRGBColor _readColor(librevenge::RVNGInputStream *input);
+  void _readPropLstElements(librevenge::RVNGInputStream *input, FHPropList &propertyList, unsigned size);
   void _readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId);
 
   librevenge::RVNGInputStream *m_input;
