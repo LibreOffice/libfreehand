@@ -807,16 +807,26 @@ void libfreehand::FHParser::readElemList(librevenge::RVNGInputStream *input, lib
   input->seek(4, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readElemPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readElemPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   if (m_version > 8)
     input->seek(2, librevenge::RVNG_SEEK_CUR);
   unsigned short size = readU16(input);
   if (m_version <= 8)
     input->seek(2, librevenge::RVNG_SEEK_CUR);
-  input->seek(6, librevenge::RVNG_SEEK_CUR);
-  for (unsigned short i = 0; i < size*2; ++i)
-    _readRecordId(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FHPropList propertyList;
+  propertyList.m_parentId = _readRecordId(input);
+  _readRecordId(input);
+  for (unsigned short i = 0; i < size; ++i)
+  {
+    unsigned nameId = _readRecordId(input);
+    unsigned valueId = _readRecordId(input);
+    if (nameId && valueId)
+      propertyList.m_elements[nameId] = valueId;
+  }
+  if (collector)
+    collector->collectPropList(m_currentRecord+1, propertyList);
 }
 
 void libfreehand::FHParser::readEnvelope(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

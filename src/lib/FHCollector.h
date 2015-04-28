@@ -46,6 +46,7 @@ public:
   void collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters);
   void collectTextObject(unsigned recordId, const FHTextObject &textObject);
   void collectCharProps(unsigned recordId, const FHCharProperties &charProps);
+  void collectPropList(unsigned recordId, const FHPropList &propertyList);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -103,6 +104,7 @@ private:
   std::map<unsigned, FHCharProperties> m_charProperties;
   std::map<unsigned, FHRGBColor> m_colors;
   std::map<unsigned, unsigned> m_basicFills;
+  std::map<unsigned, FHPropList> m_propertyLists;
 };
 
 } // namespace libfreehand

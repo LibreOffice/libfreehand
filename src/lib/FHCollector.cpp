@@ -21,7 +21,7 @@
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
-  m_textObjects(), m_charProperties(), m_colors(), m_basicFills()
+  m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists()
 {
 }
 
@@ -128,6 +128,11 @@ void libfreehand::FHCollector::collectColor(unsigned recordId, const FHRGBColor 
 void libfreehand::FHCollector::collectBasicFill(unsigned recordId, unsigned colorId)
 {
   m_basicFills[recordId] = colorId;
+}
+
+void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropList &propertyList)
+{
+  m_propertyLists[recordId] = propertyList;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)

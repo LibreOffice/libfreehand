@@ -126,6 +126,14 @@ struct FHRGBColor
     : m_red(0), m_green(0), m_blue(0) {}
 };
 
+struct FHPropList
+{
+  unsigned m_parentId;
+  std::map<unsigned, unsigned> m_elements;
+  FHPropList()
+    : m_parentId(0), m_elements() {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */
