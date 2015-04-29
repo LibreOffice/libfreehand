@@ -73,6 +73,10 @@ private:
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);
   void _appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId);
+  void _appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
+  void _appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
+  void _appendBasicFill(::librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
+  void _appendBasicLine(::librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
   const FHPath *_findPath(unsigned id);
@@ -81,7 +85,11 @@ private:
   const FHTextObject *_findTextObject(unsigned id);
   const FHTransform *_findTransform(unsigned id);
   const FHParagraph *_findParagraph(unsigned id);
+  const FHPropList *_findPropList(unsigned id);
   const std::vector<unsigned short> *_findTextBlok(unsigned id);
+  const FHBasicFill *_findBasicFill(unsigned id);
+  const FHBasicLine *_findBasicLine(unsigned id);
+  const FHRGBColor *_findColor(unsigned id);
   ::librevenge::RVNGString getColorString(const FHRGBColor &color);
 
   FHPageInfo m_pageInfo;
@@ -106,6 +114,9 @@ private:
   std::map<unsigned, FHBasicFill> m_basicFills;
   std::map<unsigned, FHPropList> m_propertyLists;
   std::map<unsigned, FHBasicLine> m_basicLines;
+
+  unsigned m_strokeId;
+  unsigned m_fillId;
 };
 
 } // namespace libfreehand

@@ -585,8 +585,8 @@ void libfreehand::FHParser::readBasicLine(librevenge::RVNGInputStream *input, li
   line.m_linePatternId = _readRecordId(input);
   line.m_startArrowId = _readRecordId(input);
   line.m_endArrowId = _readRecordId(input);
-  line.m_mitter = _readCoordinate(input);
-  line.m_width = _readCoordinate(input);
+  line.m_mitter = _readCoordinate(input) / 72.0;
+  line.m_width = _readCoordinate(input) / 72.0;
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectBasicLine(m_currentRecord+1, line);

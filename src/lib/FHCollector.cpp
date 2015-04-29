@@ -18,10 +18,72 @@
 #define FH_UNINITIALIZED(pI) \
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
 
+namespace
+{
+
+static void _composePath(const std::vector<::librevenge::RVNGPropertyList> &segments, ::librevenge::RVNGPropertyListVector &path)
+{
+  std::vector<::librevenge::RVNGPropertyList> tmpPath;
+  bool firstPoint = true;
+  bool wasMove = false;
+  for (unsigned i = 0; i < segments.size(); i++)
+  {
+    if (firstPoint)
+    {
+      firstPoint = false;
+      wasMove = true;
+    }
+    else if (segments[i]["librevenge:path-action"]->getStr() == "M")
+    {
+      if (!tmpPath.empty())
+      {
+        if (!wasMove)
+        {
+          if (tmpPath.back()["librevenge:path-action"]->getStr() != "Z")
+          {
+            librevenge::RVNGPropertyList closedPath;
+            closedPath.insert("librevenge:path-action", "Z");
+            tmpPath.push_back(closedPath);
+          }
+        }
+        else
+        {
+          tmpPath.pop_back();
+        }
+      }
+      wasMove = true;
+    }
+    else
+      wasMove = false;
+    tmpPath.push_back(segments[i]);
+  }
+  if (!tmpPath.empty())
+  {
+    if (!wasMove)
+    {
+      if (tmpPath.back()["librevenge:path-action"]->getStr() != "Z")
+      {
+        librevenge::RVNGPropertyList closedPath;
+        closedPath.insert("librevenge:path-action", "Z");
+        tmpPath.push_back(closedPath);
+      }
+    }
+    else
+      tmpPath.pop_back();
+  }
+  if (tmpPath.empty())
+    return;
+  for (unsigned i = 0; i < tmpPath.size(); ++i)
+    path.append(tmpPath[i]);
+}
+
+}
+
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
-  m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists()
+  m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists(),
+  m_strokeId(0), m_fillId(0)
 {
 }
 
@@ -42,6 +104,14 @@ void libfreehand::FHCollector::collectString(unsigned recordId, const librevenge
 void libfreehand::FHCollector::collectName(unsigned recordId, const librevenge::RVNGString &name)
 {
   m_names[name] = recordId;
+  if (name == "stroke")
+    m_strokeId = recordId;
+  if (name == "StrokeMultiple")
+    m_strokeId = recordId;
+  if (name == "fill")
+    m_fillId = recordId;
+  if (name == "FillMultiple")
+    m_fillId = recordId;
 }
 
 void libfreehand::FHCollector::collectPath(unsigned recordId, const libfreehand::FHPath &path)
@@ -156,14 +226,14 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   if (!painter || !path || path->empty())
     return;
 
+  FHPath fhPath(*path);
   librevenge::RVNGPropertyList propList;
-  propList.insert("draw:fill", "none");
-  propList.insert("draw:stroke", "solid");
-  propList.insert("svg:stroke-width", 0.0);
-  propList.insert("svg:stroke-color", "#000000");
+  _appendStrokeProperties(propList, fhPath.getGraphicStyleId());
+  _appendFillProperties(propList, fhPath.getGraphicStyleId());
+  if (fhPath.getEvenOdd())
+    propList.insert("svg:fill-rule", "evenodd");
   painter->setStyle(propList);
 
-  FHPath fhPath(*path);
   unsigned short xform = fhPath.getXFormId();
 
   if (xform)
@@ -177,9 +247,11 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
     fhPath.transform(m_currentTransforms.top());
   _normalizePath(fhPath);
 
-  librevenge::RVNGPropertyListVector propVec;
-  fhPath.writeOut(propVec);
+  std::vector<librevenge::RVNGPropertyList> segments;
+  fhPath.writeOut(segments);
 
+  librevenge::RVNGPropertyListVector propVec;
+  _composePath(segments, propVec);
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
   painter->drawPath(pList);
@@ -310,7 +382,16 @@ void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHComposi
   if (_findListElements(elements, compositePath->m_elementsId))
   {
     for (std::vector<unsigned>::const_iterator iter = elements.begin(); iter != elements.end(); ++iter)
-      _outputPath(_findPath(*iter), painter);
+    {
+      const libfreehand::FHPath *path = _findPath(*iter);
+      if (path)
+      {
+        libfreehand::FHPath fhPath(*path);
+        if (!fhPath.getGraphicStyleId())
+          fhPath.setGraphicStyleId(compositePath->m_graphicStyleId);
+        _outputPath(&fhPath, painter);
+      }
+    }
   }
 }
 
@@ -422,6 +503,7 @@ bool libfreehand::FHCollector::_findListElements(std::vector<unsigned> &elements
   return true;
 }
 
+
 void libfreehand::FHCollector::_appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId)
 {
   std::map<unsigned, FHAGDFont>::const_iterator iter = m_fonts.find(agdFontId);
@@ -467,6 +549,82 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
     }
   }
   propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
+}
+
+
+void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId)
+{
+  if (!graphicStyleId)
+  {
+    propList.insert("draw:fill", "none");
+  }
+  else
+  {
+    const FHPropList *propertyList = _findPropList(graphicStyleId);
+    if (!propertyList)
+      _appendFillProperties(propList, 0);
+    else
+    {
+      if (propertyList->m_parentId)
+        _appendFillProperties(propList, propertyList->m_parentId);
+      std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_fillId);
+      if (iter != propertyList->m_elements.end())
+      {
+        _appendBasicFill(propList, _findBasicFill(iter->second));
+      }
+    }
+  }
+}
+
+void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId)
+{
+  if (!graphicStyleId)
+  {
+    propList.insert("draw:stroke", "solid");
+    propList.insert("svg:stroke-width", 0.0);
+    propList.insert("svg:stroke-color", "#000000");
+  }
+  else
+  {
+    const FHPropList *propertyList = _findPropList(graphicStyleId);
+    if (!propertyList)
+      _appendStrokeProperties(propList, 0);
+    else
+    {
+      if (propertyList->m_parentId)
+        _appendStrokeProperties(propList, propertyList->m_parentId);
+      std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_strokeId);
+      if (iter != propertyList->m_elements.end())
+      {
+        _appendBasicLine(propList, _findBasicLine(iter->second));
+      }
+    }
+  }
+}
+
+void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicFill *basicFill)
+{
+  if (!basicFill)
+    return;
+  propList.insert("draw:fill", "solid");
+  const FHRGBColor *color = _findColor(basicFill->m_colorId);
+  if (color)
+    propList.insert("draw:fill-color", getColorString(*color));
+  else
+    propList.insert("draw:fill-color", "#000000");
+}
+
+void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)
+{
+  if (!basicLine)
+    return;
+  propList.insert("draw:stroke", "solid");
+  const FHRGBColor *color = _findColor(basicLine->m_colorId);
+  if (color)
+    propList.insert("svg:stroke-color", getColorString(*color));
+  else
+    propList.insert("svg:stroke-color", "#000000");
+  propList.insert("svg:stroke-width", basicLine->m_width);
 }
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
@@ -521,6 +679,38 @@ const std::vector<unsigned> *libfreehand::FHCollector::_findTStringElements(unsi
 {
   std::map<unsigned, std::vector<unsigned> >::const_iterator iter = m_tStrings.find(id);
   if (iter != m_tStrings.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHPropList *libfreehand::FHCollector::_findPropList(unsigned id)
+{
+  std::map<unsigned, FHPropList>::const_iterator iter = m_propertyLists.find(id);
+  if (iter != m_propertyLists.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHBasicFill *libfreehand::FHCollector::_findBasicFill(unsigned id)
+{
+  std::map<unsigned, FHBasicFill>::const_iterator iter = m_basicFills.find(id);
+  if (iter != m_basicFills.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
+{
+  std::map<unsigned, FHBasicLine>::const_iterator iter = m_basicLines.find(id);
+  if (iter != m_basicLines.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHRGBColor *libfreehand::FHCollector::_findColor(unsigned id)
+{
+  std::map<unsigned, FHRGBColor>::const_iterator iter = m_colors.find(id);
+  if (iter != m_colors.end())
     return &(iter->second);
   return 0;
 }

@@ -23,7 +23,7 @@ class FHPathElement
 public:
   FHPathElement() {}
   virtual ~FHPathElement() {}
-  virtual void writeOut(librevenge::RVNGPropertyListVector &vec) const = 0;
+  virtual void writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const = 0;
   virtual void transform(const FHTransform &trafo) = 0;
   virtual FHPathElement *clone() = 0;
 };
@@ -49,7 +49,7 @@ public:
   void setGraphicStyleId(unsigned graphicStyleId);
   void setEvenOdd(bool evenOdd);
 
-  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
+  void writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 
