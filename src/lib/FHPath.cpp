@@ -31,7 +31,7 @@ public:
     : m_x(x),
       m_y(y) {}
   ~FHMoveToElement() {}
-  void writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -46,7 +46,7 @@ public:
     : m_x(x),
       m_y(y) {}
   ~FHLineToElement() {}
-  void writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -65,7 +65,7 @@ public:
       m_x(x),
       m_y(y) {}
   ~FHCubicBezierToElement() {}
-  void writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -86,7 +86,7 @@ public:
       m_x(x),
       m_y(y) {}
   ~FHQuadraticBezierToElement() {}
-  void writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -108,7 +108,7 @@ public:
       m_x(x),
       m_y(y) {}
   ~FHArcToElement() {}
-  void writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const;
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
 private:
@@ -124,13 +124,13 @@ private:
 } // namespace libfreehand
 
 
-void libfreehand::FHMoveToElement::writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const
+void libfreehand::FHMoveToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   librevenge::RVNGPropertyList node;
   node.insert("librevenge:path-action", "M");
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
-  vec.push_back(node);
+  vec.append(node);
 }
 
 void libfreehand::FHMoveToElement::transform(const FHTransform &trafo)
@@ -143,13 +143,13 @@ libfreehand::FHPathElement *libfreehand::FHMoveToElement::clone()
   return new FHMoveToElement(m_x, m_y);
 }
 
-void libfreehand::FHLineToElement::writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const
+void libfreehand::FHLineToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   librevenge::RVNGPropertyList node;
   node.insert("librevenge:path-action", "L");
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
-  vec.push_back(node);
+  vec.append(node);
 }
 
 void libfreehand::FHLineToElement::transform(const FHTransform &trafo)
@@ -162,7 +162,7 @@ libfreehand::FHPathElement *libfreehand::FHLineToElement::clone()
   return new FHLineToElement(m_x, m_y);
 }
 
-void libfreehand::FHCubicBezierToElement::writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const
+void libfreehand::FHCubicBezierToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   librevenge::RVNGPropertyList node;
   node.insert("librevenge:path-action", "C");
@@ -172,7 +172,7 @@ void libfreehand::FHCubicBezierToElement::writeOut(std::vector<librevenge::RVNGP
   node.insert("svg:y2", m_y2);
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
-  vec.push_back(node);
+  vec.append(node);
 }
 
 void libfreehand::FHCubicBezierToElement::transform(const FHTransform &trafo)
@@ -187,7 +187,7 @@ libfreehand::FHPathElement *libfreehand::FHCubicBezierToElement::clone()
   return new FHCubicBezierToElement(m_x1, m_y1, m_x2, m_y2, m_x, m_y);
 }
 
-void libfreehand::FHQuadraticBezierToElement::writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const
+void libfreehand::FHQuadraticBezierToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   librevenge::RVNGPropertyList node;
   node.insert("librevenge:path-action", "Q");
@@ -195,7 +195,7 @@ void libfreehand::FHQuadraticBezierToElement::writeOut(std::vector<librevenge::R
   node.insert("svg:y1", m_y1);
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
-  vec.push_back(node);
+  vec.append(node);
 }
 
 void libfreehand::FHQuadraticBezierToElement::transform(const FHTransform &trafo)
@@ -209,7 +209,7 @@ libfreehand::FHPathElement *libfreehand::FHQuadraticBezierToElement::clone()
   return new FHQuadraticBezierToElement(m_x1, m_y1, m_x, m_y);
 }
 
-void libfreehand::FHArcToElement::writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const
+void libfreehand::FHArcToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   librevenge::RVNGPropertyList node;
   node.insert("librevenge:path-action", "A");
@@ -220,7 +220,7 @@ void libfreehand::FHArcToElement::writeOut(std::vector<librevenge::RVNGPropertyL
   node.insert("librevenge:sweep", m_sweep);
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
-  vec.push_back(node);
+  vec.append(node);
 }
 
 void libfreehand::FHArcToElement::transform(const FHTransform &trafo)
@@ -263,9 +263,7 @@ void libfreehand::FHPath::appendClosePath()
   m_isClosed = true;
 }
 
-libfreehand::FHPath::FHPath(const libfreehand::FHPath &path)
-  : m_elements(), m_isClosed(path.m_isClosed), m_xFormId(path.m_xFormId), m_graphicStyleId(path.m_graphicStyleId),
-    m_evenOdd(path.m_evenOdd)
+libfreehand::FHPath::FHPath(const libfreehand::FHPath &path) : m_elements(), m_isClosed(path.m_isClosed), m_xFormId(path.m_xFormId), m_graphicStyleId(path.m_graphicStyleId)
 {
   for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
     m_elements.push_back((*iter)->clone());
@@ -312,7 +310,7 @@ void libfreehand::FHPath::setEvenOdd(bool evenOdd)
   m_evenOdd = evenOdd;
 }
 
-void libfreehand::FHPath::writeOut(std::vector<librevenge::RVNGPropertyList> &vec) const
+void libfreehand::FHPath::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   for (std::vector<FHPathElement *>::const_iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
     (*iter)->writeOut(vec);

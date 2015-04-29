@@ -21,60 +21,105 @@
 namespace
 {
 
-static void _composePath(const std::vector<::librevenge::RVNGPropertyList> &segments, ::librevenge::RVNGPropertyListVector &path)
+static void _composePath(::librevenge::RVNGPropertyListVector &path, bool isClosed)
 {
-  std::vector<::librevenge::RVNGPropertyList> tmpPath;
   bool firstPoint = true;
   bool wasMove = false;
-  for (unsigned i = 0; i < segments.size(); i++)
+  double initialX = 0.0;
+  double initialY = 0.0;
+  double previousX = 0.0;
+  double previousY = 0.0;
+  double x = 0.0;
+  double y = 0.0;
+  std::vector<librevenge::RVNGPropertyList> tmpPath;
+
+  librevenge::RVNGPropertyListVector::Iter i(path);
+  for (i.rewind(); i.next();)
   {
-    if (firstPoint)
+    if (!i()["librevenge:path-action"])
+      continue;
+    if (i()["svg:x"] && i()["svg:y"])
     {
-      firstPoint = false;
-      wasMove = true;
-    }
-    else if (segments[i]["librevenge:path-action"]->getStr() == "M")
-    {
-      if (!tmpPath.empty())
+      bool ignoreM = false;
+      x = i()["svg:x"]->getDouble();
+      y = i()["svg:y"]->getDouble();
+      if (firstPoint)
       {
-        if (!wasMove)
-        {
-          if (tmpPath.back()["librevenge:path-action"]->getStr() != "Z")
-          {
-            librevenge::RVNGPropertyList closedPath;
-            closedPath.insert("librevenge:path-action", "Z");
-            tmpPath.push_back(closedPath);
-          }
-        }
+        initialX = x;
+        initialY = y;
+        firstPoint = false;
+        wasMove = true;
+      }
+      else if (i()["librevenge:path-action"]->getStr() == "M")
+      {
+        if (FH_ALMOST_ZERO(previousX - x) && FH_ALMOST_ZERO(previousY - y))
+          ignoreM = true;
         else
         {
-          tmpPath.pop_back();
+          if (!tmpPath.empty())
+          {
+            if (!wasMove)
+            {
+              if ((FH_ALMOST_ZERO(initialX - previousX) && FH_ALMOST_ZERO(initialY - previousY)) || isClosed)
+              {
+                librevenge::RVNGPropertyList node;
+                node.insert("librevenge:path-action", "Z");
+                tmpPath.push_back(node);
+              }
+            }
+            else
+              tmpPath.pop_back();
+          }
         }
+
+        if (!ignoreM)
+        {
+          initialX = x;
+          initialY = y;
+          wasMove = true;
+        }
+
       }
-      wasMove = true;
+      else
+        wasMove = false;
+
+      if (!ignoreM)
+      {
+        tmpPath.push_back(i());
+        previousX = x;
+        previousY = y;
+      }
+
     }
-    else
-      wasMove = false;
-    tmpPath.push_back(segments[i]);
+    else if (i()["librevenge:path-action"]->getStr() == "Z")
+    {
+      if (tmpPath.back()["librevenge:path-action"] && tmpPath.back()["librevenge:path-action"]->getStr() != "Z")
+        tmpPath.push_back(i());
+    }
   }
   if (!tmpPath.empty())
   {
     if (!wasMove)
     {
-      if (tmpPath.back()["librevenge:path-action"]->getStr() != "Z")
+      if ((FH_ALMOST_ZERO(initialX - previousX) && FH_ALMOST_ZERO(initialY - previousY)) || isClosed)
       {
-        librevenge::RVNGPropertyList closedPath;
-        closedPath.insert("librevenge:path-action", "Z");
-        tmpPath.push_back(closedPath);
+        if (tmpPath.back()["librevenge:path-action"] && tmpPath.back()["librevenge:path-action"]->getStr() != "Z")
+        {
+          librevenge::RVNGPropertyList closedPath;
+          closedPath.insert("librevenge:path-action", "Z");
+          tmpPath.push_back(closedPath);
+        }
       }
     }
     else
       tmpPath.pop_back();
   }
-  if (tmpPath.empty())
-    return;
-  for (unsigned i = 0; i < tmpPath.size(); ++i)
-    path.append(tmpPath[i]);
+  if (!tmpPath.empty())
+  {
+    path.clear();
+    for (std::vector<librevenge::RVNGPropertyList>::const_iterator iter = tmpPath.begin(); iter != tmpPath.end(); ++iter)
+      path.append(*iter);
+  }
 }
 
 }
@@ -247,11 +292,9 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
     fhPath.transform(m_currentTransforms.top());
   _normalizePath(fhPath);
 
-  std::vector<librevenge::RVNGPropertyList> segments;
-  fhPath.writeOut(segments);
-
   librevenge::RVNGPropertyListVector propVec;
-  _composePath(segments, propVec);
+  fhPath.writeOut(propVec);
+  _composePath(propVec, fhPath.isClosed());
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
   painter->drawPath(pList);
