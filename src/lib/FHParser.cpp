@@ -2002,56 +2002,48 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
 
 void libfreehand::FHParser::readXform(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  long startPosition = input->tell();
-  if (m_version < 9)
-    input->seek(52, librevenge::RVNG_SEEK_CUR);
-  else
-  {
-    unsigned char var1 = readU8(input);
-    unsigned char var2 = readU8(input);
-    unsigned len1 = _xformCalc(var1, var2);
-    input->seek(len1, librevenge::RVNG_SEEK_CUR);
-    var1 = readU8(input);
-    var2 = readU8(input);
-    unsigned len2 =  _xformCalc(var1, var2);
-    input->seek(len2, librevenge::RVNG_SEEK_CUR);
-  }
-  long length = input->tell() - startPosition;
-  input->seek(startPosition, librevenge::RVNG_SEEK_SET);
   double m11 = 1.0;
   double m21 = 0.0;
   double m12 = 0.0;
   double m22 = 1.0;
   double m13 = 0.0;
   double m23 = 0.0;
-  unsigned char var1 = readU8(input);
-  unsigned char var2 = readU8(input);
-  unsigned a5 = (((~var1)&0x20)>>5);
-  unsigned a4 = (((~var1)&0x10)>>4);
-  unsigned a2 = (var1&0x4)>>2;
-  unsigned a1 = (var1&0x2)>>1;
-  unsigned a0 = var1&0x1;
-
-  unsigned b6 = (var2&0x40) >> 6;
-  unsigned b5 = (var2&0x20) >> 5;
-  if (!a2)
+  if (m_version < 9)
   {
-    if (a4)
-      m11 = _readCoordinate(input);
-    if (b6)
-      m21 = _readCoordinate(input);
-    if (b5)
-      m12 = _readCoordinate(input);
-    if (a5)
-      m22 = _readCoordinate(input);
-    if (a0)
-      m13 = _readCoordinate(input) / 72.0;
-    if (a1)
-      m23 = _readCoordinate(input) / 72.0;
+    input->seek(2, librevenge::RVNG_SEEK_CUR);
+    m11 = _readCoordinate(input);
+    m21 = _readCoordinate(input);
+    m12 = _readCoordinate(input);
+    m22 = _readCoordinate(input);
+    m13 = _readCoordinate(input) / 72.0;
+    m23 = _readCoordinate(input) / 72.0;
+    input->seek(26, librevenge::RVNG_SEEK_CUR);
+  }
+  else
+  {
+    unsigned char var1 = readU8(input);
+    unsigned char var2 = readU8(input);
+    if (!(var1&0x4))
+    {
+      if (!(var1&0x10))
+        m11 = _readCoordinate(input);
+      if (var2&0x40)
+        m21 = _readCoordinate(input);
+      if (var2&0x20)
+        m12 = _readCoordinate(input);
+      if (!(var1&0x20))
+        m22 = _readCoordinate(input);
+      if (var1&0x1)
+        m13 = _readCoordinate(input) / 72.0;
+      if (var1&0x2)
+        m23 = _readCoordinate(input) / 72.0;
+    }
+    var1 = readU8(input);
+    var2 = readU8(input);
+    input->seek(_xformCalc(var1, var2), librevenge::RVNG_SEEK_CUR);
   }
   if (collector)
     collector->collectXform(m_currentRecord+1, m11, m21, m12, m22, m13, m23);
-  input->seek(startPosition+length, librevenge::RVNG_SEEK_SET);
 }
 
 unsigned libfreehand::FHParser::_readRecordId(librevenge::RVNGInputStream *input)
@@ -2064,18 +2056,22 @@ unsigned libfreehand::FHParser::_readRecordId(librevenge::RVNGInputStream *input
 
 unsigned libfreehand::FHParser::_xformCalc(unsigned char var1, unsigned char var2)
 {
-  unsigned a5 = (((~var1)&0x20)>>5);
-  unsigned a4 = (((~var1)&0x10)>>4);
-  unsigned a2 = (var1&0x4)>>2;
-  unsigned a1 = (var1&0x2)>>1;
-  unsigned a0 = var1&0x1;
-
-  unsigned b6 = (var2&0x40) >> 6;
-  unsigned b5 = (var2&0x20) >> 5;
-  if (a2)
+  if (var1&0x4)
     return 0;
-
-  return (a5+a4+a1+a0+b6+b5)*4;
+  unsigned length = 0;
+  if (!(var1&0x20))
+    length += 4;
+  if (!(var1&0x10))
+    length += 4;
+  if (var1&0x2)
+    length += 4;
+  if (var1&0x1)
+    length += 4;
+  if (var2&0x40)
+    length += 4;
+  if (var2&0x20)
+    length += 4;
+  return length;
 }
 
 double libfreehand::FHParser::_readCoordinate(librevenge::RVNGInputStream *input)
