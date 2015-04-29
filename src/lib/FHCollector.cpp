@@ -44,8 +44,7 @@ void libfreehand::FHCollector::collectName(unsigned recordId, const librevenge::
   m_names[name] = recordId;
 }
 
-void libfreehand::FHCollector::collectPath(unsigned recordId, unsigned /* graphicStyle */, unsigned /* layer */,
-                                           const libfreehand::FHPath &path, bool /* evenOdd */)
+void libfreehand::FHCollector::collectPath(unsigned recordId, const libfreehand::FHPath &path)
 {
   m_paths[recordId] = path;
 }

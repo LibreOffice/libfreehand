@@ -32,7 +32,7 @@ public:
 class FHPath : public FHPathElement
 {
 public:
-  FHPath() : m_elements(), m_isClosed(false), m_xFormId(0) {}
+  FHPath() : m_elements(), m_isClosed(false), m_xFormId(0), m_graphicStyleId(0), m_evenOdd(false) {}
   FHPath(const FHPath &path);
   ~FHPath();
 
@@ -45,7 +45,9 @@ public:
   void appendArcTo(double rx, double ry, double rotation, bool longAngle, bool sweep, double x, double y);
   void appendClosePath();
   void appendPath(const FHPath &path);
-  void setXFormId(unsigned short xFormId);
+  void setXFormId(unsigned xFormId);
+  void setGraphicStyleId(unsigned graphicStyleId);
+  void setEvenOdd(bool evenOdd);
 
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
@@ -54,12 +56,16 @@ public:
   void clear();
   bool empty() const;
   bool isClosed() const;
-  unsigned short getXFormId() const;
+  unsigned getXFormId() const;
+  unsigned getGraphicStyleId() const;
+  bool getEvenOdd() const;
 
 private:
   std::vector<FHPathElement *> m_elements;
   bool m_isClosed;
-  unsigned short m_xFormId;
+  unsigned m_xFormId;
+  unsigned m_graphicStyleId;
+  bool m_evenOdd;
 };
 
 } // namespace libfreehand

@@ -263,11 +263,10 @@ void libfreehand::FHPath::appendClosePath()
   m_isClosed = true;
 }
 
-libfreehand::FHPath::FHPath(const libfreehand::FHPath &path) : m_elements(), m_isClosed(false)
+libfreehand::FHPath::FHPath(const libfreehand::FHPath &path) : m_elements(), m_isClosed(path.m_isClosed), m_xFormId(path.m_xFormId), m_graphicStyleId(path.m_graphicStyleId)
 {
   for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
     m_elements.push_back((*iter)->clone());
-  m_isClosed = path.isClosed();
 }
 
 libfreehand::FHPath &libfreehand::FHPath::operator=(const libfreehand::FHPath &path)
@@ -278,7 +277,9 @@ libfreehand::FHPath &libfreehand::FHPath::operator=(const libfreehand::FHPath &p
   clear();
   for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
     m_elements.push_back((*iter)->clone());
-  m_isClosed = path.isClosed();
+  m_isClosed = path.m_isClosed;
+  m_xFormId = path.m_xFormId;
+  m_graphicStyleId = path.m_graphicStyleId;
   return *this;
 }
 
@@ -294,9 +295,19 @@ void libfreehand::FHPath::appendPath(const FHPath &path)
     m_elements.push_back((*iter)->clone());
 }
 
-void libfreehand::FHPath::setXFormId(unsigned short xFormId)
+void libfreehand::FHPath::setXFormId(unsigned xFormId)
 {
   m_xFormId = xFormId;
+}
+
+void libfreehand::FHPath::setGraphicStyleId(unsigned graphicStyleId)
+{
+  m_graphicStyleId = graphicStyleId;
+}
+
+void libfreehand::FHPath::setEvenOdd(bool evenOdd)
+{
+  m_evenOdd = evenOdd;
 }
 
 void libfreehand::FHPath::writeOut(librevenge::RVNGPropertyListVector &vec) const
@@ -323,6 +334,8 @@ void libfreehand::FHPath::clear()
       delete(*iter);
   m_elements.clear();
   m_isClosed = false;
+  m_xFormId = 0;
+  m_graphicStyleId = 0;
 }
 
 bool libfreehand::FHPath::empty() const
@@ -335,9 +348,19 @@ bool libfreehand::FHPath::isClosed() const
   return m_isClosed;
 }
 
-unsigned short libfreehand::FHPath::getXFormId() const
+unsigned libfreehand::FHPath::getXFormId() const
 {
   return m_xFormId;
+}
+
+unsigned libfreehand::FHPath::getGraphicStyleId() const
+{
+  return m_graphicStyleId;
+}
+
+bool libfreehand::FHPath::getEvenOdd() const
+{
+  return m_evenOdd;
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

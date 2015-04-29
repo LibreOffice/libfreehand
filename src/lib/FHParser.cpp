@@ -1232,7 +1232,7 @@ void libfreehand::FHParser::readOpacityFilter(librevenge::RVNGInputStream *input
 void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short graphicStyle = _readRecordId(input);
-  unsigned short layer = _readRecordId(input);
+  _readRecordId(input); // Layer
   if (m_version > 3)
     input->seek(4, librevenge::RVNG_SEEK_CUR);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
@@ -1304,8 +1304,10 @@ void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfree
     path.appendClosePath();
   }
   path.setXFormId(xform);
+  path.setGraphicStyleId(graphicStyle);
+  path.setEvenOdd(true);
   if (collector && !path.empty())
-    collector->collectPath(m_currentRecord+1, graphicStyle, layer, path, true);
+    collector->collectPath(m_currentRecord+1, path);
 }
 
 void libfreehand::FHParser::readParagraph(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -1410,8 +1412,10 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
     fhPath.appendClosePath();
   }
 
+  fhPath.setGraphicStyleId(graphicStyle);
+  fhPath.setEvenOdd(evenOdd);
   if (collector && !fhPath.empty())
-    collector->collectPath(m_currentRecord+1, graphicStyle, 0, fhPath, evenOdd);
+    collector->collectPath(m_currentRecord+1, fhPath);
 }
 
 void libfreehand::FHParser::readPathTextLineInfo(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1445,7 +1449,7 @@ void libfreehand::FHParser::readPerspectiveGrid(librevenge::RVNGInputStream *inp
 void libfreehand::FHParser::readPolygonFigure(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short graphicStyle = _readRecordId(input);
-  unsigned short layer = _readRecordId(input);
+  _readRecordId(input); // Layer
   input->seek(12, librevenge::RVNG_SEEK_CUR);
   unsigned short xform = _readRecordId(input);
   unsigned short numSegments = readU16(input);
@@ -1484,8 +1488,10 @@ void libfreehand::FHParser::readPolygonFigure(librevenge::RVNGInputStream *input
   path.appendClosePath();
   input->seek(8, librevenge::RVNG_SEEK_CUR);
   path.setXFormId(xform);
+  path.setGraphicStyleId(graphicStyle);
+  path.setEvenOdd(evenodd);
   if (collector && !path.empty())
-    collector->collectPath(m_currentRecord+1, graphicStyle, layer, path, evenodd);
+    collector->collectPath(m_currentRecord+1, path);
 }
 
 void libfreehand::FHParser::readProcedure(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1534,12 +1540,12 @@ void libfreehand::FHParser::readRaggedFilter(librevenge::RVNGInputStream *input,
 
 void libfreehand::FHParser::readRectangle(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  unsigned short graphicStyle = readU16(input);
-  unsigned short layer = readU16(input);
+  unsigned graphicStyle = _readRecordId(input);
+  _readRecordId(input);
   if (m_version > 3)
     input->seek(4, librevenge::RVNG_SEEK_CUR);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
-  unsigned short xform = readU16(input);
+  unsigned xform = _readRecordId(input);
   double x1 = _readCoordinate(input) / 72.0;
   double y1 = _readCoordinate(input) / 72.0;
   double x2 = _readCoordinate(input) / 72.0;
@@ -1615,8 +1621,10 @@ void libfreehand::FHParser::readRectangle(librevenge::RVNGInputStream *input, li
   path.appendClosePath();
 
   path.setXFormId(xform);
+  path.setGraphicStyleId(graphicStyle);
+  path.setEvenOdd(true);
   if (collector && !path.empty())
-    collector->collectPath(m_currentRecord+1, graphicStyle, layer, path, true);
+    collector->collectPath(m_currentRecord+1, path);
 }
 
 void libfreehand::FHParser::readSketchFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

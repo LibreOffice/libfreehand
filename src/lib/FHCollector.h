@@ -30,8 +30,7 @@ public:
   // collector functions
   void collectString(unsigned recordId, const librevenge::RVNGString &str);
   void collectName(unsigned recordId, const librevenge::RVNGString &str);
-  void collectPath(unsigned recordId, unsigned graphicStyle, unsigned layer,
-                   const FHPath &path, bool evenodd);
+  void collectPath(unsigned recordId, const FHPath &path);
   void collectXform(unsigned recordId, double m11, double m21,
                     double m12, double m22, double m13, double m23);
   void collectFHTail(unsigned recordId, const FHTail &fhTail);
