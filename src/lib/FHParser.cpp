@@ -832,8 +832,8 @@ void libfreehand::FHParser::readElemPropLst(librevenge::RVNGInputStream *input, 
   if (m_version <= 8)
     input->seek(2, librevenge::RVNG_SEEK_CUR);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  FHPropList propertyList;
   _readRecordId(input);
+  FHPropList propertyList;
   propertyList.m_parentId = _readRecordId(input);
   _readPropLstElements(input, propertyList, size);
   if (collector)
@@ -1003,33 +1003,29 @@ void libfreehand::FHParser::readImageFill(librevenge::RVNGInputStream *input, li
 
 void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  long startPosition = input->tell();
   _readRecordId(input);
   _readRecordId(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
-  unsigned recid = _readRecordId(input);
+  if (m_version > 3)
+    input->seek(4, librevenge::RVNG_SEEK_CUR);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input);
   _readRecordId(input);
   _readRecordId(input);
   _readRecordId(input);
 
   if (m_version > 8)
     input->seek(34, librevenge::RVNG_SEEK_CUR);
-  else if (m_version == 8)
+  else
     input->seek(32, librevenge::RVNG_SEEK_CUR);
-  else if (m_version < 8)
-    input->seek(28, librevenge::RVNG_SEEK_CUR);
 
-  if (recid)
+  if (m_version > 8)
   {
     while (readU8(input))
     {
     }
   }
   if (m_version > 10)
-  {
-    while ((input->tell() - startPosition) % 4)
-      readU8(input);
-  }
+    input->seek(2, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
