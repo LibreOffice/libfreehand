@@ -1499,9 +1499,14 @@ void libfreehand::FHParser::readProcedure(librevenge::RVNGInputStream *input, li
   input->seek(4, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readProcessColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readProcessColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(22, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FHRGBColor color = _readColor(input);
+  input->seek(12, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectColor(m_currentRecord+1, color);
 }
 
 void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -1632,9 +1637,14 @@ void libfreehand::FHParser::readSketchFilter(librevenge::RVNGInputStream *input,
   input->seek(11, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readSpotColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readSpotColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(26, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FHRGBColor color = _readColor(input);
+  input->seek(16, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectColor(m_currentRecord+1, color);
 }
 
 void libfreehand::FHParser::readSpotColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -1807,9 +1817,14 @@ void libfreehand::FHParser::readTileFill(librevenge::RVNGInputStream *input, lib
   input->seek(28, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readTintColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTintColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(20, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FHRGBColor color = _readColor(input);
+  input->seek(10, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectColor(m_currentRecord+1, color);
 }
 
 void libfreehand::FHParser::readTintColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
