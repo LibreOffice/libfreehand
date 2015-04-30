@@ -105,6 +105,7 @@ TaperedFillX
 TEffect
 TextBlok
 TextColumn
+TextEffs
 TextInPath
 TFOnPath
 TileFill
