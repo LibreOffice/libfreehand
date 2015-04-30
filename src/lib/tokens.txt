@@ -74,6 +74,7 @@ NewContourFill
 NewRadialFill
 OpacityFilter
 Oval
+PantoneColor
 Paragraph
 Path
 PathTextLineInfo

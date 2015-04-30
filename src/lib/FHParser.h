@@ -165,6 +165,7 @@ private:
   void readNewRadialFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readOpacityFilter(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readOval(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readPantoneColor(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readParagraph(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPath(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPathTextLineInfo(librevenge::RVNGInputStream *input, FHCollector *collector);
