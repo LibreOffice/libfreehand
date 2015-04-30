@@ -803,7 +803,10 @@ void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, 
     adj = 18;
   else if (size2 == size1)
     size2 = 1;
-  input->seek(8+size1+1+size2*30+adj, librevenge::RVNG_SEEK_CUR);
+  if (m_version < 5)
+    input->seek(size1+size2*30+adj-51, librevenge::RVNG_SEEK_CUR);
+  else
+    input->seek(size1+size2*30+adj+9, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readDuetFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1000,6 +1003,7 @@ void libfreehand::FHParser::readImageFill(librevenge::RVNGInputStream *input, li
 
 void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
+  long startPosition = input->tell();
   _readRecordId(input);
   _readRecordId(input);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
@@ -1008,17 +1012,24 @@ void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, 
   _readRecordId(input);
   _readRecordId(input);
 
-  if (m_version > 10)
-    input->seek(36, librevenge::RVNG_SEEK_CUR);
-  else if (m_version > 8)
+  if (m_version > 8)
     input->seek(34, librevenge::RVNG_SEEK_CUR);
   else if (m_version == 8)
     input->seek(32, librevenge::RVNG_SEEK_CUR);
   else if (m_version < 8)
     input->seek(28, librevenge::RVNG_SEEK_CUR);
 
-  if (recid > 0)
-    input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (recid)
+  {
+    while (readU8(input))
+    {
+    }
+  }
+  if (m_version > 10)
+  {
+    while ((input->tell() - startPosition) % 4)
+      readU8(input);
+  }
 }
 
 void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -1366,25 +1377,25 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
   std::vector<unsigned char> ptrTypes;
   std::vector<std::vector<std::pair<double, double> > > path;
 
-  for (unsigned short i = 0; i < numPoints  && !input->isEnd(); ++i)
-  {
-    input->seek(1, librevenge::RVNG_SEEK_CUR);
-    ptrTypes.push_back(readU8(input));
-    input->seek(1, librevenge::RVNG_SEEK_CUR);
-    std::vector<std::pair<double, double> > segment;
-    for (unsigned short j = 0; j < 3 && !input->isEnd(); ++j)
-    {
-      double x = _readCoordinate(input);
-      double y = _readCoordinate(input);
-      std::pair<double, double> tmpPoint = std::make_pair(x, y);
-      segment.push_back(tmpPoint);
-    }
-    path.push_back(segment);
-    segment.clear();
-  }
-  input->seek((size-numPoints)*27, librevenge::RVNG_SEEK_CUR);
   try
   {
+    for (unsigned short i = 0; i < numPoints  && !input->isEnd(); ++i)
+    {
+      input->seek(1, librevenge::RVNG_SEEK_CUR);
+      ptrTypes.push_back(readU8(input));
+      input->seek(1, librevenge::RVNG_SEEK_CUR);
+      std::vector<std::pair<double, double> > segment;
+      for (unsigned short j = 0; j < 3 && !input->isEnd(); ++j)
+      {
+        double x = _readCoordinate(input);
+        double y = _readCoordinate(input);
+        std::pair<double, double> tmpPoint = std::make_pair(x, y);
+        segment.push_back(tmpPoint);
+      }
+      path.push_back(segment);
+      segment.clear();
+    }
+    input->seek((size-numPoints)*27, librevenge::RVNG_SEEK_CUR);
   }
   catch (const EndOfStreamException &)
   {
