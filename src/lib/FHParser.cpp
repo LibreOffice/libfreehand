@@ -830,9 +830,9 @@ void libfreehand::FHParser::readElemPropLst(librevenge::RVNGInputStream *input, 
   if (m_version <= 8)
     input->seek(2, librevenge::RVNG_SEEK_CUR);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
   FHPropList propertyList;
   propertyList.m_parentId = _readRecordId(input);
+  _readRecordId(input);
   _readPropLstElements(input, propertyList, size);
   if (collector)
     collector->collectPropList(m_currentRecord+1, propertyList);
