@@ -195,6 +195,7 @@ private:
   void readTaperedFillX(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readTEffect(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readTextBlok(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readTextEffs(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readTextObject(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readTileFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readTintColor(librevenge::RVNGInputStream *input, FHCollector *collector);

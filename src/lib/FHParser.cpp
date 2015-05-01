@@ -459,6 +459,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
   case FH_TFONPATH:
     readTextObject(input, collector);
     break;
+  case FH_TEXTEFFS:
+    readTextEffs(input, collector);
+    break;
   case FH_TILEFILL:
     readTileFill(input, collector);
     break;
@@ -795,18 +798,13 @@ void libfreehand::FHParser::readDateTime(librevenge::RVNGInputStream *input, lib
 
 void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  input->seek(0x7a, librevenge::RVNG_SEEK_CUR);
+  input->seek(70, librevenge::RVNG_SEEK_CUR);
+  unsigned size0 = readU16(input);
+  input->seek(6, librevenge::RVNG_SEEK_CUR);
+  unsigned size3 = readU8(input);
+  input->seek(43, librevenge::RVNG_SEEK_CUR);
   unsigned size1 = readU16(input);
-  unsigned size2 = readU16(input);
-  unsigned adj = 0;
-  if (!size2)
-    adj = 18;
-  else if (size2 == size1)
-    size2 = 1;
-  if (m_version < 5)
-    input->seek(size1+size2*30+adj-51, librevenge::RVNG_SEEK_CUR);
-  else
-    input->seek(size1+size2*30+adj+9, librevenge::RVNG_SEEK_CUR);
+  input->seek(size1+size0*(1+size3)-19, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readDuetFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1774,6 +1772,11 @@ void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, lib
   _appendUTF16(text, characters);
   FH_DEBUG_MSG(("FHParser::readTextBlock %s\n", text.cstr()));
 #endif
+}
+
+void libfreehand::FHParser::readTextEffs(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+{
+  input->seek(0xf4, librevenge::RVNG_SEEK_CUR); // bogus based on one file
 }
 
 void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
