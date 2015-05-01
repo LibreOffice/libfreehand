@@ -46,6 +46,7 @@ public:
   void collectTextObject(unsigned recordId, const FHTextObject &textObject);
   void collectCharProps(unsigned recordId, const FHCharProperties &charProps);
   void collectPropList(unsigned recordId, const FHPropList &propertyList);
+  void collectDisplayText(unsigned recordId, const FHDisplayText &displayText);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -69,6 +70,7 @@ private:
   void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter);
   void _outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
                       unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);
@@ -90,6 +92,7 @@ private:
   const FHBasicFill *_findBasicFill(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findColor(unsigned id);
+  const FHDisplayText *_findDisplayText(unsigned id);
   ::librevenge::RVNGString getColorString(const FHRGBColor &color);
 
   FHPageInfo m_pageInfo;
@@ -114,6 +117,7 @@ private:
   std::map<unsigned, FHBasicFill> m_basicFills;
   std::map<unsigned, FHPropList> m_propertyLists;
   std::map<unsigned, FHBasicLine> m_basicLines;
+  std::map<unsigned, FHDisplayText> m_displayTexts;
 
   unsigned m_strokeId;
   unsigned m_fillId;

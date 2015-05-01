@@ -796,15 +796,50 @@ void libfreehand::FHParser::readDateTime(librevenge::RVNGInputStream *input, lib
   input->seek(14, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(70, librevenge::RVNG_SEEK_CUR);
-  unsigned size0 = readU16(input);
-  input->seek(6, librevenge::RVNG_SEEK_CUR);
-  unsigned size3 = readU8(input);
-  input->seek(43, librevenge::RVNG_SEEK_CUR);
-  unsigned size1 = readU16(input);
-  input->seek(size1+size0*(1+size3)-19, librevenge::RVNG_SEEK_CUR);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FHDisplayText displayText;
+  displayText.m_graphicStyleId = _readRecordId(input);
+  _readRecordId(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  displayText.m_xFormId = _readRecordId(input);
+  input->seek(16, librevenge::RVNG_SEEK_CUR);
+  double dimR = _readCoordinate(input) / 72.0;
+  double dimB = _readCoordinate(input) / 72.0;
+  double dimL = _readCoordinate(input) / 72.0;
+  double dimT = _readCoordinate(input) / 72.0;
+  displayText.m_startX = dimL;
+  displayText.m_startY = dimT;
+  displayText.m_width = dimR - dimL;
+  displayText.m_height = dimT - dimB;
+  input->seek(26, librevenge::RVNG_SEEK_CUR);
+  unsigned short flag = readU16(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  unsigned short textLength = readU16(input);
+  input->seek(44, librevenge::RVNG_SEEK_CUR);
+  unsigned short charOffset = 0;
+  if (flag & 0xf)
+  {
+    while (charOffset < textLength)
+    {
+      charOffset = readU16(input);
+      input->seek(10, librevenge::RVNG_SEEK_CUR);
+    }
+  }
+  charOffset = 0;
+  while (charOffset < textLength)
+  {
+    charOffset = readU16(input);
+    input->seek(28, librevenge::RVNG_SEEK_CUR);
+  }
+  for (unsigned short i = 0; i <= textLength; ++i)
+  {
+    displayText.m_characters.push_back(readU8(input));
+  }
+  displayText.m_characters.push_back(0);
+  if (collector)
+    collector->collectDisplayText(m_currentRecord+1, displayText);
 }
 
 void libfreehand::FHParser::readDuetFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

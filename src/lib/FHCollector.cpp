@@ -127,7 +127,7 @@ static void _composePath(::librevenge::RVNGPropertyListVector &path, bool isClos
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
-  m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists(),
+  m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
   m_strokeId(0), m_fillId(0)
 {
 }
@@ -254,6 +254,11 @@ void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropLi
   m_propertyLists[recordId] = propertyList;
 }
 
+void libfreehand::FHCollector::collectDisplayText(unsigned recordId, const FHDisplayText &displayText)
+{
+  m_displayTexts[recordId] = displayText;
+}
+
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
 {
   FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_minX, m_pageInfo.m_maxY);
@@ -331,6 +336,8 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
       _outputGroup(_findGroup(*iterVec), painter);
       _outputPath(_findPath(*iterVec), painter);
       _outputCompositePath(_findCompositePath(*iterVec), painter);
+      _outputTextObject(_findTextObject(*iterVec), painter);
+      _outputDisplayText(_findDisplayText(*iterVec), painter);
     }
     painter->closeGroup();
   }
@@ -413,6 +420,7 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNG
     _outputPath(_findPath(*iterVec), painter);
     _outputCompositePath(_findCompositePath(*iterVec), painter);
     _outputTextObject(_findTextObject(*iterVec), painter);
+    _outputDisplayText(_findDisplayText(*iterVec), painter);
   }
 }
 
@@ -515,6 +523,87 @@ void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *
   }
 
   painter->closeParagraph();
+}
+
+void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !displayText)
+    return;
+
+  double xa = displayText->m_startX;
+  double ya = displayText->m_startY;
+  double xb = displayText->m_startX + displayText->m_width;
+  double yb = displayText->m_startY + displayText->m_height;
+  double xc = xa;
+  double yc = yb;
+  unsigned xFormId = displayText->m_xFormId;
+  if (xFormId)
+  {
+    const FHTransform *trafo = _findTransform(xFormId);
+    if (trafo)
+    {
+      trafo->applyToPoint(xa, ya);
+      trafo->applyToPoint(xb, yb);
+      trafo->applyToPoint(xc, yc);
+    }
+  }
+  std::stack<FHTransform> groupTransforms = m_currentTransforms;
+  if (!m_currentTransforms.empty())
+  {
+    m_currentTransforms.top().applyToPoint(xa, ya);
+    m_currentTransforms.top().applyToPoint(xb, yb);
+    m_currentTransforms.top().applyToPoint(xc, yc);
+  }
+  _normalizePoint(xa, ya);
+  _normalizePoint(xb, yb);
+  _normalizePoint(xc, yc);
+  double rotation = atan2(yb-yc, xb-xc);
+  double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
+  double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
+  double xmid = (xa + xb) / 2.0;
+  double ymid = (ya + yb) / 2.0;
+
+  ::librevenge::RVNGPropertyList textObjectProps;
+  textObjectProps.insert("svg:x", xmid - displayText->m_width / 2.0);
+  textObjectProps.insert("svg:y", ymid + displayText->m_height / 2.0);
+  textObjectProps.insert("svg:height", height);
+  textObjectProps.insert("svg:width", width);
+  if (!FH_ALMOST_ZERO(rotation))
+    textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
+
+  painter->startTextObject(textObjectProps);
+
+  painter->openParagraph(librevenge::RVNGPropertyList());
+
+  painter->openSpan(librevenge::RVNGPropertyList());
+
+  librevenge::RVNGString text;
+  for (std::vector<unsigned char>::const_iterator iter = displayText->m_characters.begin();
+       iter != displayText->m_characters.end(); ++iter)
+  {
+    if (*iter == 0xd)
+    {
+      if (!text.empty())
+      {
+        painter->insertText(text);
+        text.clear();
+      }
+      painter->insertLineBreak();
+    }
+    else
+      _appendMacRoman(text, *iter);
+  }
+  if (!text.empty())
+  {
+    painter->insertText(text);
+    text.clear();
+  }
+
+  painter->closeSpan();
+
+  painter->closeParagraph();
+
+  painter->endTextObject();
 }
 
 void libfreehand::FHCollector::_outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
@@ -754,6 +843,14 @@ const libfreehand::FHRGBColor *libfreehand::FHCollector::_findColor(unsigned id)
 {
   std::map<unsigned, FHRGBColor>::const_iterator iter = m_colors.find(id);
   if (iter != m_colors.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHDisplayText *libfreehand::FHCollector::_findDisplayText(unsigned id)
+{
+  std::map<unsigned, FHDisplayText>::const_iterator iter = m_displayTexts.find(id);
+  if (iter != m_displayTexts.end())
     return &(iter->second);
   return 0;
 }

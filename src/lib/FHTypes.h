@@ -154,6 +154,21 @@ struct FHBasicFill
   FHBasicFill() : m_colorId(0) {}
 };
 
+struct FHDisplayText
+{
+  unsigned m_graphicStyleId;
+  unsigned m_xFormId;
+  double m_startX;
+  double m_startY;
+  double m_width;
+  double m_height;
+  std::vector<unsigned char> m_characters;
+  FHDisplayText()
+    : m_graphicStyleId(0), m_xFormId(0),
+      m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0),
+      m_characters() {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */
