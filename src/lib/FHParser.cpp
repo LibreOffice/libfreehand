@@ -817,7 +817,16 @@ void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, 
   unsigned short flag = readU16(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short textLength = readU16(input);
-  input->seek(44, librevenge::RVNG_SEEK_CUR);
+
+  input->seek(10, librevenge::RVNG_SEEK_CUR);
+  displayText.m_fontNameId = _readRecordId(input);
+  displayText.m_fontSize = _readCoordinate(input);
+
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  displayText.m_fontStyle = readU32(input);
+  displayText.m_fontColorId = _readRecordId(input);
+
+  input->seek(18, librevenge::RVNG_SEEK_CUR);
   unsigned short charOffset = 0;
   if (flag & 0xf)
   {

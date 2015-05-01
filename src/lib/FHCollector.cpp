@@ -575,7 +575,27 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
 
   painter->openParagraph(librevenge::RVNGPropertyList());
 
-  painter->openSpan(librevenge::RVNGPropertyList());
+  librevenge::RVNGPropertyList propList;
+
+  if (displayText->m_fontNameId)
+  {
+    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(displayText->m_fontNameId);
+    if (iterString != m_strings.end())
+      propList.insert("fo:font-name", iterString->second);
+  }
+  propList.insert("fo:font-size", displayText->m_fontSize, librevenge::RVNG_POINT);
+  if (displayText->m_fontColorId)
+  {
+    std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(displayText->m_fontColorId);
+    if (iterColor != m_colors.end())
+      propList.insert("fo:color", getColorString(iterColor->second));
+  }
+  if (displayText->m_fontStyle & 1)
+    propList.insert("fo:font-weight", "bold");
+  if (displayText->m_fontStyle & 2)
+    propList.insert("fo:font-style", "italic");
+
+  painter->openSpan(propList);
 
   librevenge::RVNGString text;
   for (std::vector<unsigned char>::const_iterator iter = displayText->m_characters.begin();

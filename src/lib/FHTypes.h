@@ -162,11 +162,16 @@ struct FHDisplayText
   double m_startY;
   double m_width;
   double m_height;
+  unsigned m_fontNameId;
+  double m_fontSize;
+  unsigned m_fontStyle;
+  unsigned m_fontColorId;
   std::vector<unsigned char> m_characters;
   FHDisplayText()
     : m_graphicStyleId(0), m_xFormId(0),
       m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0),
-      m_characters() {}
+      m_fontNameId(0), m_fontSize(12.0), m_fontStyle(0),
+      m_fontColorId(0), m_characters() {}
 };
 
 } // namespace libfreehand
