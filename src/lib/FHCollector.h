@@ -73,7 +73,9 @@ private:
   void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
+  void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, const FH3ParaProperties &paraProps);
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);
+  void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps);
   void _appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId);
   void _appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
   void _appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);

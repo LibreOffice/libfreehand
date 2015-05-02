@@ -813,40 +813,37 @@ void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, 
   displayText.m_startY = dimT;
   displayText.m_width = dimR - dimL;
   displayText.m_height = dimT - dimB;
-  input->seek(26, librevenge::RVNG_SEEK_CUR);
-  unsigned short flag = readU16(input);
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  input->seek(32, librevenge::RVNG_SEEK_CUR);
   unsigned short textLength = readU16(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  FH3CharProperties charProps;
+  charProps.m_offset = readU16(input);
 
-  input->seek(10, librevenge::RVNG_SEEK_CUR);
-  displayText.m_fontNameId = _readRecordId(input);
-  displayText.m_fontSize = _readCoordinate(input);
+  input->seek(6, librevenge::RVNG_SEEK_CUR);
+  charProps.m_fontNameId = _readRecordId(input);
+  charProps.m_fontSize = _readCoordinate(input);
 
   input->seek(4, librevenge::RVNG_SEEK_CUR);
-  displayText.m_fontStyle = readU32(input);
-  displayText.m_fontColorId = _readRecordId(input);
+  charProps.m_fontStyle = readU32(input);
+  charProps.m_fontColorId = _readRecordId(input);
 
   input->seek(18, librevenge::RVNG_SEEK_CUR);
-  unsigned short charOffset = 0;
-  if (flag & 0xf)
+  displayText.m_charProps.push_back(charProps);
+  while (charProps.m_offset < textLength)
   {
-    while (charOffset < textLength)
-    {
-      charOffset = readU16(input);
-      input->seek(10, librevenge::RVNG_SEEK_CUR);
-    }
+    _readFH3CharProperties(input, charProps);
+    displayText.m_charProps.push_back(charProps);
   }
-  charOffset = 0;
-  while (charOffset < textLength)
+  FH3ParaProperties paraProps;
+  while (paraProps.m_offset < textLength)
   {
-    charOffset = readU16(input);
-    input->seek(28, librevenge::RVNG_SEEK_CUR);
+    _readFH3ParaProperties(input, paraProps);
+    displayText.m_paraProps.push_back(paraProps);
   }
   for (unsigned short i = 0; i <= textLength; ++i)
   {
     displayText.m_characters.push_back(readU8(input));
   }
-  displayText.m_characters.push_back(0);
   if (collector)
     collector->collectDisplayText(m_currentRecord+1, displayText);
 }
@@ -2177,5 +2174,48 @@ void libfreehand::FHParser::_readPropLstElements(librevenge::RVNGInputStream *in
       propertyList.m_elements[nameId] = valueId;
   }
 }
+
+void libfreehand::FHParser::_readFH3CharProperties(librevenge::RVNGInputStream *input, FH3CharProperties &charProps)
+{
+  charProps.m_offset = readU16(input);
+  unsigned flags = readU16(input);
+  if (flags & 0x1)// some kind of float
+    _readCoordinate(input);
+  if (flags & 0x2) // kerning
+    _readCoordinate(input);
+  if (flags & 0x4)
+    charProps.m_fontNameId = _readRecordId(input);
+  if (flags & 0x8)
+    charProps.m_fontSize = _readCoordinate(input);
+  if (flags & 0x10)
+  {
+    FH_DEBUG_MSG(("FHParser::_readFH3CharProperties: NEW FLAG IN DISPLAY TEXT! %x\n", flags));
+  }
+  if (flags & 0x20)
+    charProps.m_fontStyle = readU32(input);
+  if (flags & 0x40)
+    charProps.m_fontColorId = _readRecordId(input);
+  if (flags & 0x80)
+    charProps.m_textEffsId = _readRecordId(input);
+  if (flags & 0x100)
+    _readCoordinate(input);
+  if (flags & 0x200)
+    _readCoordinate(input);
+  if (flags & 0x400)
+    _readCoordinate(input);
+  if (flags & 0x800)
+    charProps.m_baselineShift = _readCoordinate(input);
+  if (flags & 0x1000)
+  {
+    FH_DEBUG_MSG(("FHParser::_readFH3CharProperties: NEW FLAG IN DISPLAY TEXT! %x\n", flags));
+  }
+}
+
+void libfreehand::FHParser::_readFH3ParaProperties(librevenge::RVNGInputStream *input, FH3ParaProperties &paraProps)
+{
+  paraProps.m_offset = readU16(input);
+  input->seek(28, librevenge::RVNG_SEEK_CUR);
+}
+
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

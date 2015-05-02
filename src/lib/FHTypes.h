@@ -154,6 +154,26 @@ struct FHBasicFill
   FHBasicFill() : m_colorId(0) {}
 };
 
+struct FH3CharProperties
+{
+  unsigned m_offset;
+  unsigned m_fontNameId;
+  double m_fontSize;
+  unsigned m_fontStyle;
+  unsigned m_fontColorId;
+  unsigned m_textEffsId;
+  double m_baselineShift;
+  FH3CharProperties()
+    : m_offset(0), m_fontNameId(0), m_fontSize(12.0), m_fontStyle(0),
+      m_fontColorId(0), m_textEffsId(0), m_baselineShift(0.0) {}
+};
+
+struct FH3ParaProperties
+{
+  unsigned m_offset;
+  FH3ParaProperties() : m_offset(0) {}
+};
+
 struct FHDisplayText
 {
   unsigned m_graphicStyleId;
@@ -162,16 +182,13 @@ struct FHDisplayText
   double m_startY;
   double m_width;
   double m_height;
-  unsigned m_fontNameId;
-  double m_fontSize;
-  unsigned m_fontStyle;
-  unsigned m_fontColorId;
+  std::vector<FH3CharProperties> m_charProps;
+  std::vector<FH3ParaProperties> m_paraProps;
   std::vector<unsigned char> m_characters;
   FHDisplayText()
     : m_graphicStyleId(0), m_xFormId(0),
       m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0),
-      m_fontNameId(0), m_fontSize(12.0), m_fontStyle(0),
-      m_fontColorId(0), m_characters() {}
+      m_charProps(), m_paraProps(), m_characters() {}
 };
 
 } // namespace libfreehand

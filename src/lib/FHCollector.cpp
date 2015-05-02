@@ -525,6 +525,31 @@ void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *
   painter->closeParagraph();
 }
 
+void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps)
+{
+  if (charProps.m_fontNameId)
+  {
+    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(charProps.m_fontNameId);
+    if (iterString != m_strings.end())
+      propList.insert("fo:font-name", iterString->second);
+  }
+  propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
+  if (charProps.m_fontColorId)
+  {
+    std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(charProps.m_fontColorId);
+    if (iterColor != m_colors.end())
+      propList.insert("fo:color", getColorString(iterColor->second));
+  }
+  if (charProps.m_fontStyle & 1)
+    propList.insert("fo:font-weight", "bold");
+  if (charProps.m_fontStyle & 2)
+    propList.insert("fo:font-style", "italic");
+}
+
+void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, const FH3ParaProperties & /* paraProps */)
+{
+}
+
 void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter)
 {
   if (!painter || !displayText)
@@ -573,55 +598,88 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
 
   painter->startTextObject(textObjectProps);
 
+  std::vector<FH3ParaProperties>::const_iterator iterPara = displayText->m_paraProps.begin();
+  std::vector<FH3CharProperties>::const_iterator iterChar = displayText->m_charProps.begin();
+
+  FH3ParaProperties paraProps = *iterPara++;
+  FH3CharProperties charProps = *iterChar++;
+  librevenge::RVNGString text;
+  std::vector<unsigned char>::size_type i = 0;
+
   painter->openParagraph(librevenge::RVNGPropertyList());
+  bool isParagraphOpened = true;
 
   librevenge::RVNGPropertyList propList;
-
-  if (displayText->m_fontNameId)
-  {
-    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(displayText->m_fontNameId);
-    if (iterString != m_strings.end())
-      propList.insert("fo:font-name", iterString->second);
-  }
-  propList.insert("fo:font-size", displayText->m_fontSize, librevenge::RVNG_POINT);
-  if (displayText->m_fontColorId)
-  {
-    std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(displayText->m_fontColorId);
-    if (iterColor != m_colors.end())
-      propList.insert("fo:color", getColorString(iterColor->second));
-  }
-  if (displayText->m_fontStyle & 1)
-    propList.insert("fo:font-weight", "bold");
-  if (displayText->m_fontStyle & 2)
-    propList.insert("fo:font-style", "italic");
-
+  _appendCharacterProperties(propList, charProps);
   painter->openSpan(propList);
+  bool isSpanOpened = true;
 
-  librevenge::RVNGString text;
-  for (std::vector<unsigned char>::const_iterator iter = displayText->m_characters.begin();
-       iter != displayText->m_characters.end(); ++iter)
+  while (i < displayText->m_characters.size())
   {
-    if (*iter == 0xd)
+    _appendMacRoman(text, displayText->m_characters[i++]);
+    if (i > paraProps.m_offset)
     {
       if (!text.empty())
-      {
         painter->insertText(text);
-        text.clear();
+      text.clear();
+      if (isParagraphOpened)
+      {
+        if (isSpanOpened)
+        {
+          painter->closeSpan();
+          isSpanOpened = false;
+        }
+        painter->closeParagraph();
+        isParagraphOpened = false;
       }
-      painter->insertLineBreak();
+      if (iterPara != displayText->m_paraProps.end())
+      {
+        paraProps = *iterPara++;
+      }
     }
-    else
-      _appendMacRoman(text, *iter);
+    if (i > charProps.m_offset)
+    {
+      if (!text.empty())
+        painter->insertText(text);
+      text.clear();
+      if (isSpanOpened)
+      {
+        painter->closeSpan();
+        isSpanOpened = false;
+      }
+      if (iterChar != displayText->m_charProps.end())
+      {
+        charProps = *iterChar++;
+      }
+    }
+    if (i >= displayText->m_characters.size())
+      break;
+    if (!isParagraphOpened)
+    {
+      painter->openParagraph(librevenge::RVNGPropertyList());
+      isParagraphOpened = true;
+      if (!isSpanOpened)
+      {
+        propList.clear();
+        _appendCharacterProperties(propList, charProps);
+        painter->openSpan(propList);
+        isSpanOpened = true;
+      }
+    }
+    if (!isSpanOpened)
+    {
+      propList.clear();
+      _appendCharacterProperties(propList, charProps);
+      painter->openSpan(propList);
+      isSpanOpened = true;
+    }
   }
   if (!text.empty())
-  {
     painter->insertText(text);
-    text.clear();
-  }
-
-  painter->closeSpan();
-
-  painter->closeParagraph();
+  if (isSpanOpened)
+    painter->closeSpan();
+  if (isParagraphOpened)
+    painter->closeParagraph();
 
   painter->endTextObject();
 }
