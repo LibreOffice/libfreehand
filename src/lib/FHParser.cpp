@@ -1817,7 +1817,21 @@ void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, lib
 
 void libfreehand::FHParser::readTextEffs(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
-  input->seek(0xf4, librevenge::RVNG_SEEK_CUR); // bogus based on one file
+  unsigned num = readU16(input);
+  input->seek(22, librevenge::RVNG_SEEK_CUR);
+  for (unsigned i = 0; i < num; ++i)
+  {
+    readU16(input);
+    unsigned rec = readU16(input);
+    if (rec == 7)
+    {
+      input->seek(8, librevenge::RVNG_SEEK_CUR);
+      if (readU32(input))
+        input->seek(-4, librevenge::RVNG_SEEK_CUR);
+    }
+    else
+      input->seek(12, librevenge::RVNG_SEEK_CUR);
+  }
 }
 
 void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
