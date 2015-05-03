@@ -73,6 +73,7 @@ private:
   void _outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
                       unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
   void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, const FH3ParaProperties &paraProps);

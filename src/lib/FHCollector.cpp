@@ -315,6 +315,18 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   painter->drawPath(pList);
 }
 
+void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !somethingId)
+    return;
+
+  _outputGroup(_findGroup(somethingId), painter);
+  _outputPath(_findPath(somethingId), painter);
+  _outputCompositePath(_findCompositePath(somethingId), painter);
+  _outputTextObject(_findTextObject(somethingId), painter);
+  _outputDisplayText(_findDisplayText(somethingId), painter);
+}
+
 void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, ::librevenge::RVNGDrawingInterface *painter)
 {
   if (!painter || !group)
@@ -342,13 +354,7 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
   {
     painter->openGroup(::librevenge::RVNGPropertyList());
     for (std::vector<unsigned>::const_iterator iterVec = elements.begin(); iterVec != elements.end(); ++iterVec)
-    {
-      _outputGroup(_findGroup(*iterVec), painter);
-      _outputPath(_findPath(*iterVec), painter);
-      _outputCompositePath(_findCompositePath(*iterVec), painter);
-      _outputTextObject(_findTextObject(*iterVec), painter);
-      _outputDisplayText(_findDisplayText(*iterVec), painter);
-    }
+      _outputSomething(*iterVec, painter);
     painter->closeGroup();
   }
 
@@ -425,13 +431,7 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNG
   }
 
   for (std::vector<unsigned>::const_iterator iterVec = elements.begin(); iterVec != elements.end(); ++iterVec)
-  {
-    _outputGroup(_findGroup(*iterVec), painter);
-    _outputPath(_findPath(*iterVec), painter);
-    _outputCompositePath(_findCompositePath(*iterVec), painter);
-    _outputTextObject(_findTextObject(*iterVec), painter);
-    _outputDisplayText(_findDisplayText(*iterVec), painter);
-  }
+    _outputSomething(*iterVec, painter);
 }
 
 void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter)
