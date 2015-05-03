@@ -128,7 +128,7 @@ libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
   m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
-  m_graphicStyles(), m_attributeHolders(), m_strokeId(0), m_fillId(0)
+  m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_strokeId(0), m_fillId(0)
 {
 }
 
@@ -151,11 +151,7 @@ void libfreehand::FHCollector::collectName(unsigned recordId, const librevenge::
   m_names[name] = recordId;
   if (name == "stroke")
     m_strokeId = recordId;
-  if (name == "StrokeMultiple")
-    m_strokeId = recordId;
   if (name == "fill")
-    m_fillId = recordId;
-  if (name == "FillMultiple")
     m_fillId = recordId;
 }
 
@@ -267,6 +263,21 @@ void libfreehand::FHCollector::collectGraphicStyle(unsigned recordId, const FHGr
 void libfreehand::FHCollector::collectAttributeHolder(unsigned recordId, const FHAttributeHolder &attributeHolder)
 {
   m_attributeHolders[recordId] = attributeHolder;
+}
+
+void libfreehand::FHCollector::collectData(unsigned recordId, const ::librevenge::RVNGBinaryData &data)
+{
+  m_data[recordId] = data;
+}
+
+void libfreehand::FHCollector::collectDataList(unsigned recordId, const FHDataList &list)
+{
+  m_dataLists[recordId] = list;
+}
+
+void libfreehand::FHCollector::collectImage(unsigned recordId, const FHImageImport &image)
+{
+  m_images[recordId] = image;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)

@@ -49,6 +49,9 @@ public:
   void collectDisplayText(unsigned recordId, const FHDisplayText &displayText);
   void collectGraphicStyle(unsigned recordId, const FHGraphicStyle &graphicStyle);
   void collectAttributeHolder(unsigned recordId, const FHAttributeHolder &attributeHolder);
+  void collectData(unsigned recordId, const librevenge::RVNGBinaryData &data);
+  void collectDataList(unsigned recordId, const FHDataList &list);
+  void collectImage(unsigned recordId, const FHImageImport &image);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -129,6 +132,9 @@ private:
   std::map<unsigned, FHDisplayText> m_displayTexts;
   std::map<unsigned, FHGraphicStyle> m_graphicStyles;
   std::map<unsigned, FHAttributeHolder> m_attributeHolders;
+  std::map<unsigned, librevenge::RVNGBinaryData> m_data;
+  std::map<unsigned, FHDataList> m_dataLists;
+  std::map<unsigned, FHImageImport> m_images;
 
   unsigned m_strokeId;
   unsigned m_fillId;

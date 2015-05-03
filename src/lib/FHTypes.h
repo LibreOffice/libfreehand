@@ -205,6 +205,29 @@ struct FHAttributeHolder
   FHAttributeHolder() : m_parentId(0), m_attrId(0) {}
 };
 
+struct FHDataList
+{
+  unsigned m_dataSize;
+  std::vector<unsigned> m_elements;
+  FHDataList() : m_dataSize(0), m_elements() {}
+};
+
+struct FHImageImport
+{
+  unsigned m_graphicStyleId;
+  unsigned m_dataListId;
+  unsigned m_xFormId;
+  double m_startX;
+  double m_startY;
+  double m_width;
+  double m_height;
+  librevenge::RVNGString m_format;
+  FHImageImport()
+    : m_graphicStyleId(0), m_dataListId(0), m_xFormId(0),
+      m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0),
+      m_format() {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

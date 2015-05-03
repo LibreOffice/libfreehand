@@ -779,18 +779,28 @@ void libfreehand::FHParser::readCustomProc(librevenge::RVNGInputStream *input, l
   input->seek(4+10*size, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readDataList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readDataList(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short size = readU16(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  FHDataList list;
+  list.m_dataSize = readU32(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
   for (unsigned short i = 0; i < size; ++i)
-    _readRecordId(input);
+    list.m_elements.push_back(_readRecordId(input));
+  if (collector)
+    collector->collectDataList(m_currentRecord+1, list);
 }
 
-void libfreehand::FHParser::readData(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readData(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  unsigned short size = readU16(input);
-  input->seek(size*4+4, librevenge::RVNG_SEEK_CUR);
+  unsigned blockSize = readU16(input);
+  unsigned dataSize = readU32(input);
+  unsigned long numBytesRead = 0;
+  const unsigned char *buffer = input->read(dataSize, numBytesRead);
+  librevenge::RVNGBinaryData data(buffer, numBytesRead);
+  input->seek(blockSize*4-dataSize, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectData(m_currentRecord+1, data);
 }
 
 void libfreehand::FHParser::readDateTime(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1055,31 +1065,37 @@ void libfreehand::FHParser::readImageFill(librevenge::RVNGInputStream *input, li
   input->seek(6, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
+  FHImageImport image;
+  image.m_graphicStyleId = _readRecordId(input);
+  _readRecordId(input); // parent
   if (m_version > 3)
     input->seek(4, librevenge::RVNG_SEEK_CUR);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-
   if (m_version > 8)
-    input->seek(34, librevenge::RVNG_SEEK_CUR);
-  else
-    input->seek(32, librevenge::RVNG_SEEK_CUR);
-
-  if (m_version > 8)
+    _readRecordId(input); // format name
+  image.m_dataListId = _readRecordId(input);
+  _readRecordId(input); // file descriptor
+  image.m_xFormId = _readRecordId(input);
+  image.m_startX = _readCoordinate(input) / 72.0;
+  image.m_startY = _readCoordinate(input) / 72.0;
+  image.m_width = _readCoordinate(input) / 72.0;
+  image.m_height = _readCoordinate(input) / 72.0;
+  input->seek(14, librevenge::RVNG_SEEK_CUR);
+  unsigned char character(0);
+  do
   {
-    while (readU8(input))
-    {
-    }
+    character = readU8(input);
+    if (character)
+      _appendMacRoman(image.m_format, character);
   }
+  while (character);
+
   if (m_version > 10)
     input->seek(2, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectImage(m_currentRecord+1, image);
 }
 
 void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
