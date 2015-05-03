@@ -835,17 +835,26 @@ void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, 
     displayText.m_charProps.push_back(charProps);
   }
   FH3ParaProperties paraProps;
-  while (paraProps.m_offset < textLength)
+  do
   {
     _readFH3ParaProperties(input, paraProps);
     displayText.m_paraProps.push_back(paraProps);
   }
+  while (paraProps.m_offset < textLength);
+#ifdef DEBUG
+  librevenge::RVNGString text;
+#endif
   for (unsigned short i = 0; i <= textLength; ++i)
   {
-    displayText.m_characters.push_back(readU8(input));
+    unsigned char character = readU8(input);
+    displayText.m_characters.push_back(character);
+#ifdef DEBUG
+    _appendMacRoman(text, character);
+#endif
   }
   if (collector)
     collector->collectDisplayText(m_currentRecord+1, displayText);
+  FH_DEBUG_MSG(("FHParser::readDisplayText: %s\n", text.cstr()));
 }
 
 void libfreehand::FHParser::readDuetFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
