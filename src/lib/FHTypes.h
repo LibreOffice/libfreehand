@@ -191,6 +191,20 @@ struct FHDisplayText
       m_charProps(), m_paraProps(), m_characters() {}
 };
 
+struct FHGraphicStyle
+{
+  unsigned m_parentId;
+  unsigned m_attrId;
+  FHGraphicStyle() : m_parentId(0), m_attrId(0) {}
+};
+
+struct FHAttributeHolder
+{
+  unsigned m_parentId;
+  unsigned m_attrId;
+  FHAttributeHolder() : m_parentId(0), m_attrId(0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

@@ -128,7 +128,7 @@ libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
   m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
-  m_strokeId(0), m_fillId(0)
+  m_graphicStyles(), m_attributeHolders(), m_strokeId(0), m_fillId(0)
 {
 }
 
@@ -257,6 +257,16 @@ void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropLi
 void libfreehand::FHCollector::collectDisplayText(unsigned recordId, const FHDisplayText &displayText)
 {
   m_displayTexts[recordId] = displayText;
+}
+
+void libfreehand::FHCollector::collectGraphicStyle(unsigned recordId, const FHGraphicStyle &graphicStyle)
+{
+  m_graphicStyles[recordId] = graphicStyle;
+}
+
+void libfreehand::FHCollector::collectAttributeHolder(unsigned recordId, const FHAttributeHolder &attributeHolder)
+{
+  m_attributeHolders[recordId] = attributeHolder;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -772,7 +782,21 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
   {
     const FHPropList *propertyList = _findPropList(graphicStyleId);
     if (!propertyList)
-      _appendFillProperties(propList, 0);
+    {
+      const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
+      if (!graphicStyle)
+        _appendFillProperties(propList, 0);
+      else
+      {
+        if (graphicStyle->m_parentId)
+          _appendFillProperties(propList, graphicStyle->m_parentId);
+        unsigned fillId = _findFillId(*graphicStyle);;
+        if (fillId)
+          _appendBasicFill(propList, _findBasicFill(fillId));
+        else
+          _appendFillProperties(propList, 0);
+      }
+    }
     else
     {
       if (propertyList->m_parentId)
@@ -798,7 +822,21 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
   {
     const FHPropList *propertyList = _findPropList(graphicStyleId);
     if (!propertyList)
-      _appendStrokeProperties(propList, 0);
+    {
+      const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
+      if (!graphicStyle)
+        _appendStrokeProperties(propList, 0);
+      else
+      {
+        if (graphicStyle->m_parentId)
+          _appendStrokeProperties(propList, graphicStyle->m_parentId);
+        unsigned strokeId = _findStrokeId(*graphicStyle);
+        if (strokeId)
+          _appendBasicLine(propList, _findBasicLine(strokeId));
+        else
+          _appendStrokeProperties(propList, 0);
+      }
+    }
     else
     {
       if (propertyList->m_parentId)
@@ -901,6 +939,14 @@ const libfreehand::FHPropList *libfreehand::FHCollector::_findPropList(unsigned 
   return 0;
 }
 
+const libfreehand::FHGraphicStyle *libfreehand::FHCollector::_findGraphicStyle(unsigned id)
+{
+  std::map<unsigned, FHGraphicStyle>::const_iterator iter = m_graphicStyles.find(id);
+  if (iter != m_graphicStyles.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHBasicFill *libfreehand::FHCollector::_findBasicFill(unsigned id)
 {
   std::map<unsigned, FHBasicFill>::const_iterator iter = m_basicFills.find(id);
@@ -931,6 +977,57 @@ const libfreehand::FHDisplayText *libfreehand::FHCollector::_findDisplayText(uns
   if (iter != m_displayTexts.end())
     return &(iter->second);
   return 0;
+}
+
+unsigned libfreehand::FHCollector::_findStrokeId(const libfreehand::FHGraphicStyle &graphicStyle)
+{
+  unsigned listId = graphicStyle.m_attrId;
+  if (!listId)
+    return 0;
+  std::map<unsigned, FHList>::const_iterator iter = m_lists.find(listId);
+  if (iter == m_lists.end())
+    return 0;
+  unsigned strokeId = 0;
+  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  {
+    unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
+    if (_findBasicLine(valueId))
+      strokeId = valueId;
+  }
+  return strokeId;
+}
+
+unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle &graphicStyle)
+{
+  unsigned listId = graphicStyle.m_attrId;
+  if (!listId)
+    return 0;
+  std::map<unsigned, FHList>::const_iterator iter = m_lists.find(listId);
+  if (iter == m_lists.end())
+    return 0;
+  unsigned fillId = 0;
+  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  {
+    unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
+    if (_findBasicFill(valueId))
+      fillId = valueId;
+  }
+  return fillId;
+}
+
+unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHAttributeHolder>::const_iterator iter = m_attributeHolders.find(id);
+  if (iter == m_attributeHolders.end())
+    return 0;
+  unsigned value = 0;
+  if (iter->second.m_parentId)
+    value = _findValueFromAttribute(iter->second.m_parentId);
+  if (iter->second.m_attrId)
+    value = iter->second.m_attrId;
+  return value;
 }
 
 ::librevenge::RVNGString libfreehand::FHCollector::getColorString(const libfreehand::FHRGBColor &color)

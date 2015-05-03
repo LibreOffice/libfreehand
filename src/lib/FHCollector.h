@@ -47,6 +47,8 @@ public:
   void collectCharProps(unsigned recordId, const FHCharProperties &charProps);
   void collectPropList(unsigned recordId, const FHPropList &propertyList);
   void collectDisplayText(unsigned recordId, const FHDisplayText &displayText);
+  void collectGraphicStyle(unsigned recordId, const FHGraphicStyle &graphicStyle);
+  void collectAttributeHolder(unsigned recordId, const FHAttributeHolder &attributeHolder);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -90,12 +92,16 @@ private:
   const FHTransform *_findTransform(unsigned id);
   const FHParagraph *_findParagraph(unsigned id);
   const FHPropList *_findPropList(unsigned id);
+  const FHGraphicStyle *_findGraphicStyle(unsigned id);
   const std::vector<unsigned short> *_findTextBlok(unsigned id);
   const FHBasicFill *_findBasicFill(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
   ::librevenge::RVNGString getColorString(const FHRGBColor &color);
+  unsigned _findFillId(const FHGraphicStyle &graphicStyle);
+  unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
+  unsigned _findValueFromAttribute(unsigned id);
 
   FHPageInfo m_pageInfo;
   FHTail m_fhTail;
@@ -120,6 +126,8 @@ private:
   std::map<unsigned, FHPropList> m_propertyLists;
   std::map<unsigned, FHBasicLine> m_basicLines;
   std::map<unsigned, FHDisplayText> m_displayTexts;
+  std::map<unsigned, FHGraphicStyle> m_graphicStyles;
+  std::map<unsigned, FHAttributeHolder> m_attributeHolders;
 
   unsigned m_strokeId;
   unsigned m_fillId;
