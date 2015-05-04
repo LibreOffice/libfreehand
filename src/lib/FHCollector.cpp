@@ -950,8 +950,7 @@ void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList 
     return;
   propList.insert("draw:fill", "gradient");
   propList.insert("draw:style", "linear");
-  if (!FH_ALMOST_ZERO(linearFill->m_angle))
-    propList.insert("draw:angle", linearFill->m_angle);
+  propList.insert("draw:angle", 90.0 - linearFill->m_angle);
   if (linearFill->m_multiColorListId)
   {
     const std::vector<FHColorStop> *multiColorList = _findMultiColorList(linearFill->m_multiColorListId);
