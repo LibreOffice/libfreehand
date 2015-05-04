@@ -1766,9 +1766,23 @@ void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input,
     collector->collectPropList(m_currentRecord, propertyList);
 }
 
-void libfreehand::FHParser::readSwfImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readSwfImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(43, librevenge::RVNG_SEEK_CUR);
+  FHImageImport image;
+  image.m_graphicStyleId = _readRecordId(input);
+  _readRecordId(input); // parent
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input); // format name
+  image.m_dataListId = _readRecordId(input);
+  _readRecordId(input); // file descriptor
+  image.m_xFormId = _readRecordId(input);
+  image.m_startX = _readCoordinate(input) / 72.0;
+  image.m_startY = _readCoordinate(input) / 72.0;
+  image.m_width = _readCoordinate(input) / 72.0;
+  image.m_height = _readCoordinate(input) / 72.0;
+  input->seek(7, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectImage(m_currentRecord+1, image);
 }
 
 void libfreehand::FHParser::readSymbolClass(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
