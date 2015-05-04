@@ -1082,7 +1082,7 @@ void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, 
   image.m_startY = _readCoordinate(input) / 72.0;
   image.m_width = _readCoordinate(input) / 72.0;
   image.m_height = _readCoordinate(input) / 72.0;
-  input->seek(14, librevenge::RVNG_SEEK_CUR);
+  input->seek(18, librevenge::RVNG_SEEK_CUR);
   unsigned char character(0);
   do
   {
@@ -1202,6 +1202,7 @@ void libfreehand::FHParser::readList(librevenge::RVNGInputStream *input, libfree
 {
   unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
+  printf("Fridrich %x %x\n", size2, size);
   input->seek(6, librevenge::RVNG_SEEK_CUR);
   FHList lst;
   lst.m_listType = readU16(input);

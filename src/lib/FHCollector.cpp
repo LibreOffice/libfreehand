@@ -336,6 +336,7 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::libreven
   _outputCompositePath(_findCompositePath(somethingId), painter);
   _outputTextObject(_findTextObject(somethingId), painter);
   _outputDisplayText(_findDisplayText(somethingId), painter);
+  _outputImageImport(_findImageImport(somethingId), painter);
 }
 
 void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, ::librevenge::RVNGDrawingInterface *painter)
@@ -705,6 +706,61 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   painter->endTextObject();
 }
 
+void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !image)
+    return;
+
+  double xa = image->m_startX;
+  double ya = image->m_startY;
+  double xb = image->m_startX + image->m_width;
+  double yb = image->m_startY + image->m_height;
+  double xc = xa;
+  double yc = yb;
+  unsigned xFormId = image->m_xFormId;
+  if (xFormId)
+  {
+    const FHTransform *trafo = _findTransform(xFormId);
+    if (trafo)
+    {
+      trafo->applyToPoint(xa, ya);
+      trafo->applyToPoint(xb, yb);
+      trafo->applyToPoint(xc, yc);
+    }
+  }
+  std::stack<FHTransform> groupTransforms = m_currentTransforms;
+  if (!m_currentTransforms.empty())
+  {
+    m_currentTransforms.top().applyToPoint(xa, ya);
+    m_currentTransforms.top().applyToPoint(xb, yb);
+    m_currentTransforms.top().applyToPoint(xc, yc);
+  }
+  _normalizePoint(xa, ya);
+  _normalizePoint(xb, yb);
+  _normalizePoint(xc, yc);
+  double rotation = atan2(yb-yc, xb-xc);
+  double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
+  double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
+  double xmid = (xa + xb) / 2.0;
+  double ymid = (ya + yb) / 2.0;
+
+  ::librevenge::RVNGPropertyList imageProps;
+  imageProps.insert("svg:x", xmid - width / 2.0);
+  imageProps.insert("svg:y", ymid - height / 2.0);
+  imageProps.insert("svg:height", height);
+  imageProps.insert("svg:width", width);
+  if (!FH_ALMOST_ZERO(rotation))
+    imageProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
+
+  imageProps.insert("librevenge:mime-type", "whatever");
+  librevenge::RVNGBinaryData data = getImageData(image->m_dataListId);
+
+  if (data.empty())
+    return;
+  imageProps.insert("office:binary-data", data);
+  painter->drawGraphicObject(imageProps);
+}
+
 void libfreehand::FHCollector::_outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
                                               unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter)
 {
@@ -990,6 +1046,22 @@ const libfreehand::FHDisplayText *libfreehand::FHCollector::_findDisplayText(uns
   return 0;
 }
 
+const libfreehand::FHImageImport *libfreehand::FHCollector::_findImageImport(unsigned id)
+{
+  std::map<unsigned, FHImageImport>::const_iterator iter = m_images.find(id);
+  if (iter != m_images.end())
+    return &(iter->second);
+  return 0;
+}
+
+const ::librevenge::RVNGBinaryData *libfreehand::FHCollector::_findData(unsigned id)
+{
+  std::map<unsigned, ::librevenge::RVNGBinaryData>::const_iterator iter = m_data.find(id);
+  if (iter != m_data.end())
+    return &(iter->second);
+  return 0;
+}
+
 unsigned libfreehand::FHCollector::_findStrokeId(const libfreehand::FHGraphicStyle &graphicStyle)
 {
   unsigned listId = graphicStyle.m_attrId;
@@ -1039,6 +1111,21 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
   if (iter->second.m_attrId)
     value = iter->second.m_attrId;
   return value;
+}
+
+::librevenge::RVNGBinaryData libfreehand::FHCollector::getImageData(unsigned id)
+{
+  std::map<unsigned, FHDataList>::const_iterator iter = m_dataLists.find(id);
+  ::librevenge::RVNGBinaryData data;
+  if (iter == m_dataLists.end())
+    return data;
+  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  {
+    const ::librevenge::RVNGBinaryData *pData = _findData(iter->second.m_elements[i]);
+    if (pData)
+      data.append(*pData);
+  }
+  return data;
 }
 
 ::librevenge::RVNGString libfreehand::FHCollector::getColorString(const libfreehand::FHRGBColor &color)

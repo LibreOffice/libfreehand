@@ -76,6 +76,7 @@ private:
   void _outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
                       unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputImageImport(const FHImageImport *image, ::librevenge::RVNGDrawingInterface *painter);
   void _outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter);
 
   bool _findListElements(std::vector<unsigned> &elements, unsigned id);
@@ -102,10 +103,13 @@ private:
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
+  const FHImageImport *_findImageImport(unsigned id);
+  const ::librevenge::RVNGBinaryData *_findData(unsigned id);
   ::librevenge::RVNGString getColorString(const FHRGBColor &color);
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
   unsigned _findValueFromAttribute(unsigned id);
+  ::librevenge::RVNGBinaryData getImageData(unsigned id);
 
   FHPageInfo m_pageInfo;
   FHTail m_fhTail;
