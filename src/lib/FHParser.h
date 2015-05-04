@@ -141,6 +141,7 @@ private:
   void readHalftone(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readImageFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readImageImport(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readImport(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readLayer(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readLensFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readLinearFill(librevenge::RVNGInputStream *input, FHCollector *collector);

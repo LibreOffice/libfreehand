@@ -289,6 +289,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
   case FH_IMAGEIMPORT:
     readImageImport(input, collector);
     break;
+  case FH_IMPORT:
+    readImport(input, collector);
+    break;
   case FH_LAYER:
     readLayer(input, collector);
     break;
@@ -1096,6 +1099,11 @@ void libfreehand::FHParser::readImageImport(librevenge::RVNGInputStream *input, 
     input->seek(2, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectImage(m_currentRecord+1, image);
+}
+
+void libfreehand::FHParser::readImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+{
+  input->seek(34, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

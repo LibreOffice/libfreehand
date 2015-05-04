@@ -49,6 +49,7 @@ Guides
 Halftone
 ImageFill
 ImageImport
+Import
 Layer
 LensFill
 LinearFill
