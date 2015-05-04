@@ -1840,12 +1840,16 @@ void libfreehand::FHParser::readTaperedFill(librevenge::RVNGInputStream *input, 
   input->seek(8, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readTaperedFillX(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTaperedFillX(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(12, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
+  FHLinearFill fill;
+  fill.m_color1Id = _readRecordId(input);
+  fill.m_color2Id = _readRecordId(input);
+  fill.m_angle = _readCoordinate(input);
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  fill.m_multiColorListId = _readRecordId(input);
+  if (collector)
+    collector->collectLinearFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readTEffect(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
