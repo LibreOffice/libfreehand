@@ -154,6 +154,15 @@ struct FHBasicFill
   FHBasicFill() : m_colorId(0) {}
 };
 
+struct FHLinearFill
+{
+  unsigned m_color1Id;
+  unsigned m_color2Id;
+  double m_angle;
+  unsigned m_multiColorListId;
+  FHLinearFill() : m_color1Id(0), m_color2Id(0), m_angle(0.0), m_multiColorListId(0) {}
+};
+
 struct FH3CharProperties
 {
   unsigned m_offset;
@@ -226,6 +235,13 @@ struct FHImageImport
     : m_graphicStyleId(0), m_dataListId(0), m_xFormId(0),
       m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0),
       m_format() {}
+};
+
+struct FHColorStop
+{
+  unsigned m_colorId;
+  double m_position;
+  FHColorStop() : m_colorId(0), m_position(0.0) {}
 };
 
 } // namespace libfreehand

@@ -128,7 +128,8 @@ libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
   m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
-  m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_strokeId(0), m_fillId(0)
+  m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
+  m_linearFills(), m_strokeId(0), m_fillId(0)
 {
 }
 
@@ -278,6 +279,16 @@ void libfreehand::FHCollector::collectDataList(unsigned recordId, const FHDataLi
 void libfreehand::FHCollector::collectImage(unsigned recordId, const FHImageImport &image)
 {
   m_images[recordId] = image;
+}
+
+void libfreehand::FHCollector::collectMultiColorList(unsigned recordId, const std::vector<FHColorStop> &colorStops)
+{
+  m_multiColorLists[recordId] = colorStops;
+}
+
+void libfreehand::FHCollector::collectLinearFill(unsigned recordId, const FHLinearFill &fill)
+{
+  m_linearFills[recordId] = fill;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -558,9 +569,9 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
   propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
   if (charProps.m_fontColorId)
   {
-    std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(charProps.m_fontColorId);
-    if (iterColor != m_colors.end())
-      propList.insert("fo:color", getColorString(iterColor->second));
+    const FHRGBColor *color = _findColor(charProps.m_fontColorId);
+    if (color)
+      propList.insert("fo:color", getColorString(*color));
   }
   if (charProps.m_fontStyle & 1)
     propList.insert("fo:font-weight", "bold");
@@ -830,9 +841,9 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
     std::map<unsigned, FHBasicFill>::const_iterator iterBasicFill = m_basicFills.find(charProps.m_textColorId);
     if (iterBasicFill != m_basicFills.end() && iterBasicFill->second.m_colorId)
     {
-      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_colors.find(iterBasicFill->second.m_colorId);
-      if (iterColor != m_colors.end())
-        propList.insert("fo:color", getColorString(iterColor->second));
+      const FHRGBColor *color = _findColor(iterBasicFill->second.m_colorId);
+      if (color)
+        propList.insert("fo:color", getColorString(*color));
     }
   }
   propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
@@ -859,7 +870,10 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           _appendFillProperties(propList, graphicStyle->m_parentId);
         unsigned fillId = _findFillId(*graphicStyle);;
         if (fillId)
+        {
           _appendBasicFill(propList, _findBasicFill(fillId));
+          _appendLinearFill(propList, _findLinearFill(fillId));
+        }
         else
           _appendFillProperties(propList, 0);
       }
@@ -872,6 +886,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
       if (iter != propertyList->m_elements.end())
       {
         _appendBasicFill(propList, _findBasicFill(iter->second));
+        _appendLinearFill(propList, _findLinearFill(iter->second));
       }
     }
   }
@@ -927,6 +942,47 @@ void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &
     propList.insert("draw:fill-color", getColorString(*color));
   else
     propList.insert("draw:fill-color", "#000000");
+}
+
+void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLinearFill *linearFill)
+{
+  if (!linearFill)
+    return;
+  propList.insert("draw:fill", "gradient");
+  propList.insert("draw:style", "linear");
+  if (!FH_ALMOST_ZERO(linearFill->m_angle))
+    propList.insert("draw:angle", linearFill->m_angle);
+  if (linearFill->m_multiColorListId)
+  {
+    const std::vector<FHColorStop> *multiColorList = _findMultiColorList(linearFill->m_multiColorListId);
+    if (multiColorList && multiColorList->size() > 1)
+    {
+      const FHRGBColor *color = _findColor((*multiColorList)[0].m_colorId);
+      if (color)
+        propList.insert("draw:start-color", getColorString(*color));
+      color = _findColor((*multiColorList)[1].m_colorId);
+      if (color)
+        propList.insert("draw:end-color", getColorString(*color));
+    }
+    else
+    {
+      const FHRGBColor *color = _findColor(linearFill->m_color1Id);
+      if (color)
+        propList.insert("draw:start-color", getColorString(*color));
+      color = _findColor(linearFill->m_color2Id);
+      if (color)
+        propList.insert("draw:end-color", getColorString(*color));
+    }
+  }
+  else
+  {
+    const FHRGBColor *color = _findColor(linearFill->m_color1Id);
+    if (color)
+      propList.insert("draw:start-color", getColorString(*color));
+    color = _findColor(linearFill->m_color2Id);
+    if (color)
+      propList.insert("draw:end-color", getColorString(*color));
+  }
 }
 
 void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)
@@ -1022,6 +1078,14 @@ const libfreehand::FHBasicFill *libfreehand::FHCollector::_findBasicFill(unsigne
   return 0;
 }
 
+const libfreehand::FHLinearFill *libfreehand::FHCollector::_findLinearFill(unsigned id)
+{
+  std::map<unsigned, FHLinearFill>::const_iterator iter = m_linearFills.find(id);
+  if (iter != m_linearFills.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
 {
   std::map<unsigned, FHBasicLine>::const_iterator iter = m_basicLines.find(id);
@@ -1062,6 +1126,15 @@ const ::librevenge::RVNGBinaryData *libfreehand::FHCollector::_findData(unsigned
   return 0;
 }
 
+const std::vector<libfreehand::FHColorStop> *libfreehand::FHCollector::_findMultiColorList(unsigned id)
+{
+  std::map<unsigned, std::vector<libfreehand::FHColorStop> >::const_iterator iter = m_multiColorLists.find(id);
+  if (iter != m_multiColorLists.end())
+    return &(iter->second);
+  return 0;
+}
+
+
 unsigned libfreehand::FHCollector::_findStrokeId(const libfreehand::FHGraphicStyle &graphicStyle)
 {
   unsigned listId = graphicStyle.m_attrId;
@@ -1092,7 +1165,7 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
   for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
   {
     unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
-    if (_findBasicFill(valueId))
+    if (_findBasicFill(valueId) || _findLinearFill(valueId))
       fillId = valueId;
   }
   return fillId;

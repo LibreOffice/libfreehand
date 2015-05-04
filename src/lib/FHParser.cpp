@@ -1130,13 +1130,17 @@ void libfreehand::FHParser::readLensFill(librevenge::RVNGInputStream *input, lib
   input->seek(38, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readLinearFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readLinearFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(12, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
+  FHLinearFill fill;
+  fill.m_color1Id = _readRecordId(input);
+  fill.m_color2Id = _readRecordId(input);
+  fill.m_angle = _readCoordinate(input);
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  fill.m_multiColorListId = _readRecordId(input);
   input->seek(16, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectLinearFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readLinePat(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1279,15 +1283,21 @@ void libfreehand::FHParser::readMultiBlend(librevenge::RVNGInputStream *input, l
   input->seek(32 + size*6, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readMultiColorList(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readMultiColorList(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
+  std::vector<FHColorStop> colorStops;
   unsigned short num = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
   for (unsigned short i = 0; i < num; ++i)
   {
-    input->seek(8, librevenge::RVNG_SEEK_CUR);
-    _readRecordId(input);
+    FHColorStop colorStop;
+    colorStop.m_colorId = _readRecordId(input);
+    colorStop.m_position = _readCoordinate(input);
+    input->seek(4, librevenge::RVNG_SEEK_CUR);
+    colorStops.push_back(colorStop);
   }
+  if (collector)
+    collector->collectMultiColorList(m_currentRecord+1, colorStops);
 }
 
 void libfreehand::FHParser::readNewBlend(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

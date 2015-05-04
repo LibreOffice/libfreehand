@@ -52,6 +52,8 @@ public:
   void collectData(unsigned recordId, const librevenge::RVNGBinaryData &data);
   void collectDataList(unsigned recordId, const FHDataList &list);
   void collectImage(unsigned recordId, const FHImageImport &image);
+  void collectMultiColorList(unsigned recordId, const std::vector<FHColorStop> &colorStops);
+  void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -88,6 +90,7 @@ private:
   void _appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
   void _appendBasicFill(::librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
   void _appendBasicLine(::librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
+  void _appendLinearFill(::librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
   const FHPath *_findPath(unsigned id);
@@ -100,6 +103,7 @@ private:
   const FHGraphicStyle *_findGraphicStyle(unsigned id);
   const std::vector<unsigned short> *_findTextBlok(unsigned id);
   const FHBasicFill *_findBasicFill(unsigned id);
+  const FHLinearFill *_findLinearFill(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
@@ -109,6 +113,7 @@ private:
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
   unsigned _findValueFromAttribute(unsigned id);
+  const std::vector<FHColorStop> *_findMultiColorList(unsigned id);
   ::librevenge::RVNGBinaryData getImageData(unsigned id);
 
   FHPageInfo m_pageInfo;
@@ -139,6 +144,8 @@ private:
   std::map<unsigned, librevenge::RVNGBinaryData> m_data;
   std::map<unsigned, FHDataList> m_dataLists;
   std::map<unsigned, FHImageImport> m_images;
+  std::map<unsigned, std::vector<FHColorStop> > m_multiColorLists;
+  std::map<unsigned, FHLinearFill> m_linearFills;
 
   unsigned m_strokeId;
   unsigned m_fillId;
