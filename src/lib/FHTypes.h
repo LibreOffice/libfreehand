@@ -11,6 +11,7 @@
 #define __FHTYPES_H__
 
 #include <vector>
+#include <map>
 #include "FHPath.h"
 
 namespace libfreehand
@@ -125,6 +126,16 @@ struct FHRGBColor
   unsigned short m_blue;
   FHRGBColor()
     : m_red(0), m_green(0), m_blue(0) {}
+};
+
+struct FHCMYKColor
+{
+  unsigned short m_cyan;
+  unsigned short m_magenta;
+  unsigned short m_yellow;
+  unsigned short m_black;
+  FHCMYKColor()
+    : m_cyan(0), m_magenta(0), m_yellow(0), m_black(0xffff) {}
 };
 
 struct FHPropList

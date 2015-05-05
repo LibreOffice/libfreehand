@@ -117,6 +117,15 @@ PKG_CHECK_MODULES([ICU],[icu-i18n],[
 )
 AC_SUBST(ICU_CFLAGS)
 
+# ==========
+# Find lcms2
+# ==========
+PKG_CHECK_MODULES([LCMS2],[
+	lcms2
+])
+AC_SUBST([LCMS2_CFLAGS])
+AC_SUBST([LCMS_LIBS])
+
 # =================================
 # Libtool/Version Makefile settings
 # =================================

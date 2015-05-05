@@ -12,6 +12,7 @@
 
 #include <map>
 #include <vector>
+#include <lcms2.h>
 #include <librevenge/librevenge.h>
 #include "FHTypes.h"
 
@@ -213,7 +214,8 @@ private:
   unsigned _xformCalc(unsigned char var1, unsigned char var2);
 
   double _readCoordinate(librevenge::RVNGInputStream *input);
-  FHRGBColor _readColor(librevenge::RVNGInputStream *input);
+  FHRGBColor _readRGBColor(librevenge::RVNGInputStream *input);
+  FHRGBColor _readCMYKColor(librevenge::RVNGInputStream *input);
   void _readPropLstElements(librevenge::RVNGInputStream *input, FHPropList &propertyList, unsigned size);
   void _readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId);
   void _readFH3CharProperties(librevenge::RVNGInputStream *input, FH3CharProperties &charProps);
@@ -226,6 +228,7 @@ private:
   std::vector<unsigned short> m_records;
   std::vector<unsigned short>::size_type m_currentRecord;
   FHPageInfo m_pageInfo;
+  cmsHTRANSFORM m_colorTransform;
 };
 
 } // namespace libfreehand

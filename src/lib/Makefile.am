@@ -16,6 +16,7 @@ AM_CXXFLAGS = \
 	$(REVENGE_CFLAGS) \
 	$(ZLIB_CFLAGS) \
 	$(ICU_CFLAGS) \
+	$(LCMS2_CFLAGS) \
 	$(DEBUG_CXXFLAGS)
 
 generated_files = \
@@ -25,6 +26,7 @@ generated_files = \
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LIBADD = \
 	$(REVENGE_LIBS) \
 	$(ZLIB_LIBS) \
+	$(LCMS2_LIBS) \
 	@LIBFREEHAND_WIN32_RESOURCE@
 
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_DEPENDENCIES = @LIBFREEHAND_WIN32_RESOURCE@
@@ -38,6 +40,7 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	FHTransform.cpp \
 	libfreehand_utils.cpp \
 	FHCollector.h \
+	FHColorProfiles.h \
 	FHInternalStream.h \
 	FHParser.h \
 	FHPath.h \

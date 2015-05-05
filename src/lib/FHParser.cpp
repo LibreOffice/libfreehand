@@ -12,6 +12,8 @@
 #include <string.h>
 #include <unicode/utf8.h>
 #include <unicode/utf16.h>
+#include <lcms2.h>
+#include "FHColorProfiles.h"
 #include "FHParser.h"
 #include "FHCollector.h"
 #include "FHInternalStream.h"
@@ -53,12 +55,21 @@ const char *getTokenName(int tokenId)
 
 libfreehand::FHParser::FHParser()
   : m_input(0), m_collector(0), m_version(-1), m_dictionary(),
-    m_records(), m_currentRecord(0), m_pageInfo()
+    m_records(), m_currentRecord(0), m_pageInfo(), m_colorTransform(0)
 {
+  cmsHPROFILE inProfile  = cmsOpenProfileFromMem(CMYK_icc, sizeof(CMYK_icc)/sizeof(CMYK_icc[0]));
+  cmsHPROFILE outProfile = cmsCreate_sRGBProfile();
+
+  m_colorTransform = cmsCreateTransform(inProfile, TYPE_CMYK_16, outProfile, TYPE_RGB_16, INTENT_PERCEPTUAL, 0);
+
+  cmsCloseProfile(inProfile);
+  cmsCloseProfile(outProfile);
 }
 
 libfreehand::FHParser::~FHParser()
 {
+  if (m_colorTransform)
+    cmsDeleteTransform(m_colorTransform);
 }
 
 bool libfreehand::FHParser::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
@@ -707,7 +718,7 @@ void libfreehand::FHParser::readColor6(librevenge::RVNGInputStream *input, libfr
 {
   unsigned var = readU16(input);
   _readRecordId(input);
-  FHRGBColor color = _readColor(input);
+  FHRGBColor color = _readRGBColor(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   _readRecordId(input);
   unsigned length = 12;
@@ -1420,7 +1431,7 @@ void libfreehand::FHParser::readPantoneColor(librevenge::RVNGInputStream *input,
 {
   _readRecordId(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  FHRGBColor color = _readColor(input);
+  FHRGBColor color = _readRGBColor(input);
   input->seek(28, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectColor(m_currentRecord+1, color);
@@ -1602,9 +1613,8 @@ void libfreehand::FHParser::readProcedure(librevenge::RVNGInputStream *input, li
 void libfreehand::FHParser::readProcessColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   _readRecordId(input);
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
-  FHRGBColor color = _readColor(input);
   input->seek(12, librevenge::RVNG_SEEK_CUR);
+  FHRGBColor color = _readCMYKColor(input);
   if (collector)
     collector->collectColor(m_currentRecord+1, color);
 }
@@ -1740,7 +1750,7 @@ void libfreehand::FHParser::readSpotColor(librevenge::RVNGInputStream *input, li
 {
   _readRecordId(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  FHRGBColor color = _readColor(input);
+  FHRGBColor color = _readRGBColor(input);
   input->seek(16, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectColor(m_currentRecord+1, color);
@@ -1750,7 +1760,7 @@ void libfreehand::FHParser::readSpotColor6(librevenge::RVNGInputStream *input, l
 {
   unsigned short size = readU16(input);
   _readRecordId(input);
-  FHRGBColor color = _readColor(input);
+  FHRGBColor color = _readRGBColor(input);
   if (m_version < 10)
     input->seek(16, librevenge::RVNG_SEEK_CUR);
   else
@@ -1833,11 +1843,15 @@ void libfreehand::FHParser::readTabTable(librevenge::RVNGInputStream *input, lib
     input->seek(2+size*6, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readTaperedFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTaperedFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  FHLinearFill fill;
+  fill.m_color1Id = _readRecordId(input);
+  fill.m_color2Id = _readRecordId(input);
+  fill.m_angle = _readCoordinate(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectLinearFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readTaperedFillX(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -1956,7 +1970,7 @@ void libfreehand::FHParser::readTintColor(librevenge::RVNGInputStream *input, li
 {
   _readRecordId(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  FHRGBColor color = _readColor(input);
+  FHRGBColor color = _readRGBColor(input);
   input->seek(10, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectColor(m_currentRecord+1, color);
@@ -1966,7 +1980,7 @@ void libfreehand::FHParser::readTintColor6(librevenge::RVNGInputStream *input, l
 {
   input->seek(2, librevenge::RVNG_SEEK_CUR);
   _readRecordId(input);
-  FHRGBColor color = _readColor(input);
+  FHRGBColor color = _readRGBColor(input);
   if (m_version < 10)
     input->seek(26, librevenge::RVNG_SEEK_CUR);
   else
@@ -2231,12 +2245,32 @@ double libfreehand::FHParser::_readCoordinate(librevenge::RVNGInputStream *input
   return value;
 }
 
-libfreehand::FHRGBColor libfreehand::FHParser::_readColor(librevenge::RVNGInputStream *input)
+libfreehand::FHRGBColor libfreehand::FHParser::_readRGBColor(librevenge::RVNGInputStream *input)
 {
   FHRGBColor tmpColor;
   tmpColor.m_red = readU16(input);
   tmpColor.m_green = readU16(input);
   tmpColor.m_blue = readU16(input);
+  return tmpColor;
+}
+
+libfreehand::FHRGBColor libfreehand::FHParser::_readCMYKColor(librevenge::RVNGInputStream *input)
+{
+  unsigned short cmyk[4] = { 0, 0, 0, 0 };
+
+  cmyk[3] = readU16(input); // K
+  cmyk[0] = readU16(input); // C
+  cmyk[1] = readU16(input); // M
+  cmyk[2] = readU16(input); // Y
+
+  unsigned short rgb[3] = { 0, 0, 0 };
+
+  cmsDoTransform(m_colorTransform, cmyk, rgb, 1);
+
+  FHRGBColor tmpColor;
+  tmpColor.m_red = rgb[0];
+  tmpColor.m_green = rgb[1];
+  tmpColor.m_blue = rgb[2];
   return tmpColor;
 }
 
