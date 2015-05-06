@@ -961,8 +961,8 @@ void libfreehand::FHParser::readFHTail(librevenge::RVNGInputStream *input, libfr
   fhTail.m_pageInfo.m_maxX = _readCoordinate(input) / 72.0;
   fhTail.m_pageInfo.m_maxY = _readCoordinate(input) / 72.0;
   input->seek(0x32+startPosition, librevenge::RVNG_SEEK_SET);
-  fhTail.m_pageInfo.m_minX = fhTail.m_pageInfo.m_maxX - _readCoordinate(input) / 72.0;
-  fhTail.m_pageInfo.m_minY = fhTail.m_pageInfo.m_maxY - _readCoordinate(input) / 72.0;
+  fhTail.m_pageInfo.m_minX = 0.0;
+  fhTail.m_pageInfo.m_minY = 0.0;
 
   if (collector)
     collector->collectFHTail(m_currentRecord+1, fhTail);
