@@ -15,6 +15,10 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#ifndef DUMP_BINARY_OBJECTS
+#define DUMP_BINARY_OBJECTS 0
+#endif
+
 #define FH_UNINITIALIZED(pI) \
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
 
@@ -399,6 +403,24 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
 
 void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface *painter)
 {
+
+#if DUMP_BINARY_OBJECTS
+  for (std::map<unsigned, FHImageImport>::const_iterator iterImage = m_images.begin(); iterImage != m_images.end(); ++iterImage)
+  {
+    librevenge::RVNGBinaryData data = getImageData(iterImage->second.m_dataListId);
+    librevenge::RVNGString filename;
+    filename.sprintf("freehanddump%.4x.%s", iterImage->first, iterImage->second.m_format.empty() ? "bin" : iterImage->second.m_format.cstr());
+    FILE *f = fopen(filename.cstr(), "wb");
+    if (f)
+    {
+      const unsigned char *tmpBuffer = data.getDataBuffer();
+      for (unsigned long k = 0; k < data.size(); k++)
+        fprintf(f, "%c",tmpBuffer[k]);
+      fclose(f);
+    }
+  }
+#endif
+
   if (!painter)
     return;
 
