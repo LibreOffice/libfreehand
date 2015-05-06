@@ -21,6 +21,13 @@
 namespace
 {
 
+librevenge::RVNGString _getColorString(const libfreehand::FHRGBColor &color)
+{
+  ::librevenge::RVNGString colorString;
+  colorString.sprintf("#%.2x%.2x%.2x", color.m_red >> 8, color.m_green >> 8, color.m_blue >> 8);
+  return colorString;
+}
+
 static void _composePath(::librevenge::RVNGPropertyListVector &path, bool isClosed)
 {
   bool firstPoint = true;
@@ -127,9 +134,9 @@ static void _composePath(::librevenge::RVNGPropertyListVector &path, bool isClos
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
-  m_textObjects(), m_charProperties(), m_colors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
+  m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
   m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_strokeId(0), m_fillId(0)
+  m_linearFills(), m_tints(), m_strokeId(0), m_fillId(0)
 {
 }
 
@@ -233,7 +240,12 @@ void libfreehand::FHCollector::collectCharProps(unsigned recordId, const FHCharP
 
 void libfreehand::FHCollector::collectColor(unsigned recordId, const FHRGBColor &color)
 {
-  m_colors[recordId] = color;
+  m_rgbColors[recordId] = color;
+}
+
+void libfreehand::FHCollector::collectTintColor(unsigned recordId, const FHTintColor &color)
+{
+  m_tints[recordId] = color;
 }
 
 void libfreehand::FHCollector::collectBasicFill(unsigned recordId, const FHBasicFill &fill)
@@ -569,9 +581,9 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
   propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
   if (charProps.m_fontColorId)
   {
-    const FHRGBColor *color = _findColor(charProps.m_fontColorId);
-    if (color)
-      propList.insert("fo:color", getColorString(*color));
+    librevenge::RVNGString color = getColorString(charProps.m_fontColorId);
+    if (!color.empty())
+      propList.insert("fo:color", color);
   }
   if (charProps.m_fontStyle & 1)
     propList.insert("fo:font-weight", "bold");
@@ -841,9 +853,9 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
     std::map<unsigned, FHBasicFill>::const_iterator iterBasicFill = m_basicFills.find(charProps.m_textColorId);
     if (iterBasicFill != m_basicFills.end() && iterBasicFill->second.m_colorId)
     {
-      const FHRGBColor *color = _findColor(iterBasicFill->second.m_colorId);
-      if (color)
-        propList.insert("fo:color", getColorString(*color));
+      librevenge::RVNGString color = getColorString(iterBasicFill->second.m_colorId);
+      if (!color.empty())
+        propList.insert("fo:color", color);
     }
   }
   propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
@@ -937,9 +949,9 @@ void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &
   if (!basicFill)
     return;
   propList.insert("draw:fill", "solid");
-  const FHRGBColor *color = _findColor(basicFill->m_colorId);
-  if (color)
-    propList.insert("draw:fill-color", getColorString(*color));
+  librevenge::RVNGString color = getColorString(basicFill->m_colorId);
+  if (!color.empty())
+    propList.insert("draw:fill-color", color);
   else
     propList.insert("draw:fill-color", "#000000");
 }
@@ -956,31 +968,31 @@ void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList 
     const std::vector<FHColorStop> *multiColorList = _findMultiColorList(linearFill->m_multiColorListId);
     if (multiColorList && multiColorList->size() > 1)
     {
-      const FHRGBColor *color = _findColor((*multiColorList)[0].m_colorId);
-      if (color)
-        propList.insert("draw:start-color", getColorString(*color));
-      color = _findColor((*multiColorList)[1].m_colorId);
-      if (color)
-        propList.insert("draw:end-color", getColorString(*color));
+      librevenge::RVNGString color = getColorString((*multiColorList)[0].m_colorId);
+      if (!color.empty())
+        propList.insert("draw:start-color", color);
+      color = getColorString((*multiColorList)[1].m_colorId);
+      if (!color.empty())
+        propList.insert("draw:end-color", color);
     }
     else
     {
-      const FHRGBColor *color = _findColor(linearFill->m_color1Id);
-      if (color)
-        propList.insert("draw:start-color", getColorString(*color));
-      color = _findColor(linearFill->m_color2Id);
-      if (color)
-        propList.insert("draw:end-color", getColorString(*color));
+      librevenge::RVNGString color = getColorString(linearFill->m_color1Id);
+      if (!color.empty())
+        propList.insert("draw:start-color", color);
+      color = getColorString(linearFill->m_color2Id);
+      if (!color.empty())
+        propList.insert("draw:end-color", color);
     }
   }
   else
   {
-    const FHRGBColor *color = _findColor(linearFill->m_color1Id);
-    if (color)
-      propList.insert("draw:start-color", getColorString(*color));
-    color = _findColor(linearFill->m_color2Id);
-    if (color)
-      propList.insert("draw:end-color", getColorString(*color));
+    librevenge::RVNGString color = getColorString(linearFill->m_color1Id);
+    if (!color.empty())
+      propList.insert("draw:start-color", color);
+    color = getColorString(linearFill->m_color2Id);
+    if (!color.empty())
+      propList.insert("draw:end-color", color);
   }
 }
 
@@ -989,9 +1001,9 @@ void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &
   if (!basicLine)
     return;
   propList.insert("draw:stroke", "solid");
-  const FHRGBColor *color = _findColor(basicLine->m_colorId);
-  if (color)
-    propList.insert("svg:stroke-color", getColorString(*color));
+  librevenge::RVNGString color = getColorString(basicLine->m_colorId);
+  if (!color.empty())
+    propList.insert("svg:stroke-color", color);
   else
     propList.insert("svg:stroke-color", "#000000");
   propList.insert("svg:stroke-width", basicLine->m_width);
@@ -1093,10 +1105,10 @@ const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigne
   return 0;
 }
 
-const libfreehand::FHRGBColor *libfreehand::FHCollector::_findColor(unsigned id)
+const libfreehand::FHRGBColor *libfreehand::FHCollector::_findRGBColor(unsigned id)
 {
-  std::map<unsigned, FHRGBColor>::const_iterator iter = m_colors.find(id);
-  if (iter != m_colors.end())
+  std::map<unsigned, FHRGBColor>::const_iterator iter = m_rgbColors.find(id);
+  if (iter != m_rgbColors.end())
     return &(iter->second);
   return 0;
 }
@@ -1200,11 +1212,34 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
   return data;
 }
 
-::librevenge::RVNGString libfreehand::FHCollector::getColorString(const libfreehand::FHRGBColor &color)
+::librevenge::RVNGString libfreehand::FHCollector::getColorString(unsigned id)
 {
-  ::librevenge::RVNGString colorString;
-  colorString.sprintf("#%.2x%.2x%.2x", color.m_red >> 8, color.m_green >> 8, color.m_blue >> 8);
-  return colorString;
+  std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(id);
+  if (iterColor != m_rgbColors.end())
+    return _getColorString(iterColor->second);
+  std::map<unsigned, FHTintColor>::const_iterator iterTint = m_tints.find(id);
+  if (iterTint != m_tints.end())
+    return getRGBFromTint(iterTint->second);
+  return ::librevenge::RVNGString();
+}
+
+::librevenge::RVNGString libfreehand::FHCollector::getRGBFromTint(const FHTintColor &tint)
+{
+  if (!tint.m_baseColorId)
+    return librevenge::RVNGString();
+  std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(tint.m_baseColorId);
+  if (iterColor != m_rgbColors.end())
+  {
+    unsigned red = iterColor->second.m_red * tint.m_tint + (65536 - tint.m_tint) * 65536;
+    unsigned green = iterColor->second.m_green * tint.m_tint + (65536 - tint.m_tint) * 65536;
+    unsigned blue = iterColor->second.m_blue * tint.m_tint + (65536 - tint.m_tint) * 65536;
+    FHRGBColor color;
+    color.m_red = (red >> 16);
+    color.m_green = (green >> 16);
+    color.m_blue = (blue >> 16);
+    return _getColorString(color);
+  }
+  return getColorString(tint.m_baseColorId);
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

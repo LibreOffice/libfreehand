@@ -138,6 +138,13 @@ struct FHCMYKColor
     : m_cyan(0), m_magenta(0), m_yellow(0), m_black(0xffff) {}
 };
 
+struct FHTintColor
+{
+  unsigned m_baseColorId;
+  unsigned short m_tint;
+  FHTintColor() : m_baseColorId(0), m_tint(1.0) {}
+};
+
 struct FHPropList
 {
   unsigned m_parentId;

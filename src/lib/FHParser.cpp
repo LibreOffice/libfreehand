@@ -1968,12 +1968,14 @@ void libfreehand::FHParser::readTileFill(librevenge::RVNGInputStream *input, lib
 
 void libfreehand::FHParser::readTintColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
+  FHTintColor tint;
   _readRecordId(input);
+  input->seek(12, librevenge::RVNG_SEEK_CUR);
+  tint.m_baseColorId = _readRecordId(input);
+  tint.m_tint = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  FHRGBColor color = _readRGBColor(input);
-  input->seek(10, librevenge::RVNG_SEEK_CUR);
   if (collector)
-    collector->collectColor(m_currentRecord+1, color);
+    collector->collectTintColor(m_currentRecord+1, tint);
 }
 
 void libfreehand::FHParser::readTintColor6(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
