@@ -53,13 +53,14 @@ public:
   void collectDataList(unsigned recordId, const FHDataList &list);
   void collectImage(unsigned recordId, const FHImageImport &image);
   void collectMultiColorList(unsigned recordId, const std::vector<FHColorStop> &colorStops);
-  void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
   void collectColor(unsigned recordId, const FHRGBColor &color);
   void collectTintColor(unsigned recordId, const FHTintColor &color);
   void collectBasicFill(unsigned recordId, const FHBasicFill &fill);
+  void collectLensFill(unsigned recordId, const FHLensFill &fill);
+  void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
 
   void outputContent(::librevenge::RVNGDrawingInterface *painter);
@@ -92,6 +93,7 @@ private:
   void _appendBasicFill(::librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
   void _appendBasicLine(::librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
   void _appendLinearFill(::librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
+  void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
   const FHPath *_findPath(unsigned id);
@@ -105,6 +107,7 @@ private:
   const std::vector<unsigned short> *_findTextBlok(unsigned id);
   const FHBasicFill *_findBasicFill(unsigned id);
   const FHLinearFill *_findLinearFill(unsigned id);
+  const FHLensFill *_findLensFill(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findRGBColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
@@ -149,6 +152,7 @@ private:
   std::map<unsigned, std::vector<FHColorStop> > m_multiColorLists;
   std::map<unsigned, FHLinearFill> m_linearFills;
   std::map<unsigned, FHTintColor> m_tints;
+  std::map<unsigned, FHLensFill> m_lensFills;
 
   unsigned m_strokeId;
   unsigned m_fillId;

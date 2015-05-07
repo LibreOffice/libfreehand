@@ -262,6 +262,14 @@ struct FHColorStop
   FHColorStop() : m_colorId(0), m_position(0.0) {}
 };
 
+struct FHLensFill
+{
+  unsigned m_colorId;
+  double m_value;
+  unsigned m_mode;
+  FHLensFill() : m_colorId(0), m_value(0.0), m_mode(0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

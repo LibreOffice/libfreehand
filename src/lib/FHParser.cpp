@@ -13,12 +13,14 @@
 #include <unicode/utf8.h>
 #include <unicode/utf16.h>
 #include <lcms2.h>
-#include "FHColorProfiles.h"
-#include "FHParser.h"
 #include "FHCollector.h"
+#include "FHColorProfiles.h"
+#include "FHConstants.h"
 #include "FHInternalStream.h"
+#include "FHParser.h"
 #include "libfreehand_utils.h"
 #include "tokens.h"
+
 
 namespace
 {
@@ -1135,10 +1137,16 @@ void libfreehand::FHParser::readLayer(librevenge::RVNGInputStream *input, libfre
     collector->collectLayer(m_currentRecord+1, layer);
 }
 
-void libfreehand::FHParser::readLensFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readLensFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  input->seek(38, librevenge::RVNG_SEEK_CUR);
+  FHLensFill fill;
+  fill.m_colorId = _readRecordId(input);
+  input->seek(6, librevenge::RVNG_SEEK_CUR);
+  fill.m_value = _readCoordinate(input);
+  input->seek(27, librevenge::RVNG_SEEK_CUR);
+  fill.m_mode = readU8(input);
+  if (collector)
+    collector->collectLensFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readLinearFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

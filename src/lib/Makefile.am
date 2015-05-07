@@ -41,6 +41,7 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	libfreehand_utils.cpp \
 	FHCollector.h \
 	FHColorProfiles.h \
+	FHConstants.h \
 	FHInternalStream.h \
 	FHParser.h \
 	FHPath.h \

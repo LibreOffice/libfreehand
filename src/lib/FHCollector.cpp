@@ -9,6 +9,7 @@
 
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
+#include "FHConstants.h"
 #include "libfreehand_utils.h"
 
 #ifndef M_PI
@@ -140,7 +141,7 @@ libfreehand::FHCollector::FHCollector() :
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
   m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
   m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_strokeId(0), m_fillId(0)
+  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0)
 {
 }
 
@@ -305,6 +306,11 @@ void libfreehand::FHCollector::collectMultiColorList(unsigned recordId, const st
 void libfreehand::FHCollector::collectLinearFill(unsigned recordId, const FHLinearFill &fill)
 {
   m_linearFills[recordId] = fill;
+}
+
+void libfreehand::FHCollector::collectLensFill(unsigned recordId, const FHLensFill &fill)
+{
+  m_lensFills[recordId] = fill;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -907,6 +913,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         {
           _appendBasicFill(propList, _findBasicFill(fillId));
           _appendLinearFill(propList, _findLinearFill(fillId));
+          _appendLensFill(propList, _findLensFill(fillId));
         }
         else
           _appendFillProperties(propList, 0);
@@ -921,6 +928,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
       {
         _appendBasicFill(propList, _findBasicFill(iter->second));
         _appendLinearFill(propList, _findLinearFill(iter->second));
+        _appendLensFill(propList, _findLensFill(iter->second));
       }
     }
   }
@@ -984,7 +992,7 @@ void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList 
     return;
   propList.insert("draw:fill", "gradient");
   propList.insert("draw:style", "linear");
-  propList.insert("draw:angle", 90.0 - linearFill->m_angle);
+  propList.insert("draw:angle", 90.0 - linearFill->m_angle, librevenge::RVNG_GENERIC);
   if (linearFill->m_multiColorListId)
   {
     const std::vector<FHColorStop> *multiColorList = _findMultiColorList(linearFill->m_multiColorListId);
@@ -1015,6 +1023,75 @@ void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList 
     color = getColorString(linearFill->m_color2Id);
     if (!color.empty())
       propList.insert("draw:end-color", color);
+  }
+}
+
+void libfreehand::FHCollector::_appendLensFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLensFill *lensFill)
+{
+  if (!lensFill)
+    return;
+
+  if (lensFill->m_colorId)
+  {
+    propList.insert("draw:fill", "solid");
+    librevenge::RVNGString color = getColorString(lensFill->m_colorId);
+    if (!color.empty())
+      propList.insert("draw:fill-color", color);
+    else
+      propList.insert("draw:fill", "none");
+  }
+  else
+    propList.insert("draw:fill", "none");
+
+  switch (lensFill->m_mode)
+  {
+  case FH_LENSFILL_MODE_TRANSPARENCY:
+    propList.insert("draw:opacity", lensFill->m_value / 100.0, librevenge::RVNG_PERCENT);
+    break;
+  case FH_LENSFILL_MODE_MONOCHROME:
+    propList.insert("draw:fill", "none");
+    propList.insert("draw:color-mode", "greyscale");
+    break;
+  case FH_LENSFILL_MODE_MAGNIFY:
+    propList.insert("draw:fill", "none");
+    break;
+  case FH_LENSFILL_MODE_LIGHTEN:
+  {
+    if (lensFill->m_colorId)
+    {
+      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(lensFill->m_colorId);
+      if (iterColor != m_rgbColors.end())
+      {
+        FHRGBColor color;
+        color.m_red = (unsigned short)((((double)iterColor->second.m_red) * lensFill->m_value + 65535.0 * (100.0 - lensFill->m_value)) / 100.0);
+        color.m_green = (unsigned short)((((double)iterColor->second.m_green) * lensFill->m_value + 65535.0 * (100.0 - lensFill->m_value)) / 100.0);
+        color.m_blue = (unsigned short)((((double)iterColor->second.m_blue) * lensFill->m_value + 65535.0 * (100.0 - lensFill->m_value)) / 100.0);
+        propList.insert("draw:fill-color",  _getColorString(color));
+      }
+      break;
+    }
+  }
+  case FH_LENSFILL_MODE_DARKEN:
+  {
+    if (lensFill->m_colorId)
+    {
+      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(lensFill->m_colorId);
+      if (iterColor != m_rgbColors.end())
+      {
+        FHRGBColor color;
+        color.m_red = (unsigned short)(((double)iterColor->second.m_red) * lensFill->m_value / 100.0);
+        color.m_green = (unsigned short)(((double)iterColor->second.m_green) * lensFill->m_value / 100.0);
+        color.m_blue = (unsigned short)(((double)iterColor->second.m_blue) * lensFill->m_value / 100.0);
+        propList.insert("draw:fill-color",  _getColorString(color));
+      }
+      break;
+    }
+  }
+  case FH_LENSFILL_MODE_INVERT:
+    propList.insert("draw:fill", "none");
+    break;
+  default:
+    break;
   }
 }
 
@@ -1119,6 +1196,14 @@ const libfreehand::FHLinearFill *libfreehand::FHCollector::_findLinearFill(unsig
   return 0;
 }
 
+const libfreehand::FHLensFill *libfreehand::FHCollector::_findLensFill(unsigned id)
+{
+  std::map<unsigned, FHLensFill>::const_iterator iter = m_lensFills.find(id);
+  if (iter != m_lensFills.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
 {
   std::map<unsigned, FHBasicLine>::const_iterator iter = m_basicLines.find(id);
@@ -1198,7 +1283,8 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
   for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
   {
     unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
-    if (_findBasicFill(valueId) || _findLinearFill(valueId))
+    // Add other fills if we support them
+    if (_findBasicFill(valueId) || _findLinearFill(valueId) || _findLensFill(valueId))
       fillId = valueId;
   }
   return fillId;
