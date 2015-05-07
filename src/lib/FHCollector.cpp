@@ -1055,38 +1055,16 @@ void libfreehand::FHCollector::_appendLensFill(::librevenge::RVNGPropertyList &p
   case FH_LENSFILL_MODE_MAGNIFY:
     propList.insert("draw:fill", "none");
     break;
-  case FH_LENSFILL_MODE_LIGHTEN:
-  {
-    if (lensFill->m_colorId)
-    {
-      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(lensFill->m_colorId);
-      if (iterColor != m_rgbColors.end())
-      {
-        FHRGBColor color;
-        color.m_red = (unsigned short)((((double)iterColor->second.m_red) * lensFill->m_value + 65535.0 * (100.0 - lensFill->m_value)) / 100.0);
-        color.m_green = (unsigned short)((((double)iterColor->second.m_green) * lensFill->m_value + 65535.0 * (100.0 - lensFill->m_value)) / 100.0);
-        color.m_blue = (unsigned short)((((double)iterColor->second.m_blue) * lensFill->m_value + 65535.0 * (100.0 - lensFill->m_value)) / 100.0);
-        propList.insert("draw:fill-color",  _getColorString(color));
-      }
-      break;
-    }
-  }
-  case FH_LENSFILL_MODE_DARKEN:
-  {
-    if (lensFill->m_colorId)
-    {
-      std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(lensFill->m_colorId);
-      if (iterColor != m_rgbColors.end())
-      {
-        FHRGBColor color;
-        color.m_red = (unsigned short)(((double)iterColor->second.m_red) * lensFill->m_value / 100.0);
-        color.m_green = (unsigned short)(((double)iterColor->second.m_green) * lensFill->m_value / 100.0);
-        color.m_blue = (unsigned short)(((double)iterColor->second.m_blue) * lensFill->m_value / 100.0);
-        propList.insert("draw:fill-color",  _getColorString(color));
-      }
-      break;
-    }
-  }
+  case FH_LENSFILL_MODE_LIGHTEN: // emulate by semi-transparent white fill
+    propList.insert("draw:fill", "solid");
+    propList.insert("draw:fill-color", "#FFFFFF");
+    propList.insert("draw:opacity", lensFill->m_value / 100.0, librevenge::RVNG_PERCENT);
+    break;
+  case FH_LENSFILL_MODE_DARKEN: // emulate by semi-transparent black fill
+    propList.insert("draw:fill", "solid");
+    propList.insert("draw:fill-color", "#000000");
+    propList.insert("draw:opacity", lensFill->m_value / 100.0, librevenge::RVNG_PERCENT);
+    break;
   case FH_LENSFILL_MODE_INVERT:
     propList.insert("draw:fill", "none");
     break;
