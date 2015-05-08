@@ -541,7 +541,6 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
       trafo->applyToPoint(xc, yc);
     }
   }
-  std::stack<FHTransform> groupTransforms = m_currentTransforms;
   if (!m_currentTransforms.empty())
   {
     m_currentTransforms.top().applyToPoint(xa, ya);
