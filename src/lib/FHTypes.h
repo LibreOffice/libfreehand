@@ -126,6 +126,10 @@ struct FHRGBColor
   unsigned short m_blue;
   FHRGBColor()
     : m_red(0), m_green(0), m_blue(0) {}
+  bool black() const
+  {
+    return !m_red && !m_green && !m_blue;
+  }
 };
 
 struct FHCMYKColor
