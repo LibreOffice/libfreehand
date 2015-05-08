@@ -1705,7 +1705,7 @@ void libfreehand::FHParser::readRectangle(librevenge::RVNGInputStream *input, li
     path.appendMoveTo(x1, y1);
   else
   {
-    path.appendMoveTo(x1 - rblb, y1);
+    path.appendMoveTo(x1 + rblb, y1);
     if (rbl)
       path.appendQuadraticBezierTo(x1, y1, x1, y1 + rbll);
     else
@@ -1744,7 +1744,7 @@ void libfreehand::FHParser::readRectangle(librevenge::RVNGInputStream *input, li
   if (FH_ALMOST_ZERO(rbll) || FH_ALMOST_ZERO(rblb))
     path.appendLineTo(x1, y1);
   else
-    path.appendLineTo(x1 - rblb, y1);
+    path.appendLineTo(x1 + rblb, y1);
   path.appendClosePath();
 
   path.setXFormId(xform);
