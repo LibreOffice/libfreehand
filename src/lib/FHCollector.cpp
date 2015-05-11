@@ -141,10 +141,10 @@ static void _composePath(::librevenge::RVNGPropertyListVector &path, bool isClos
 
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
-  m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
-  m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
-  m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0), m_contentId(0), m_fakeTransform()
+  m_layers(), m_groups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(),
+  m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
+  m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
+  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
 
@@ -354,7 +354,8 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   if (!m_currentTransforms.empty())
     fhPath.transform(m_currentTransforms.top());
   _normalizePath(fhPath);
-  fhPath.transform(m_fakeTransform);
+  if (!m_fakeTransforms.empty())
+    fhPath.transform(m_fakeTransforms.top());
 
   librevenge::RVNGPropertyListVector propVec;
   fhPath.writeOut(propVec);
@@ -573,9 +574,12 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
 
-  m_fakeTransform.applyToPoint(xa, ya);
-  m_fakeTransform.applyToPoint(xb, yb);
-  m_fakeTransform.applyToPoint(xc, yc);
+  if (!m_fakeTransforms.empty())
+  {
+    m_fakeTransforms.top().applyToPoint(xa, ya);
+    m_fakeTransforms.top().applyToPoint(xb, yb);
+    m_fakeTransforms.top().applyToPoint(xc, yc);
+  }
 
   double rotation = atan2(yb-yc, xb-xc);
   double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
@@ -716,9 +720,12 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
 
-  m_fakeTransform.applyToPoint(xa, ya);
-  m_fakeTransform.applyToPoint(xb, yb);
-  m_fakeTransform.applyToPoint(xc, yc);
+  if (!m_fakeTransforms.empty())
+  {
+    m_fakeTransforms.top().applyToPoint(xa, ya);
+    m_fakeTransforms.top().applyToPoint(xb, yb);
+    m_fakeTransforms.top().applyToPoint(xc, yc);
+  }
 
   double rotation = atan2(yb-yc, xb-xc);
   double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
@@ -1026,6 +1033,25 @@ void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &
     propList.insert("draw:fill-color", "#000000");
 }
 
+unsigned libfreehand::FHCollector::_findContent(unsigned graphicStyleId)
+{
+  if (!graphicStyleId)
+    return 0;
+  else
+  {
+    const FHPropList *propertyList = _findPropList(graphicStyleId);
+    if (!propertyList)
+      return 0;
+    else
+    {
+      std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_contentId);
+      if (iter != propertyList->m_elements.end())
+        return (iter->second);
+    }
+  }
+  return 0;
+}
+
 void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLinearFill *linearFill)
 {
   if (!linearFill)
@@ -1307,6 +1333,7 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
   }
   return fillId;
 }
+
 
 unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
 {
