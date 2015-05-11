@@ -19,6 +19,9 @@
 #ifndef DUMP_BINARY_OBJECTS
 #define DUMP_BINARY_OBJECTS 0
 #endif
+#ifndef DEBUG_BOUNDING_BOX
+#define DEBUG_BOUNDING_BOX 0
+#endif
 
 #define FH_UNINITIALIZED(pI) \
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
@@ -359,7 +362,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   pList.insert("svg:d", propVec);
   painter->setStyle(propList);
   painter->drawPath(pList);
-#ifdef DEBUG_BOUNDING_BOX
+#if DEBUG_BOUNDING_BOX
   {
     librevenge::RVNGPropertyList rectangleProps;
     rectangleProps.insert("draw:fill", "none");
