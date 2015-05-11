@@ -579,7 +579,9 @@ void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *
 {
   if (!painter || !paragraph)
     return;
-  painter->openParagraph(librevenge::RVNGPropertyList());
+  librevenge::RVNGPropertyList propList;
+  _appendParagraphProperties(propList, paragraph->m_paraStyleId);
+  painter->openParagraph(propList);
 
   std::map<unsigned, std::vector<unsigned short> >::const_iterator iter = m_textBloks.find(paragraph->m_textBlokId);
   if (iter != m_textBloks.end())
@@ -595,6 +597,34 @@ void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *
   }
 
   painter->closeParagraph();
+}
+
+void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId)
+{
+  std::map<unsigned, FHCharProperties>::const_iterator iter = m_charProperties.find(charPropsId);
+  if (iter == m_charProperties.end())
+    return;
+  const FHCharProperties &charProps = iter->second;
+  if (charProps.m_fontNameId)
+  {
+    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(charProps.m_fontNameId);
+    if (iterString != m_strings.end())
+      propList.insert("fo:font-name", iterString->second);
+  }
+  propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
+  if (charProps.m_fontId)
+    _appendFontProperties(propList, charProps.m_fontId);
+  if (charProps.m_textColorId)
+  {
+    std::map<unsigned, FHBasicFill>::const_iterator iterBasicFill = m_basicFills.find(charProps.m_textColorId);
+    if (iterBasicFill != m_basicFills.end() && iterBasicFill->second.m_colorId)
+    {
+      librevenge::RVNGString color = getColorString(iterBasicFill->second.m_colorId);
+      if (!color.empty())
+        propList.insert("fo:color", color);
+    }
+  }
+  propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
 }
 
 void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps)
@@ -619,6 +649,10 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
 }
 
 void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, const FH3ParaProperties & /* paraProps */)
+{
+}
+
+void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, unsigned /* paraPropsId */)
 {
 }
 
@@ -678,12 +712,14 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   librevenge::RVNGString text;
   std::vector<unsigned char>::size_type i = 0;
 
-  painter->openParagraph(librevenge::RVNGPropertyList());
+  librevenge::RVNGPropertyList paraPropList;
+  _appendParagraphProperties(paraPropList, paraProps);
+  painter->openParagraph(paraPropList);
   bool isParagraphOpened = true;
 
-  librevenge::RVNGPropertyList propList;
-  _appendCharacterProperties(propList, charProps);
-  painter->openSpan(propList);
+  librevenge::RVNGPropertyList charPropList;
+  _appendCharacterProperties(charPropList, charProps);
+  painter->openSpan(charPropList);
   bool isSpanOpened = true;
 
   while (i < displayText->m_characters.size())
@@ -728,21 +764,23 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
       break;
     if (!isParagraphOpened)
     {
-      painter->openParagraph(librevenge::RVNGPropertyList());
+      paraPropList.clear();
+      _appendParagraphProperties(paraPropList, paraProps);
+      painter->openParagraph(paraPropList);
       isParagraphOpened = true;
       if (!isSpanOpened)
       {
-        propList.clear();
-        _appendCharacterProperties(propList, charProps);
-        painter->openSpan(propList);
+        charPropList.clear();
+        _appendCharacterProperties(charPropList, charProps);
+        painter->openSpan(charPropList);
         isSpanOpened = true;
       }
     }
     if (!isSpanOpened)
     {
-      propList.clear();
-      _appendCharacterProperties(propList, charProps);
-      painter->openSpan(propList);
+      charPropList.clear();
+      _appendCharacterProperties(charPropList, charProps);
+      painter->openSpan(charPropList);
       isSpanOpened = true;
     }
   }
@@ -859,35 +897,6 @@ void libfreehand::FHCollector::_appendFontProperties(::librevenge::RVNGPropertyL
   if (font.m_fontStyle & 2)
     propList.insert("fo:font-style", "italic");
 }
-
-void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId)
-{
-  std::map<unsigned, FHCharProperties>::const_iterator iter = m_charProperties.find(charPropsId);
-  if (iter == m_charProperties.end())
-    return;
-  const FHCharProperties &charProps = iter->second;
-  if (charProps.m_fontNameId)
-  {
-    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(charProps.m_fontNameId);
-    if (iterString != m_strings.end())
-      propList.insert("fo:font-name", iterString->second);
-  }
-  propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
-  if (charProps.m_fontId)
-    _appendFontProperties(propList, charProps.m_fontId);
-  if (charProps.m_textColorId)
-  {
-    std::map<unsigned, FHBasicFill>::const_iterator iterBasicFill = m_basicFills.find(charProps.m_textColorId);
-    if (iterBasicFill != m_basicFills.end() && iterBasicFill->second.m_colorId)
-    {
-      librevenge::RVNGString color = getColorString(iterBasicFill->second.m_colorId);
-      if (!color.empty())
-        propList.insert("fo:color", color);
-    }
-  }
-  propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
-}
-
 
 void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId)
 {
@@ -1299,9 +1308,9 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
 
 ::librevenge::RVNGString libfreehand::FHCollector::getColorString(unsigned id)
 {
-  std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(id);
-  if (iterColor != m_rgbColors.end())
-    return _getColorString(iterColor->second);
+  const FHRGBColor *color = _findRGBColor(id);
+  if (color)
+    return _getColorString(*color);
   std::map<unsigned, FHTintColor>::const_iterator iterTint = m_tints.find(id);
   if (iterTint != m_tints.end())
     return getRGBFromTint(iterTint->second);
@@ -1312,12 +1321,12 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
 {
   if (!tint.m_baseColorId)
     return librevenge::RVNGString();
-  std::map<unsigned, FHRGBColor>::const_iterator iterColor = m_rgbColors.find(tint.m_baseColorId);
-  if (iterColor != m_rgbColors.end())
+  const FHRGBColor *rgbColor = _findRGBColor(tint.m_baseColorId);
+  if (rgbColor)
   {
-    unsigned red = iterColor->second.m_red * tint.m_tint + (65536 - tint.m_tint) * 65536;
-    unsigned green = iterColor->second.m_green * tint.m_tint + (65536 - tint.m_tint) * 65536;
-    unsigned blue = iterColor->second.m_blue * tint.m_tint + (65536 - tint.m_tint) * 65536;
+    unsigned red = rgbColor->m_red * tint.m_tint + (65536 - tint.m_tint) * 65536;
+    unsigned green = rgbColor->m_green * tint.m_tint + (65536 - tint.m_tint) * 65536;
+    unsigned blue = rgbColor->m_blue * tint.m_tint + (65536 - tint.m_tint) * 65536;
     FHRGBColor color;
     color.m_red = (red >> 16);
     color.m_green = (green >> 16);
