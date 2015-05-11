@@ -26,6 +26,9 @@ public:
   virtual void writeOut(librevenge::RVNGPropertyListVector &vec) const = 0;
   virtual void transform(const FHTransform &trafo) = 0;
   virtual FHPathElement *clone() = 0;
+  virtual void getBoundingBox(double x0, double y0, double &px, double &py, double &qx, double &qy) const = 0;
+  virtual double getX() const = 0;
+  virtual double getY() const = 0;
 };
 
 
@@ -44,7 +47,6 @@ public:
   void appendQuadraticBezierTo(double x1, double y1, double x, double y);
   void appendArcTo(double rx, double ry, double rotation, bool longAngle, bool sweep, double x, double y);
   void appendClosePath();
-  void appendPath(const FHPath &path);
   void setXFormId(unsigned xFormId);
   void setGraphicStyleId(unsigned graphicStyleId);
   void setEvenOdd(bool evenOdd);
@@ -52,6 +54,9 @@ public:
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
+  double getX() const;
+  double getY() const;
 
   void clear();
   bool empty() const;
@@ -59,6 +64,7 @@ public:
   unsigned getXFormId() const;
   unsigned getGraphicStyleId() const;
   bool getEvenOdd() const;
+  void getBoundingBox(double &xmin, double &ymin, double &xmax, double &ymax) const;
 
 private:
   std::vector<FHPathElement *> m_elements;

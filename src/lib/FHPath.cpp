@@ -3,7 +3,7 @@
  * This file is part of the libfreehand project.
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * License, v. 2.0. If a coymin of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
@@ -12,6 +12,7 @@
 #include "FHPath.h"
 #include "FHTypes.h"
 #include "FHTransform.h"
+#include "libfreehand_utils.h"
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -20,6 +21,34 @@
 #ifndef DEBUG_SPLINES
 #define DEBUG_SPLINES 0
 #endif
+
+namespace
+{
+
+static double getAngle(double bx, double by)
+{
+  return fmod(2*M_PI + (by > 0.0 ? 1.0 : -1.0) * acos(bx / sqrt(bx * bx + by * by)), 2*M_PI);
+}
+
+static double quadraticExtreme(double t, double a, double b, double c)
+{
+  return (1.0-t)*(1.0-t)*a + 2.0*(1.0-t)*t*b + t*t*c;
+}
+
+static double quadraticDerivative(double a, double b, double c)
+{
+  double denominator = a - 2.0*b + c;
+  if (fabs(denominator)>1e-10*(a-b))
+    return (a - b)/denominator;
+  return -1.0;
+}
+
+static double cubicBase(double t, double a, double b, double c, double d)
+{
+  return (1.0-t)*(1.0-t)*(1.0-t)*a + 3.0*(1.0-t)*(1.0-t)*t*b + 3.0*(1.0-t)*t*t*c + t*t*t*d;
+}
+
+}
 
 namespace libfreehand
 {
@@ -34,6 +63,15 @@ public:
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
+  double getX() const
+  {
+    return m_x;
+  }
+  double getY() const
+  {
+    return m_y;
+  }
 private:
   double m_x;
   double m_y;
@@ -49,6 +87,15 @@ public:
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
+  double getX() const
+  {
+    return m_x;
+  }
+  double getY() const
+  {
+    return m_y;
+  }
 private:
   double m_x;
   double m_y;
@@ -68,6 +115,15 @@ public:
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
+  double getX() const
+  {
+    return m_x;
+  }
+  double getY() const
+  {
+    return m_y;
+  }
 private:
   double m_x1;
   double m_y1;
@@ -89,6 +145,15 @@ public:
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
+  double getX() const
+  {
+    return m_x;
+  }
+  double getY() const
+  {
+    return m_y;
+  }
 private:
   double m_x1;
   double m_y1;
@@ -111,6 +176,15 @@ public:
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
+  double getX() const
+  {
+    return m_x;
+  }
+  double getY() const
+  {
+    return m_y;
+  }
 private:
   double m_rx;
   double m_ry;
@@ -143,6 +217,12 @@ libfreehand::FHPathElement *libfreehand::FHMoveToElement::clone()
   return new FHMoveToElement(m_x, m_y);
 }
 
+void libfreehand::FHMoveToElement::getBoundingBox(double /* x0 */, double /* y0 */, double &xmin, double &ymin, double &xmax, double &ymax) const
+{
+  xmin = xmax = m_x;
+  ymin = ymax = m_y;
+}
+
 void libfreehand::FHLineToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   librevenge::RVNGPropertyList node;
@@ -160,6 +240,15 @@ void libfreehand::FHLineToElement::transform(const FHTransform &trafo)
 libfreehand::FHPathElement *libfreehand::FHLineToElement::clone()
 {
   return new FHLineToElement(m_x, m_y);
+}
+
+void libfreehand::FHLineToElement::getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const
+{
+  xmin = x0 < m_x ? x0 : m_x;
+  xmax = x0 > m_x ? x0 : m_x;
+  ymin = y0 < m_y ? y0 : m_y;
+  ymax = y0 > m_y ? y0 : m_y;
+
 }
 
 void libfreehand::FHCubicBezierToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
@@ -187,6 +276,25 @@ libfreehand::FHPathElement *libfreehand::FHCubicBezierToElement::clone()
   return new FHCubicBezierToElement(m_x1, m_y1, m_x2, m_y2, m_x, m_y);
 }
 
+void libfreehand::FHCubicBezierToElement::getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const
+{
+  xmin = x0 < m_x ? x0 : m_x;
+  xmax = x0 > m_x ? x0 : m_x;
+  ymin = y0 < m_y ? y0 : m_y;
+  ymax = y0 > m_y ? y0 : m_y;
+
+  for (int i=0; i<=100; ++i)
+  {
+    double t=double(i)/100.;
+    double tmpx = cubicBase(t, x0, m_x1, m_x2, m_x);
+    xmin = tmpx < xmin ? tmpx : xmin;
+    xmax = tmpx > xmax ? tmpx : xmax;
+    double tmymin = cubicBase(t, y0, m_y1, m_y2, m_y);
+    ymin = tmymin < ymin ? tmymin : ymin;
+    ymax = tmymin > ymax ? tmymin : ymax;
+  }
+}
+
 void libfreehand::FHQuadraticBezierToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
   librevenge::RVNGPropertyList node;
@@ -207,6 +315,30 @@ void libfreehand::FHQuadraticBezierToElement::transform(const FHTransform &trafo
 libfreehand::FHPathElement *libfreehand::FHQuadraticBezierToElement::clone()
 {
   return new FHQuadraticBezierToElement(m_x1, m_y1, m_x, m_y);
+}
+
+void libfreehand::FHQuadraticBezierToElement::getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const
+{
+  xmin = x0 < m_x ? x0 : m_x;
+  xmax = x0 > m_x ? x0 : m_x;
+  ymin = y0 < m_y ? y0 : m_y;
+  ymax = y0 > m_y ? y0 : m_y;
+
+  double t = quadraticDerivative(x0, m_x1, m_x);
+  if (t>=0 && t<=1)
+  {
+    double tmpx = quadraticExtreme(t, x0, m_x1, m_x);
+    xmin = tmpx < xmin ? tmpx : xmin;
+    xmax = tmpx > xmax ? tmpx : xmax;
+  }
+
+  t = quadraticDerivative(y0, m_y1, m_y);
+  if (t>=0 && t<=1)
+  {
+    double tmymin = quadraticExtreme(t, y0, m_y1, m_y);
+    ymin = tmymin < ymin ? tmymin : ymin;
+    ymax = tmymin > ymax ? tmymin : ymax;
+  }
 }
 
 void libfreehand::FHArcToElement::writeOut(librevenge::RVNGPropertyListVector &vec) const
@@ -231,6 +363,166 @@ void libfreehand::FHArcToElement::transform(const FHTransform &trafo)
 libfreehand::FHPathElement *libfreehand::FHArcToElement::clone()
 {
   return new FHArcToElement(m_rx, m_ry, m_rotation, m_largeArc, m_sweep, m_x, m_y);
+}
+
+void libfreehand::FHArcToElement::getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const
+{
+  double phi = m_rotation*M_PI/180;
+  double rx = m_rx < 0.0 ? -m_rx : m_rx;
+  double ry = m_ry < 0.0 ? -m_ry : m_ry;
+
+  double const absError=1e-5;
+  if ((rx>-absError && rx<absError) || (ry>-absError && ry<absError))
+  {
+    xmin = (x0 < m_x ? x0 : m_x);
+    xmax = (x0 > m_x ? x0 : m_x);
+    ymin = (y0 < m_y ? y0 : m_y);
+    ymax = (y0 > m_y ? y0 : m_y);
+    return;
+  }
+
+  // F.6.5.1
+  const double x1prime = cos(phi)*(x0 - m_x)/2 + sin(phi)*(y0 - m_y)/2;
+  const double y1prime = -sin(phi)*(x0 - m_x)/2 + cos(phi)*(y0 - m_y)/2;
+
+  // F.6.5.2
+  double radicant = (rx*rx*ry*ry - rx*rx*y1prime*y1prime - ry*ry*x1prime*x1prime)/(rx*rx*y1prime*y1prime + ry*ry*x1prime*x1prime);
+  double cxprime = 0.0;
+  double cyprime = 0.0;
+  if (radicant < 0.0)
+  {
+    double ratio = rx/ry;
+    radicant = y1prime*y1prime + x1prime*x1prime/(ratio*ratio);
+    if (radicant < 0.0)
+    {
+      xmin = (x0 < m_x ? x0 : m_x);
+      xmax = (x0 > m_x ? x0 : m_x);
+      ymin = (y0 < m_y ? y0 : m_y);
+      ymax = (y0 > m_y ? y0 : m_y);
+      return;
+    }
+    ry=sqrt(radicant);
+    rx=ratio*ry;
+  }
+  else
+  {
+    double factor = (m_largeArc==m_sweep ? -1.0 : 1.0)*sqrt(radicant);
+
+    cxprime = factor*rx*y1prime/ry;
+    cyprime = -factor*ry*x1prime/rx;
+  }
+
+  // F.6.5.3
+  double cx = cxprime*cos(phi) - cyprime*sin(phi) + (x0 + m_x)/2;
+  double cy = cxprime*sin(phi) + cyprime*cos(phi) + (y0 + m_y)/2;
+
+  // now compute bounding box of the whole ellipse
+
+  // Parametric equation of an ellipse:
+  // x(theta) = cx + rx*cos(theta)*cos(phi) - ry*sin(theta)*sin(phi)
+  // y(theta) = cy + rx*cos(theta)*sin(phi) + ry*sin(theta)*cos(phi)
+
+  // Compute local extrems
+  // 0 = -rx*sin(theta)*cos(phi) - ry*cos(theta)*sin(phi)
+  // 0 = -rx*sin(theta)*sin(phi) - ry*cos(theta)*cos(phi)
+
+  // Local extrems for X:
+  // theta = -atan(ry*tan(phi)/rx)
+  // and
+  // theta = M_PI -atan(ry*tan(phi)/rx)
+
+  // Local extrems for Y:
+  // theta = atan(ry/(tan(phi)*rx))
+  // and
+  // theta = M_PI + atan(ry/(tan(phi)*rx))
+
+  double txmin, txmax, tymin, tymax;
+
+  // First handle special cases
+  if ((phi > -absError&&phi < absError) || (phi > M_PI-absError && phi < M_PI+absError))
+  {
+    xmin = cx - rx;
+    txmin = getAngle(-rx, 0);
+    xmax = cx + rx;
+    txmax = getAngle(rx, 0);
+    ymin = cy - ry;
+    tymin = getAngle(0, -ry);
+    ymax = cy + ry;
+    tymax = getAngle(0, ry);
+  }
+  else if ((phi > M_PI / 2.0-absError && phi < M_PI / 2.0+absError) ||
+           (phi > 3.0*M_PI/2.0-absError && phi < 3.0*M_PI/2.0+absError))
+  {
+    xmin = cx - ry;
+    txmin = getAngle(-ry, 0);
+    xmax = cx + ry;
+    txmax = getAngle(ry, 0);
+    ymin = cy - rx;
+    tymin = getAngle(0, -rx);
+    ymax = cy + rx;
+    tymax = getAngle(0, rx);
+  }
+  else
+  {
+    txmin = -atan(ry*tan(phi)/rx);
+    txmax = M_PI - atan(ry*tan(phi)/rx);
+    xmin = cx + rx*cos(txmin)*cos(phi) - ry*sin(txmin)*sin(phi);
+    xmax = cx + rx*cos(txmax)*cos(phi) - ry*sin(txmax)*sin(phi);
+    double tmymin = cy + rx*cos(txmin)*sin(phi) + ry*sin(txmin)*cos(phi);
+    txmin = getAngle(xmin - cx, tmymin - cy);
+    tmymin = cy + rx*cos(txmax)*sin(phi) + ry*sin(txmax)*cos(phi);
+    txmax = getAngle(xmax - cx, tmymin - cy);
+
+    tymin = atan(ry/(tan(phi)*rx));
+    tymax = atan(ry/(tan(phi)*rx))+M_PI;
+    ymin = cy + rx*cos(tymin)*sin(phi) + ry*sin(tymin)*cos(phi);
+    ymax = cy + rx*cos(tymax)*sin(phi) + ry*sin(tymax)*cos(phi);
+    double tmpX = cx + rx*cos(tymin)*cos(phi) - ry*sin(tymin)*sin(phi);
+    tymin = getAngle(tmpX - cx, ymin - cy);
+    tmpX = cx + rx*cos(tymax)*cos(phi) - ry*sin(tymax)*sin(phi);
+    tymax = getAngle(tmpX - cx, ymax - cy);
+  }
+  if (xmin > xmax)
+  {
+    std::swap(xmin,xmax);
+    std::swap(txmin,txmax);
+  }
+  if (ymin > ymax)
+  {
+    std::swap(ymin,ymax);
+    std::swap(tymin,tymax);
+  }
+  double angle1 = getAngle(x0 - cx, y0 - cy);
+  double angle2 = getAngle(m_x - cx, m_y - cy);
+
+  // for m_sweep == 0 it is normal to have delta theta < 0
+  // but we don't care about the rotation direction for bounding box
+  if (!m_sweep)
+    std::swap(angle1, angle2);
+
+  // We cannot check directly for whether an angle is included in
+  // an interval of angles that cross the 360/0 degree boundary
+  // So here we will have to check for their absence in the complementary
+  // angle interval
+  bool otherArc = false;
+  if (angle1 > angle2)
+  {
+    std::swap(angle1, angle2);
+    otherArc = true;
+  }
+
+  // Check txmin
+  if ((!otherArc && (angle1 > txmin || angle2 < txmin)) || (otherArc && !(angle1 > txmin || angle2 < txmin)))
+    xmin = x0 < m_x ? x0 : m_x;
+  // Check txmax
+  if ((!otherArc && (angle1 > txmax || angle2 < txmax)) || (otherArc && !(angle1 > txmax || angle2 < txmax)))
+    xmax = x0 > m_x ? x0 : m_x;
+  // Check tymin
+  if ((!otherArc && (angle1 > tymin || angle2 < tymin)) || (otherArc && !(angle1 > tymin || angle2 < tymin)))
+    ymin = y0 < m_y ? y0 : m_y;
+  // Check tymax
+  if ((!otherArc && (angle1 > tymax || angle2 < tymax)) || (otherArc && !(angle1 > tymax || angle2 < tymax)))
+    ymax = y0 > m_y ? y0 : m_y;
 }
 
 void libfreehand::FHPath::appendMoveTo(double x, double y)
@@ -289,12 +581,6 @@ libfreehand::FHPath::~FHPath()
   clear();
 }
 
-void libfreehand::FHPath::appendPath(const FHPath &path)
-{
-  for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
-    m_elements.push_back((*iter)->clone());
-}
-
 void libfreehand::FHPath::setXFormId(unsigned xFormId)
 {
   m_xFormId = xFormId;
@@ -348,6 +634,20 @@ bool libfreehand::FHPath::isClosed() const
   return m_isClosed;
 }
 
+double libfreehand::FHPath::getX() const
+{
+  if (empty())
+    return 0.0;
+  return m_elements.back()->getX();
+}
+
+double libfreehand::FHPath::getY() const
+{
+  if (empty())
+    return 0.0;
+  return m_elements.back()->getY();
+}
+
 unsigned libfreehand::FHPath::getXFormId() const
 {
   return m_xFormId;
@@ -362,5 +662,39 @@ bool libfreehand::FHPath::getEvenOdd() const
 {
   return m_evenOdd;
 }
+
+void libfreehand::FHPath::getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const
+{
+  for (std::vector<FHPathElement *>::const_iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
+  {
+    double txmin = (*iter)->getX();
+    double txmax = (*iter)->getX();
+    double tymin = (*iter)->getY();
+    double tymax = (*iter)->getY();
+    (*iter)->getBoundingBox(x0, y0, txmin, txmax, tymin, tymax);
+    xmin = (xmin > txmin) ? txmin : xmin;
+    ymin = (ymin > tymin) ? tymin : ymin;
+    xmax = (xmax < txmin) ? txmin : xmax;
+    ymax = (ymax < txmax) ? txmax : ymax;
+    x0 = (*iter)->getX();
+    y0 = (*iter)->getY();
+  }
+}
+
+void libfreehand::FHPath::getBoundingBox(double &xmin, double &ymin, double &xmax, double &ymax) const
+{
+  if (m_elements.empty())
+  {
+    FH_DEBUG_MSG(("libfreehand::FHPath::getBoundingBox: get an empty path\n"));
+    return;
+  }
+  double x0 = m_elements[0]->getX();
+  double y0 = m_elements[0]->getY();
+  xmin = xmax = x0;
+  ymin = ymax = y0;
+  getBoundingBox(x0, y0, xmin, ymin, xmax, ymax);
+}
+
+
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
