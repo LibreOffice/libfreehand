@@ -141,7 +141,7 @@ libfreehand::FHCollector::FHCollector() :
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
   m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
   m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0)
+  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
 
@@ -166,6 +166,8 @@ void libfreehand::FHCollector::collectName(unsigned recordId, const librevenge::
     m_strokeId = recordId;
   if (name == "fill")
     m_fillId = recordId;
+  if (name == "content")
+    m_contentId = recordId;
 }
 
 void libfreehand::FHCollector::collectPath(unsigned recordId, const libfreehand::FHPath &path)
@@ -336,7 +338,6 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   _appendFillProperties(propList, fhPath.getGraphicStyleId());
   if (fhPath.getEvenOdd())
     propList.insert("svg:fill-rule", "evenodd");
-  painter->setStyle(propList);
 
   unsigned short xform = fhPath.getXFormId();
 
@@ -356,7 +357,24 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   _composePath(propVec, fhPath.isClosed());
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
+  painter->setStyle(propList);
   painter->drawPath(pList);
+#ifdef DEBUG_BOUNDING_BOX
+  {
+    librevenge::RVNGPropertyList rectangleProps;
+    rectangleProps.insert("draw:fill", "none");
+    rectangleProps.insert("draw:stroke", "solid");
+    painter->setStyle(rectangleProps);
+    double xmin, ymin, xmax, ymax;
+    fhPath.getBoundingBox(xmin, ymin, xmax, ymax);
+    librevenge::RVNGPropertyList rectangleList;
+    rectangleList.insert("svg:x", xmin);
+    rectangleList.insert("svg:y", ymin);
+    rectangleList.insert("svg:width", xmax - xmin);
+    rectangleList.insert("svg:height", ymax - ymin);
+    painter->drawRectangle(rectangleList);
+  }
+#endif
 }
 
 void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter)
@@ -407,7 +425,7 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
     m_currentTransforms.pop();
 }
 
-void libfreehand::FHCollector::outputContent(::librevenge::RVNGDrawingInterface *painter)
+void libfreehand::FHCollector::outputDrawing(::librevenge::RVNGDrawingInterface *painter)
 {
 
 #if DUMP_BINARY_OBJECTS

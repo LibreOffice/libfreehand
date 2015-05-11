@@ -101,7 +101,7 @@ bool libfreehand::FHParser::parse(librevenge::RVNGInputStream *input, librevenge
   dataStream.seek(0, librevenge::RVNG_SEEK_SET);
   FHCollector contentCollector;
   parseDocument(&dataStream, &contentCollector);
-  contentCollector.outputContent(painter);
+  contentCollector.outputDrawing(painter);
 
   return true;
 }
@@ -1371,8 +1371,8 @@ void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfree
   bool closed = false;
   if (m_version > 10)
   {
-    arc1 = _readCoordinate(input) * M_PI / 180.0;
     arc2 = _readCoordinate(input) * M_PI / 180.0;
+    arc1 = _readCoordinate(input) * M_PI / 180.0;
     closed = bool(readU8(input));
     input->seek(1, librevenge::RVNG_SEEK_CUR);
   }
@@ -1398,15 +1398,15 @@ void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfree
     if (arc2 < arc1)
       arc2 += 2*M_PI;
     double x0 = cx + rx*cos(arc1);
-    double y0 = cy - ry*sin(arc1);
+    double y0 = cy + ry*sin(arc1);
 
     double x1 = cx + rx*cos(arc2);
-    double y1 = cy - ry*sin(arc2);
+    double y1 = cy + ry*sin(arc2);
 
     bool largeArc = (arc2 - arc1 > M_PI);
 
     path.appendMoveTo(x0, y0);
-    path.appendArcTo(rx, ry, 0.0, largeArc, false, x1, y1);
+    path.appendArcTo(rx, ry, 0.0, largeArc, true, x1, y1);
     if (closed)
     {
       path.appendLineTo(cx, cy);
@@ -1418,14 +1418,14 @@ void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfree
   {
     arc2 += M_PI/2.0;
     double x0 = cx + rx*cos(arc1);
-    double y0 = cy - ry*sin(arc1);
+    double y0 = cy + ry*sin(arc1);
 
     double x1 = cx + rx*cos(arc2);
-    double y1 = cy - ry*sin(arc2);
+    double y1 = cy + ry*sin(arc2);
 
     path.appendMoveTo(x0, y0);
-    path.appendArcTo(rx, ry, 0.0, false, false, x1, y1);
-    path.appendArcTo(rx, ry, 0.0, true, false, x0, y0);
+    path.appendArcTo(rx, ry, 0.0, false, true, x1, y1);
+    path.appendArcTo(rx, ry, 0.0, true, true, x0, y0);
     path.appendClosePath();
   }
   path.setXFormId(xform);

@@ -63,7 +63,7 @@ public:
   void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
 
-  void outputContent(::librevenge::RVNGDrawingInterface *painter);
+  void outputDrawing(::librevenge::RVNGDrawingInterface *painter);
 
 private:
   FHCollector(const FHCollector &);
@@ -157,6 +157,7 @@ private:
 
   unsigned m_strokeId;
   unsigned m_fillId;
+  unsigned m_contentId;
 };
 
 } // namespace libfreehand
