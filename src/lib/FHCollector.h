@@ -158,6 +158,7 @@ private:
   unsigned m_strokeId;
   unsigned m_fillId;
   unsigned m_contentId;
+  FHTransform m_fakeTransform;
 };
 
 } // namespace libfreehand

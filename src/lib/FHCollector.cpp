@@ -144,7 +144,7 @@ libfreehand::FHCollector::FHCollector() :
   m_layers(), m_groups(), m_currentTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(), m_textBloks(),
   m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(), m_displayTexts(),
   m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0), m_contentId(0)
+  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0), m_contentId(0), m_fakeTransform()
 {
 }
 
@@ -354,6 +354,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   if (!m_currentTransforms.empty())
     fhPath.transform(m_currentTransforms.top());
   _normalizePath(fhPath);
+  fhPath.transform(m_fakeTransform);
 
   librevenge::RVNGPropertyListVector propVec;
   fhPath.writeOut(propVec);
@@ -571,6 +572,11 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
+
+  m_fakeTransform.applyToPoint(xa, ya);
+  m_fakeTransform.applyToPoint(xb, yb);
+  m_fakeTransform.applyToPoint(xc, yc);
+
   double rotation = atan2(yb-yc, xb-xc);
   double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
   double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
@@ -709,6 +715,11 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
+
+  m_fakeTransform.applyToPoint(xa, ya);
+  m_fakeTransform.applyToPoint(xb, yb);
+  m_fakeTransform.applyToPoint(xc, yc);
+
   double rotation = atan2(yb-yc, xb-xc);
   double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
   double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
