@@ -1006,36 +1006,10 @@ void libfreehand::FHCollector::_appendFontProperties(::librevenge::RVNGPropertyL
 
 void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId)
 {
-  if (!graphicStyleId)
-  {
-    if (!propList["draw:fill"])
-      propList.insert("draw:fill", "none");
-  }
-  else
+  if (graphicStyleId)
   {
     const FHPropList *propertyList = _findPropList(graphicStyleId);
-    if (!propertyList)
-    {
-      const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
-      if (!graphicStyle)
-        _appendFillProperties(propList, 0);
-      else
-      {
-        if (graphicStyle->m_parentId)
-          _appendFillProperties(propList, graphicStyle->m_parentId);
-        unsigned fillId = _findFillId(*graphicStyle);;
-        if (fillId)
-        {
-          _appendBasicFill(propList, _findBasicFill(fillId));
-          _appendLinearFill(propList, _findLinearFill(fillId));
-          _appendLensFill(propList, _findLensFill(fillId));
-          _appendRadialFill(propList, _findRadialFill(fillId));
-        }
-        else
-          _appendFillProperties(propList, 0);
-      }
-    }
-    else
+    if (propertyList)
     {
       if (propertyList->m_parentId)
         _appendFillProperties(propList, propertyList->m_parentId);
@@ -1048,40 +1022,32 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendRadialFill(propList, _findRadialFill(iter->second));
       }
     }
+    else
+    {
+      const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
+      if (graphicStyle)
+      {
+        if (graphicStyle->m_parentId)
+          _appendFillProperties(propList, graphicStyle->m_parentId);
+        unsigned fillId = _findFillId(*graphicStyle);;
+        if (fillId)
+        {
+          _appendBasicFill(propList, _findBasicFill(fillId));
+          _appendLinearFill(propList, _findLinearFill(fillId));
+          _appendLensFill(propList, _findLensFill(fillId));
+          _appendRadialFill(propList, _findRadialFill(fillId));
+        }
+      }
+    }
   }
 }
 
 void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId)
 {
-  if (!graphicStyleId)
-  {
-    if (!propList["draw:stroke"])
-      propList.insert("draw:stroke", "solid");
-    if (!propList["svg:stroke-width"])
-      propList.insert("svg:stroke-width", 1.0, librevenge::RVNG_POINT);
-    if (!propList["svg:stroke-color"])
-      propList.insert("svg:stroke-color", "#000000");
-  }
-  else
+  if (graphicStyleId)
   {
     const FHPropList *propertyList = _findPropList(graphicStyleId);
-    if (!propertyList)
-    {
-      const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
-      if (!graphicStyle)
-        _appendStrokeProperties(propList, 0);
-      else
-      {
-        if (graphicStyle->m_parentId)
-          _appendStrokeProperties(propList, graphicStyle->m_parentId);
-        unsigned strokeId = _findStrokeId(*graphicStyle);
-        if (strokeId)
-          _appendBasicLine(propList, _findBasicLine(strokeId));
-        else
-          _appendStrokeProperties(propList, 0);
-      }
-    }
-    else
+    if (propertyList)
     {
       if (propertyList->m_parentId)
         _appendStrokeProperties(propList, propertyList->m_parentId);
@@ -1089,6 +1055,18 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
       if (iter != propertyList->m_elements.end())
       {
         _appendBasicLine(propList, _findBasicLine(iter->second));
+      }
+    }
+    else
+    {
+      const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
+      if (graphicStyle)
+      {
+        if (graphicStyle->m_parentId)
+          _appendStrokeProperties(propList, graphicStyle->m_parentId);
+        unsigned strokeId = _findStrokeId(*graphicStyle);
+        if (strokeId)
+          _appendBasicLine(propList, _findBasicLine(strokeId));
       }
     }
   }
