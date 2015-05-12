@@ -346,6 +346,8 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
 
   FHPath fhPath(*path);
   librevenge::RVNGPropertyList propList;
+  propList.insert("draw:fill", "none");
+  propList.insert("draw:stroke", "none");
   _appendStrokeProperties(propList, fhPath.getGraphicStyleId());
   _appendFillProperties(propList, fhPath.getGraphicStyleId());
   unsigned contentId = _findContentId(fhPath.getGraphicStyleId());
@@ -897,6 +899,11 @@ void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::
   if (!painter || !image)
     return;
 
+  librevenge::RVNGPropertyList propList;
+  propList.insert("draw:fill", "none");
+  propList.insert("draw:stroke", "none");
+  _appendStrokeProperties(propList, image->m_graphicStyleId);
+  _appendFillProperties(propList, image->m_graphicStyleId);
   double xa = image->m_startX;
   double ya = image->m_startY;
   double xb = image->m_startX + image->m_width;
@@ -944,6 +951,7 @@ void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::
   if (data.empty())
     return;
   imageProps.insert("office:binary-data", data);
+  painter->setStyle(propList);
   painter->drawGraphicObject(imageProps);
 }
 
@@ -1039,8 +1047,6 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendLensFill(propList, _findLensFill(iter->second));
         _appendRadialFill(propList, _findRadialFill(iter->second));
       }
-      else
-        _appendFillProperties(propList, 0);
     }
   }
 }
@@ -1084,8 +1090,6 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
       {
         _appendBasicLine(propList, _findBasicLine(iter->second));
       }
-      else
-        _appendStrokeProperties(propList, 0);
     }
   }
 }
@@ -1127,28 +1131,22 @@ void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList 
     return;
   propList.insert("draw:fill", "gradient");
   propList.insert("draw:style", "linear");
-  propList.insert("draw:angle", 90.0 - linearFill->m_angle, librevenge::RVNG_GENERIC);
-  if (linearFill->m_multiColorListId)
+  double angle = 90.0 - linearFill->m_angle;
+  while (angle < 0.0)
+    angle += 360.0;
+  while (angle > 360.0)
+    angle -= 360.0;
+  propList.insert("draw:angle", angle, librevenge::RVNG_GENERIC);
+
+  const std::vector<FHColorStop> *multiColorList = _findMultiColorList(linearFill->m_multiColorListId);
+  if (multiColorList && multiColorList->size() > 1)
   {
-    const std::vector<FHColorStop> *multiColorList = _findMultiColorList(linearFill->m_multiColorListId);
-    if (multiColorList && multiColorList->size() > 1)
-    {
-      librevenge::RVNGString color = getColorString((*multiColorList)[0].m_colorId);
-      if (!color.empty())
-        propList.insert("draw:start-color", color);
-      color = getColorString((*multiColorList)[1].m_colorId);
-      if (!color.empty())
-        propList.insert("draw:end-color", color);
-    }
-    else
-    {
-      librevenge::RVNGString color = getColorString(linearFill->m_color1Id);
-      if (!color.empty())
-        propList.insert("draw:start-color", color);
-      color = getColorString(linearFill->m_color2Id);
-      if (!color.empty())
-        propList.insert("draw:end-color", color);
-    }
+    librevenge::RVNGString color = getColorString((*multiColorList)[0].m_colorId);
+    if (!color.empty())
+      propList.insert("draw:start-color", color);
+    color = getColorString((*multiColorList)[1].m_colorId);
+    if (!color.empty())
+      propList.insert("draw:end-color", color);
   }
   else
   {
@@ -1218,27 +1216,15 @@ void libfreehand::FHCollector::_appendRadialFill(::librevenge::RVNGPropertyList 
   propList.insert("svg:cx", radialFill->m_cx, librevenge::RVNG_PERCENT);
   propList.insert("svg:cy", radialFill->m_cy, librevenge::RVNG_PERCENT);
 
-  if (radialFill->m_multiColorListId)
+  const std::vector<FHColorStop> *multiColorList = _findMultiColorList(radialFill->m_multiColorListId);
+  if (multiColorList && multiColorList->size() > 1)
   {
-    const std::vector<FHColorStop> *multiColorList = _findMultiColorList(radialFill->m_multiColorListId);
-    if (multiColorList && multiColorList->size() > 1)
-    {
-      librevenge::RVNGString color = getColorString((*multiColorList)[0].m_colorId);
-      if (!color.empty())
-        propList.insert("draw:start-color", color);
-      color = getColorString((*multiColorList)[1].m_colorId);
-      if (!color.empty())
-        propList.insert("draw:end-color", color);
-    }
-    else
-    {
-      librevenge::RVNGString color = getColorString(radialFill->m_color1Id);
-      if (!color.empty())
-        propList.insert("draw:start-color", color);
-      color = getColorString(radialFill->m_color2Id);
-      if (!color.empty())
-        propList.insert("draw:end-color", color);
-    }
+    librevenge::RVNGString color = getColorString((*multiColorList)[0].m_colorId);
+    if (!color.empty())
+      propList.insert("draw:start-color", color);
+    color = getColorString((*multiColorList)[1].m_colorId);
+    if (!color.empty())
+      propList.insert("draw:end-color", color);
   }
   else
   {
@@ -1266,6 +1252,8 @@ void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(id);
   if (iter != m_paths.end())
     return &(iter->second);
@@ -1274,6 +1262,8 @@ const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
 
 const libfreehand::FHGroup *libfreehand::FHCollector::_findGroup(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHGroup>::const_iterator iter = m_groups.find(id);
   if (iter != m_groups.end())
     return &(iter->second);
@@ -1282,6 +1272,8 @@ const libfreehand::FHGroup *libfreehand::FHCollector::_findGroup(unsigned id)
 
 const libfreehand::FHCompositePath *libfreehand::FHCollector::_findCompositePath(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHCompositePath>::const_iterator iter = m_compositePaths.find(id);
   if (iter != m_compositePaths.end())
     return &(iter->second);
@@ -1290,6 +1282,8 @@ const libfreehand::FHCompositePath *libfreehand::FHCollector::_findCompositePath
 
 const libfreehand::FHTextObject *libfreehand::FHCollector::_findTextObject(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHTextObject>::const_iterator iter = m_textObjects.find(id);
   if (iter != m_textObjects.end())
     return &(iter->second);
@@ -1298,6 +1292,8 @@ const libfreehand::FHTextObject *libfreehand::FHCollector::_findTextObject(unsig
 
 const libfreehand::FHTransform *libfreehand::FHCollector::_findTransform(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(id);
   if (iter != m_transforms.end())
     return &(iter->second);
@@ -1306,6 +1302,8 @@ const libfreehand::FHTransform *libfreehand::FHCollector::_findTransform(unsigne
 
 const libfreehand::FHParagraph *libfreehand::FHCollector::_findParagraph(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHParagraph>::const_iterator iter = m_paragraphs.find(id);
   if (iter != m_paragraphs.end())
     return &(iter->second);
@@ -1314,6 +1312,8 @@ const libfreehand::FHParagraph *libfreehand::FHCollector::_findParagraph(unsigne
 
 const std::vector<unsigned> *libfreehand::FHCollector::_findTStringElements(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, std::vector<unsigned> >::const_iterator iter = m_tStrings.find(id);
   if (iter != m_tStrings.end())
     return &(iter->second);
@@ -1322,6 +1322,8 @@ const std::vector<unsigned> *libfreehand::FHCollector::_findTStringElements(unsi
 
 const libfreehand::FHPropList *libfreehand::FHCollector::_findPropList(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHPropList>::const_iterator iter = m_propertyLists.find(id);
   if (iter != m_propertyLists.end())
     return &(iter->second);
@@ -1330,6 +1332,8 @@ const libfreehand::FHPropList *libfreehand::FHCollector::_findPropList(unsigned 
 
 const libfreehand::FHGraphicStyle *libfreehand::FHCollector::_findGraphicStyle(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHGraphicStyle>::const_iterator iter = m_graphicStyles.find(id);
   if (iter != m_graphicStyles.end())
     return &(iter->second);
@@ -1338,6 +1342,8 @@ const libfreehand::FHGraphicStyle *libfreehand::FHCollector::_findGraphicStyle(u
 
 const libfreehand::FHBasicFill *libfreehand::FHCollector::_findBasicFill(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHBasicFill>::const_iterator iter = m_basicFills.find(id);
   if (iter != m_basicFills.end())
     return &(iter->second);
@@ -1346,6 +1352,8 @@ const libfreehand::FHBasicFill *libfreehand::FHCollector::_findBasicFill(unsigne
 
 const libfreehand::FHLinearFill *libfreehand::FHCollector::_findLinearFill(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHLinearFill>::const_iterator iter = m_linearFills.find(id);
   if (iter != m_linearFills.end())
     return &(iter->second);
@@ -1354,6 +1362,8 @@ const libfreehand::FHLinearFill *libfreehand::FHCollector::_findLinearFill(unsig
 
 const libfreehand::FHLensFill *libfreehand::FHCollector::_findLensFill(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHLensFill>::const_iterator iter = m_lensFills.find(id);
   if (iter != m_lensFills.end())
     return &(iter->second);
@@ -1362,6 +1372,8 @@ const libfreehand::FHLensFill *libfreehand::FHCollector::_findLensFill(unsigned 
 
 const libfreehand::FHRadialFill *libfreehand::FHCollector::_findRadialFill(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHRadialFill>::const_iterator iter = m_radialFills.find(id);
   if (iter != m_radialFills.end())
     return &(iter->second);
@@ -1370,6 +1382,8 @@ const libfreehand::FHRadialFill *libfreehand::FHCollector::_findRadialFill(unsig
 
 const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHBasicLine>::const_iterator iter = m_basicLines.find(id);
   if (iter != m_basicLines.end())
     return &(iter->second);
@@ -1378,6 +1392,8 @@ const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigne
 
 const libfreehand::FHRGBColor *libfreehand::FHCollector::_findRGBColor(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHRGBColor>::const_iterator iter = m_rgbColors.find(id);
   if (iter != m_rgbColors.end())
     return &(iter->second);
@@ -1386,6 +1402,8 @@ const libfreehand::FHRGBColor *libfreehand::FHCollector::_findRGBColor(unsigned 
 
 const libfreehand::FHDisplayText *libfreehand::FHCollector::_findDisplayText(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHDisplayText>::const_iterator iter = m_displayTexts.find(id);
   if (iter != m_displayTexts.end())
     return &(iter->second);
@@ -1394,6 +1412,8 @@ const libfreehand::FHDisplayText *libfreehand::FHCollector::_findDisplayText(uns
 
 const libfreehand::FHImageImport *libfreehand::FHCollector::_findImageImport(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, FHImageImport>::const_iterator iter = m_images.find(id);
   if (iter != m_images.end())
     return &(iter->second);
@@ -1402,6 +1422,8 @@ const libfreehand::FHImageImport *libfreehand::FHCollector::_findImageImport(uns
 
 const ::librevenge::RVNGBinaryData *libfreehand::FHCollector::_findData(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, ::librevenge::RVNGBinaryData>::const_iterator iter = m_data.find(id);
   if (iter != m_data.end())
     return &(iter->second);
@@ -1410,6 +1432,8 @@ const ::librevenge::RVNGBinaryData *libfreehand::FHCollector::_findData(unsigned
 
 const std::vector<libfreehand::FHColorStop> *libfreehand::FHCollector::_findMultiColorList(unsigned id)
 {
+  if (!id)
+    return 0;
   std::map<unsigned, std::vector<libfreehand::FHColorStop> >::const_iterator iter = m_multiColorLists.find(id);
   if (iter != m_multiColorLists.end())
     return &(iter->second);
