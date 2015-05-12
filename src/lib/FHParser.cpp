@@ -702,7 +702,7 @@ void libfreehand::FHParser::readCharacterFill(librevenge::RVNGInputStream * /* i
 {
 }
 
-void libfreehand::FHParser::readClipGroup(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readClipGroup(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   FHGroup group;
   group.m_graphicStyleId = _readRecordId(input);
