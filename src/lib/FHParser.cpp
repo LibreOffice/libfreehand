@@ -192,7 +192,7 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
     readCharacterFill(input, collector);
     break;
   case FH_CLIPGROUP:
-    readClipGroup(input, collector);
+    readGroup(input, collector);
     break;
   case FH_COLLECTOR:
     readCollector(input, collector);
