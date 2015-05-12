@@ -17,6 +17,9 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#ifndef DUMP_CONTENTS
+#define DUMP_CONTENTS 0
+#endif
 #ifndef DUMP_BINARY_OBJECTS
 #define DUMP_BINARY_OBJECTS 0
 #endif
@@ -388,6 +391,20 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
       librevenge::RVNGBinaryData output((const unsigned char *)header, strlen(header));
       output.append((unsigned char *)svgOutput[0].cstr(), strlen(svgOutput[0].cstr()));
+#if DUMP_CONTENTS
+      {
+        librevenge::RVNGString filename;
+        filename.sprintf("fhcontents%.4x.svg", contentId);
+        FILE *f = fopen(filename.cstr(), "wb");
+        if (f)
+        {
+          const unsigned char *tmpBuffer = output.getDataBuffer();
+          for (unsigned long k = 0; k < output.size(); k++)
+            fprintf(f, "%c",tmpBuffer[k]);
+          fclose(f);
+        }
+      }
+#endif
       propList.clear();
       propList.insert("draw:stroke", "none");
       propList.insert("draw:fill", "bitmap");
