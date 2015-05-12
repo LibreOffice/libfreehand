@@ -1650,9 +1650,16 @@ void libfreehand::FHParser::readPSLine(librevenge::RVNGInputStream *input, libfr
   input->seek(8, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readRadialFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readRadialFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(16, librevenge::RVNG_SEEK_CUR);
+  FHRadialFill fill;
+  fill.m_color1Id = _readRecordId(input);
+  fill.m_color2Id = _readRecordId(input);
+  fill.m_cx = _readCoordinate(input);
+  fill.m_cy = 1.0 - _readCoordinate(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectRadialFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readRadialFillX(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

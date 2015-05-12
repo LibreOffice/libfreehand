@@ -148,7 +148,7 @@ libfreehand::FHCollector::FHCollector() :
   m_layers(), m_groups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(),
   m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_lensFills(), m_strokeId(0), m_fillId(0), m_contentId(0)
+  m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
 
@@ -320,6 +320,11 @@ void libfreehand::FHCollector::collectLinearFill(unsigned recordId, const FHLine
 void libfreehand::FHCollector::collectLensFill(unsigned recordId, const FHLensFill &fill)
 {
   m_lensFills[recordId] = fill;
+}
+
+void libfreehand::FHCollector::collectRadialFill(unsigned recordId, const FHRadialFill &fill)
+{
+  m_radialFills[recordId] = fill;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -1016,6 +1021,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           _appendBasicFill(propList, _findBasicFill(fillId));
           _appendLinearFill(propList, _findLinearFill(fillId));
           _appendLensFill(propList, _findLensFill(fillId));
+          _appendRadialFill(propList, _findRadialFill(fillId));
         }
         else
           _appendFillProperties(propList, 0);
@@ -1031,6 +1037,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendBasicFill(propList, _findBasicFill(iter->second));
         _appendLinearFill(propList, _findLinearFill(iter->second));
         _appendLensFill(propList, _findLensFill(iter->second));
+        _appendRadialFill(propList, _findRadialFill(iter->second));
       }
       else
         _appendFillProperties(propList, 0);
@@ -1201,6 +1208,23 @@ void libfreehand::FHCollector::_appendLensFill(::librevenge::RVNGPropertyList &p
   }
 }
 
+void libfreehand::FHCollector::_appendRadialFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHRadialFill *radialFill)
+{
+  if (!radialFill)
+    return;
+
+  propList.insert("draw:fill", "gradient");
+  propList.insert("draw:style", "radial");
+  propList.insert("svg:cx", radialFill->m_cx, librevenge::RVNG_PERCENT);
+  propList.insert("svg:cy", radialFill->m_cy, librevenge::RVNG_PERCENT);
+  librevenge::RVNGString color = getColorString(radialFill->m_color1Id);
+  if (!color.empty())
+    propList.insert("draw:start-color", color);
+  color = getColorString(radialFill->m_color2Id);
+  if (!color.empty())
+    propList.insert("draw:end-color", color);
+}
+
 void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)
 {
   if (!basicLine)
@@ -1310,6 +1334,14 @@ const libfreehand::FHLensFill *libfreehand::FHCollector::_findLensFill(unsigned 
   return 0;
 }
 
+const libfreehand::FHRadialFill *libfreehand::FHCollector::_findRadialFill(unsigned id)
+{
+  std::map<unsigned, FHRadialFill>::const_iterator iter = m_radialFills.find(id);
+  if (iter != m_radialFills.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
 {
   std::map<unsigned, FHBasicLine>::const_iterator iter = m_basicLines.find(id);
@@ -1390,7 +1422,7 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
   {
     unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
     // Add other fills if we support them
-    if (_findBasicFill(valueId) || _findLinearFill(valueId) || _findLensFill(valueId))
+    if (_findBasicFill(valueId) || _findLinearFill(valueId) || _findLensFill(valueId) || _findRadialFill(valueId))
       fillId = valueId;
   }
   return fillId;

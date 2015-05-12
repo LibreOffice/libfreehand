@@ -61,6 +61,7 @@ public:
   void collectBasicFill(unsigned recordId, const FHBasicFill &fill);
   void collectLensFill(unsigned recordId, const FHLensFill &fill);
   void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
+  void collectRadialFill(unsigned recordId, const FHRadialFill &fill);
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
 
   void outputDrawing(::librevenge::RVNGDrawingInterface *painter);
@@ -95,6 +96,7 @@ private:
   void _appendBasicLine(::librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
   void _appendLinearFill(::librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
   void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
+  void _appendRadialFill(::librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
   const FHPath *_findPath(unsigned id);
@@ -109,6 +111,7 @@ private:
   const FHBasicFill *_findBasicFill(unsigned id);
   const FHLinearFill *_findLinearFill(unsigned id);
   const FHLensFill *_findLensFill(unsigned id);
+  const FHRadialFill *_findRadialFill(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findRGBColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
@@ -156,6 +159,7 @@ private:
   std::map<unsigned, FHLinearFill> m_linearFills;
   std::map<unsigned, FHTintColor> m_tints;
   std::map<unsigned, FHLensFill> m_lensFills;
+  std::map<unsigned, FHRadialFill> m_radialFills;
 
   unsigned m_strokeId;
   unsigned m_fillId;
