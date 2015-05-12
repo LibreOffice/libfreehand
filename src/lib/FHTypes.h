@@ -191,7 +191,9 @@ struct FHRadialFill
   unsigned m_color2Id;
   double m_cx;
   double m_cy;
-  FHRadialFill() : m_color1Id(0), m_color2Id(0), m_cx(0.5), m_cy(0.5) {}
+  unsigned m_multiColorListId;
+  FHRadialFill()
+    : m_color1Id(0), m_color2Id(0), m_cx(0.5), m_cy(0.5), m_multiColorListId(0) {}
 };
 
 struct FH3CharProperties

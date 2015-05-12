@@ -1217,12 +1217,38 @@ void libfreehand::FHCollector::_appendRadialFill(::librevenge::RVNGPropertyList 
   propList.insert("draw:style", "radial");
   propList.insert("svg:cx", radialFill->m_cx, librevenge::RVNG_PERCENT);
   propList.insert("svg:cy", radialFill->m_cy, librevenge::RVNG_PERCENT);
-  librevenge::RVNGString color = getColorString(radialFill->m_color1Id);
-  if (!color.empty())
-    propList.insert("draw:start-color", color);
-  color = getColorString(radialFill->m_color2Id);
-  if (!color.empty())
-    propList.insert("draw:end-color", color);
+
+  if (radialFill->m_multiColorListId)
+  {
+    const std::vector<FHColorStop> *multiColorList = _findMultiColorList(radialFill->m_multiColorListId);
+    if (multiColorList && multiColorList->size() > 1)
+    {
+      librevenge::RVNGString color = getColorString((*multiColorList)[0].m_colorId);
+      if (!color.empty())
+        propList.insert("draw:start-color", color);
+      color = getColorString((*multiColorList)[1].m_colorId);
+      if (!color.empty())
+        propList.insert("draw:end-color", color);
+    }
+    else
+    {
+      librevenge::RVNGString color = getColorString(radialFill->m_color1Id);
+      if (!color.empty())
+        propList.insert("draw:start-color", color);
+      color = getColorString(radialFill->m_color2Id);
+      if (!color.empty())
+        propList.insert("draw:end-color", color);
+    }
+  }
+  else
+  {
+    librevenge::RVNGString color = getColorString(radialFill->m_color1Id);
+    if (!color.empty())
+      propList.insert("draw:start-color", color);
+    color = getColorString(radialFill->m_color2Id);
+    if (!color.empty())
+      propList.insert("draw:end-color", color);
+  }
 }
 
 void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)

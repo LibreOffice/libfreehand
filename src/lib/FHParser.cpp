@@ -750,13 +750,24 @@ void libfreehand::FHParser::readCompositePath(librevenge::RVNGInputStream *input
     collector->collectCompositePath(m_currentRecord+1, compositePath);
 }
 
-void libfreehand::FHParser::readConeFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readConeFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(16, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
+  /* It is actually a conic gradient that goes from a line on an angle phi
+     to a line at an angle phi + M_PI both CW and CCW. We are unable though
+   to map it to anything that exists in SVG or ODF :( The visually less
+   lame approximation is a linear gradient. */
+
+  FHLinearFill fill;
+  fill.m_color1Id = _readRecordId(input);
+  fill.m_color2Id = _readRecordId(input);
+  fill.m_angle = 90.0;
+  _readCoordinate(input); // cx
+  _readCoordinate(input); // 1 - cy
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  fill.m_multiColorListId = _readRecordId(input);
   input->seek(14, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectLinearFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readConnectorLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1340,13 +1351,18 @@ void libfreehand::FHParser::readNewContourFill(librevenge::RVNGInputStream *inpu
   input->seek(14, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readNewRadialFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readNewRadialFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(16, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
+  FHRadialFill fill;
+  fill.m_color1Id = _readRecordId(input);
+  fill.m_color2Id = _readRecordId(input);
+  fill.m_cx = _readCoordinate(input);
+  fill.m_cy = 1.0 - _readCoordinate(input);
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  fill.m_multiColorListId = _readRecordId(input);
   input->seek(23, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectRadialFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readOpacityFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1547,9 +1563,18 @@ void libfreehand::FHParser::readPatternFill(librevenge::RVNGInputStream *input, 
   input->seek(10, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readPatternLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readPatternLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(22, librevenge::RVNG_SEEK_CUR);
+  FHBasicLine line;
+  line.m_colorId = _readRecordId(input);
+  /* Here are 8 bytes correspoding to 8 lines of 8x8 pattern.
+     One bit per pixel. We skip the for the time being. */
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  line.m_mitter = _readCoordinate(input) / 72.0;
+  line.m_width = _readCoordinate(input) / 72.0;
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectBasicLine(m_currentRecord+1, line);
 }
 
 void libfreehand::FHParser::readPerspectiveEnvelope(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
