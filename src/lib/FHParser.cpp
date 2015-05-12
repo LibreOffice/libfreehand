@@ -2315,7 +2315,7 @@ void libfreehand::FHParser::_readPropLstElements(librevenge::RVNGInputStream *in
   {
     unsigned nameId = _readRecordId(input);
     unsigned valueId = _readRecordId(input);
-    if (nameId && valueId)
+    if (nameId)
       propertyList.m_elements[nameId] = valueId;
   }
 }

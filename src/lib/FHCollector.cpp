@@ -995,7 +995,8 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
 {
   if (!graphicStyleId)
   {
-    propList.insert("draw:fill", "none");
+    if (!propList["draw:fill"])
+      propList.insert("draw:fill", "none");
   }
   else
   {
@@ -1031,6 +1032,8 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendLinearFill(propList, _findLinearFill(iter->second));
         _appendLensFill(propList, _findLensFill(iter->second));
       }
+      else
+        _appendFillProperties(propList, 0);
     }
   }
 }
@@ -1039,9 +1042,12 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
 {
   if (!graphicStyleId)
   {
-    propList.insert("draw:stroke", "solid");
-    propList.insert("svg:stroke-width", 0.0);
-    propList.insert("svg:stroke-color", "#000000");
+    if (!propList["draw:stroke"])
+      propList.insert("draw:stroke", "solid");
+    if (!propList["svg:stroke-width"])
+      propList.insert("svg:stroke-width", 1.0, librevenge::RVNG_POINT);
+    if (!propList["svg:stroke-color"])
+      propList.insert("svg:stroke-color", "#000000");
   }
   else
   {
@@ -1071,6 +1077,8 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
       {
         _appendBasicLine(propList, _findBasicLine(iter->second));
       }
+      else
+        _appendStrokeProperties(propList, 0);
     }
   }
 }
