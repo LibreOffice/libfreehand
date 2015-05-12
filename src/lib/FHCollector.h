@@ -118,7 +118,7 @@ private:
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
   unsigned _findValueFromAttribute(unsigned id);
-  unsigned _findContent(unsigned graphicStyleId);
+  unsigned _findContentId(unsigned graphicStyleId);
   const std::vector<FHColorStop> *_findMultiColorList(unsigned id);
   ::librevenge::RVNGBinaryData getImageData(unsigned id);
   ::librevenge::RVNGString getRGBFromTint(const FHTintColor &tint);

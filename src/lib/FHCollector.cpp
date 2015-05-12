@@ -7,6 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <string.h>
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
 #include "FHConstants.h"
@@ -169,7 +170,7 @@ void libfreehand::FHCollector::collectName(unsigned recordId, const librevenge::
     m_strokeId = recordId;
   if (name == "fill")
     m_fillId = recordId;
-  if (name == "content")
+  if (name == "contents")
     m_contentId = recordId;
 }
 
@@ -339,6 +340,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   librevenge::RVNGPropertyList propList;
   _appendStrokeProperties(propList, fhPath.getGraphicStyleId());
   _appendFillProperties(propList, fhPath.getGraphicStyleId());
+  unsigned contentId = _findContentId(fhPath.getGraphicStyleId());
   if (fhPath.getEvenOdd())
     propList.insert("svg:fill-rule", "evenodd");
 
@@ -362,8 +364,43 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   _composePath(propVec, fhPath.isClosed());
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
+  if (contentId)
+    painter->openGroup(::librevenge::RVNGPropertyList());
   painter->setStyle(propList);
   painter->drawPath(pList);
+  if (contentId)
+  {
+    double xmin, ymin, xmax, ymax;
+    fhPath.getBoundingBox(xmin, ymin, xmax, ymax);
+    FHTransform trafo(1.0, 0.0, 0.0, 1.0, - xmin, -ymin);
+    m_fakeTransforms.push(trafo);
+    librevenge::RVNGStringVector svgOutput;
+    librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
+    propList.clear();
+    propList.insert("svg:width", xmax - xmin);
+    propList.insert("svg:height", ymax - ymin);
+    generator.startPage(propList);
+    _outputSomething(contentId, &generator);
+    generator.endPage();
+    if (!svgOutput.empty())
+    {
+      const char *header =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+      librevenge::RVNGBinaryData output((const unsigned char *)header, strlen(header));
+      output.append((unsigned char *)svgOutput[0].cstr(), strlen(svgOutput[0].cstr()));
+      propList.clear();
+      propList.insert("draw:stroke", "none");
+      propList.insert("draw:fill", "bitmap");
+      propList.insert("librevenge:mime-type", "image/svg+xml");
+      propList.insert("style:repeat", "stretch");
+      propList.insert("draw:fill-image", output.getBase64Data());
+      painter->setStyle(propList);
+      painter->drawPath(pList);
+    }
+    if (!m_fakeTransforms.empty())
+      m_fakeTransforms.pop();
+    painter->closeGroup();
+  }
 #if DEBUG_BOUNDING_BOX
   {
     librevenge::RVNGPropertyList rectangleProps;
@@ -1033,7 +1070,7 @@ void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &
     propList.insert("draw:fill-color", "#000000");
 }
 
-unsigned libfreehand::FHCollector::_findContent(unsigned graphicStyleId)
+unsigned libfreehand::FHCollector::_findContentId(unsigned graphicStyleId)
 {
   if (!graphicStyleId)
     return 0;
@@ -1046,7 +1083,7 @@ unsigned libfreehand::FHCollector::_findContent(unsigned graphicStyleId)
     {
       std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_contentId);
       if (iter != propertyList->m_elements.end())
-        return (iter->second);
+        return iter->second;
     }
   }
   return 0;
