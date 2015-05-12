@@ -192,7 +192,7 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
     readCharacterFill(input, collector);
     break;
   case FH_CLIPGROUP:
-    readGroup(input, collector);
+    readClipGroup(input, collector);
     break;
   case FH_COLLECTOR:
     readCollector(input, collector);
@@ -704,11 +704,16 @@ void libfreehand::FHParser::readCharacterFill(librevenge::RVNGInputStream * /* i
 
 void libfreehand::FHParser::readClipGroup(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
+  FHGroup group;
+  group.m_graphicStyleId = _readRecordId(input);
   _readRecordId(input);
-  _readRecordId(input);
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  if (m_version > 3)
+    input->seek(4, librevenge::RVNG_SEEK_CUR);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  group.m_elementsId = _readRecordId(input);
+  group.m_xFormId = _readRecordId(input);
+  if (collector)
+    collector->collectGroup(m_currentRecord+1, group);
 }
 
 void libfreehand::FHParser::readCollector(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
