@@ -286,6 +286,16 @@ struct FHLensFill
   FHLensFill() : m_colorId(0), m_value(0.0), m_mode(0) {}
 };
 
+struct FHNewBlend
+{
+  unsigned m_graphicStyleId;
+  unsigned m_parentId;
+  unsigned m_list1Id;
+  unsigned m_list2Id;
+  unsigned m_list3Id;
+  FHNewBlend() : m_graphicStyleId(0), m_parentId(0), m_list1Id(0), m_list2Id(0), m_list3Id(0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

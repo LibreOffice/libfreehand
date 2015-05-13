@@ -53,6 +53,7 @@ public:
   void collectDataList(unsigned recordId, const FHDataList &list);
   void collectImage(unsigned recordId, const FHImageImport &image);
   void collectMultiColorList(unsigned recordId, const std::vector<FHColorStop> &colorStops);
+  void collectNewBlend(unsigned recordId, const FHNewBlend &newBlend);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -82,6 +83,7 @@ private:
                       unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
   void _outputImageImport(const FHImageImport *image, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputNewBlend(const FHNewBlend *newBlend, ::librevenge::RVNGDrawingInterface *painter);
   void _outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter);
 
   const std::vector<unsigned> *_findListElements(unsigned id);
@@ -116,6 +118,7 @@ private:
   const FHRGBColor *_findRGBColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
   const FHImageImport *_findImageImport(unsigned id);
+  const FHNewBlend *_findNewBlend(unsigned id);
   const ::librevenge::RVNGBinaryData *_findData(unsigned id);
   ::librevenge::RVNGString getColorString(unsigned id);
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
@@ -160,6 +163,7 @@ private:
   std::map<unsigned, FHTintColor> m_tints;
   std::map<unsigned, FHLensFill> m_lensFills;
   std::map<unsigned, FHRadialFill> m_radialFills;
+  std::map<unsigned, FHNewBlend> m_newBlends;
 
   unsigned m_strokeId;
   unsigned m_fillId;

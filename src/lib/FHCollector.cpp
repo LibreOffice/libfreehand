@@ -148,7 +148,8 @@ libfreehand::FHCollector::FHCollector() :
   m_layers(), m_groups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(),
   m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_strokeId(0), m_fillId(0), m_contentId(0)
+  m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(),
+  m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
 
@@ -327,6 +328,11 @@ void libfreehand::FHCollector::collectRadialFill(unsigned recordId, const FHRadi
   m_radialFills[recordId] = fill;
 }
 
+void libfreehand::FHCollector::collectNewBlend(unsigned recordId, const FHNewBlend &newBlend)
+{
+  m_newBlends[recordId] = newBlend;
+}
+
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
 {
   FHTransform trafo(1.0, 0.0, 0.0, -1.0, - m_pageInfo.m_minX, m_pageInfo.m_maxY);
@@ -452,6 +458,7 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::libreven
   _outputTextObject(_findTextObject(somethingId), painter);
   _outputDisplayText(_findDisplayText(somethingId), painter);
   _outputImageImport(_findImageImport(somethingId), painter);
+  _outputNewBlend(_findNewBlend(somethingId), painter);
 }
 
 void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, ::librevenge::RVNGDrawingInterface *painter)
@@ -484,6 +491,38 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
       _outputSomething(*iterVec, painter);
     painter->closeGroup();
   }
+
+  if (!m_currentTransforms.empty())
+    m_currentTransforms.pop();
+}
+
+void libfreehand::FHCollector::_outputNewBlend(const libfreehand::FHNewBlend *newBlend, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !newBlend)
+    return;
+
+  m_currentTransforms.push(libfreehand::FHTransform());
+
+  painter->openGroup(::librevenge::RVNGPropertyList());
+  const std::vector<unsigned> *elements1 = _findListElements(newBlend->m_list1Id);
+  if (elements1 && !elements1->empty())
+  {
+    for (std::vector<unsigned>::const_iterator iterVec = elements1->begin(); iterVec != elements1->end(); ++iterVec)
+      _outputSomething(*iterVec, painter);
+  }
+  const std::vector<unsigned> *elements2 = _findListElements(newBlend->m_list2Id);
+  if (elements2 && !elements2->empty())
+  {
+    for (std::vector<unsigned>::const_iterator iterVec = elements2->begin(); iterVec != elements2->end(); ++iterVec)
+      _outputSomething(*iterVec, painter);
+  }
+  const std::vector<unsigned> *elements3 = _findListElements(newBlend->m_list3Id);
+  if (elements3 && !elements3->empty())
+  {
+    for (std::vector<unsigned>::const_iterator iterVec = elements3->begin(); iterVec != elements3->end(); ++iterVec)
+      _outputSomething(*iterVec, painter);
+  }
+  painter->closeGroup();
 
   if (!m_currentTransforms.empty())
     m_currentTransforms.pop();
@@ -1239,6 +1278,16 @@ const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
     return 0;
   std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(id);
   if (iter != m_paths.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHNewBlend *libfreehand::FHCollector::_findNewBlend(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHNewBlend>::const_iterator iter = m_newBlends.find(id);
+  if (iter != m_newBlends.end())
     return &(iter->second);
   return 0;
 }

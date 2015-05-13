@@ -1331,15 +1331,18 @@ void libfreehand::FHParser::readMultiColorList(librevenge::RVNGInputStream *inpu
     collector->collectMultiColorList(m_currentRecord+1, colorStops);
 }
 
-void libfreehand::FHParser::readNewBlend(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readNewBlend(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
+  FHNewBlend newBlend;
+  newBlend.m_graphicStyleId = _readRecordId(input);
+  newBlend.m_parentId = _readRecordId(input);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
+  newBlend.m_list1Id = _readRecordId(input);
+  newBlend.m_list2Id = _readRecordId(input);
+  newBlend.m_list3Id = _readRecordId(input);
   input->seek(26, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectNewBlend(m_currentRecord+1, newBlend);
 }
 
 void libfreehand::FHParser::readNewContourFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
