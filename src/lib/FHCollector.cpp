@@ -346,8 +346,6 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
 
   FHPath fhPath(*path);
   librevenge::RVNGPropertyList propList;
-  propList.insert("draw:fill", "none");
-  propList.insert("draw:stroke", "none");
   _appendStrokeProperties(propList, fhPath.getGraphicStyleId());
   _appendFillProperties(propList, fhPath.getGraphicStyleId());
   unsigned contentId = _findContentId(fhPath.getGraphicStyleId());
@@ -900,8 +898,6 @@ void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::
     return;
 
   librevenge::RVNGPropertyList propList;
-  propList.insert("draw:fill", "none");
-  propList.insert("draw:stroke", "none");
   _appendStrokeProperties(propList, image->m_graphicStyleId);
   _appendFillProperties(propList, image->m_graphicStyleId);
   double xa = image->m_startX;
@@ -1006,6 +1002,8 @@ void libfreehand::FHCollector::_appendFontProperties(::librevenge::RVNGPropertyL
 
 void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId)
 {
+  if (!propList["draw:fill"])
+    propList.insert("draw:fill", "none");
   if (graphicStyleId)
   {
     const FHPropList *propertyList = _findPropList(graphicStyleId);
@@ -1044,6 +1042,8 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
 
 void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId)
 {
+  if (!propList["draw:stroke"])
+    propList.insert("draw:stroke", "none");
   if (graphicStyleId)
   {
     const FHPropList *propertyList = _findPropList(graphicStyleId);
