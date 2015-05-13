@@ -1085,18 +1085,24 @@ void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &
 
 unsigned libfreehand::FHCollector::_findContentId(unsigned graphicStyleId)
 {
-  if (!graphicStyleId)
-    return 0;
-  else
+  if (graphicStyleId)
   {
     const FHPropList *propertyList = _findPropList(graphicStyleId);
-    if (!propertyList)
-      return 0;
-    else
+    if (propertyList)
     {
       std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_contentId);
       if (iter != propertyList->m_elements.end())
         return iter->second;
+    }
+    else
+    {
+      const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
+      if (graphicStyle)
+      {
+        std::map<unsigned, unsigned>::const_iterator iter = graphicStyle->m_elements.find(m_contentId);
+        if (iter != graphicStyle->m_elements.end())
+          return iter->second;
+      }
     }
   }
   return 0;
