@@ -1833,7 +1833,7 @@ void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input,
   _readRecordId(input);
   _readPropLstElements(input, propertyList, size);
   if (collector)
-    collector->collectPropList(m_currentRecord, propertyList);
+    collector->collectPropList(m_currentRecord+1, propertyList);
 }
 
 void libfreehand::FHParser::readSwfImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
