@@ -470,17 +470,17 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
   else
     m_currentTransforms.push(libfreehand::FHTransform());
 
-  std::vector<unsigned> elements;
-  if (!_findListElements(elements, group->m_elementsId))
+  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
+  if (!elements)
   {
     FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
     return;
   }
 
-  if (!elements.empty())
+  if (!elements->empty())
   {
     painter->openGroup(::librevenge::RVNGPropertyList());
-    for (std::vector<unsigned>::const_iterator iterVec = elements.begin(); iterVec != elements.end(); ++iterVec)
+    for (std::vector<unsigned>::const_iterator iterVec = elements->begin(); iterVec != elements->end(); ++iterVec)
       _outputSomething(*iterVec, painter);
     painter->closeGroup();
   }
@@ -534,10 +534,10 @@ void libfreehand::FHCollector::outputDrawing(::librevenge::RVNGDrawingInterface 
 
   unsigned layerListId = m_block.second.m_layerListId;
 
-  std::vector<unsigned> elements;
-  if (_findListElements(elements, layerListId))
+  const std::vector<unsigned> *elements = _findListElements(layerListId);
+  if (elements)
   {
-    for (std::vector<unsigned>::const_iterator iter = elements.begin(); iter != elements.end(); ++iter)
+    for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
     {
       _outputLayer(*iter, painter);
     }
@@ -568,14 +568,14 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, ::librevenge::RVNG
     return;
   }
 
-  std::vector<unsigned> elements;
-  if (!_findListElements(elements, layerElementsListId))
+  const std::vector<unsigned> *elements = _findListElements(layerElementsListId);
+  if (!elements)
   {
     FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
     return;
   }
 
-  for (std::vector<unsigned>::const_iterator iterVec = elements.begin(); iterVec != elements.end(); ++iterVec)
+  for (std::vector<unsigned>::const_iterator iterVec = elements->begin(); iterVec != elements->end(); ++iterVec)
     _outputSomething(*iterVec, painter);
 }
 
@@ -584,10 +584,10 @@ void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHComposi
   if (!painter || !compositePath)
     return;
 
-  std::vector<unsigned> elements;
-  if (_findListElements(elements, compositePath->m_elementsId))
+  const std::vector<unsigned> *elements = _findListElements(compositePath->m_elementsId);
+  if (elements && !elements->empty())
   {
-    for (std::vector<unsigned>::const_iterator iter = elements.begin(); iter != elements.end(); ++iter)
+    for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
     {
       const libfreehand::FHPath *path = _findPath(*iter);
       if (path)
@@ -971,13 +971,12 @@ void libfreehand::FHCollector::_outputTextRun(const std::vector<unsigned short> 
   painter->closeSpan();
 }
 
-bool libfreehand::FHCollector::_findListElements(std::vector<unsigned> &elements, unsigned id)
+const std::vector<unsigned> *libfreehand::FHCollector::_findListElements(unsigned id)
 {
   std::map<unsigned, FHList>::const_iterator iter = m_lists.find(id);
-  if (iter == m_lists.end())
-    return false;
-  elements = iter->second.m_elements;
-  return true;
+  if (iter != m_lists.end())
+    return &(iter->second.m_elements);
+  return 0;
 }
 
 

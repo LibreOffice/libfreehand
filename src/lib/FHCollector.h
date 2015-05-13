@@ -84,7 +84,7 @@ private:
   void _outputImageImport(const FHImageImport *image, ::librevenge::RVNGDrawingInterface *painter);
   void _outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter);
 
-  bool _findListElements(std::vector<unsigned> &elements, unsigned id);
+  const std::vector<unsigned> *_findListElements(unsigned id);
   void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, unsigned paraPropsId);
   void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, const FH3ParaProperties &paraProps);
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);

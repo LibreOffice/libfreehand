@@ -927,7 +927,7 @@ void libfreehand::FHParser::readElemPropLst(librevenge::RVNGInputStream *input, 
   FHPropList propertyList;
   propertyList.m_parentId = _readRecordId(input);
   _readRecordId(input);
-  _readPropLstElements(input, propertyList, size);
+  _readPropLstElements(input, propertyList.m_elements, size);
   if (collector)
     collector->collectPropList(m_currentRecord+1, propertyList);
 }
@@ -1053,11 +1053,7 @@ void libfreehand::FHParser::readGraphicStyle(librevenge::RVNGInputStream *input,
   FHGraphicStyle graphicStyle;
   graphicStyle.m_parentId = _readRecordId(input);
   graphicStyle.m_attrId = _readRecordId(input);
-  for (unsigned i = 0; i<size; ++i)
-  {
-    _readRecordId(input);
-    _readRecordId(input);
-  }
+  _readPropLstElements(input, graphicStyle.m_elements, size);
   if (collector)
     collector->collectGraphicStyle(m_currentRecord+1, graphicStyle);
 }
@@ -1668,7 +1664,7 @@ void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libf
   unsigned short size = readU16(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   FHPropList propertyList;
-  _readPropLstElements(input, propertyList, size);
+  _readPropLstElements(input, propertyList.m_elements, size);
   if (m_version < 9)
     input->seek((size2 - size)*4, librevenge::RVNG_SEEK_CUR);
   if (collector)
@@ -1831,7 +1827,7 @@ void libfreehand::FHParser::readStylePropLst(librevenge::RVNGInputStream *input,
   FHPropList propertyList;
   propertyList.m_parentId = _readRecordId(input);
   _readRecordId(input);
-  _readPropLstElements(input, propertyList, size);
+  _readPropLstElements(input, propertyList.m_elements, size);
   if (collector)
     collector->collectPropList(m_currentRecord+1, propertyList);
 }
@@ -2346,14 +2342,14 @@ void libfreehand::FHParser::_readBlockInformation(librevenge::RVNGInputStream *i
     _readRecordId(input);
 }
 
-void libfreehand::FHParser::_readPropLstElements(librevenge::RVNGInputStream *input, FHPropList &propertyList, unsigned size)
+void libfreehand::FHParser::_readPropLstElements(librevenge::RVNGInputStream *input, std::map<unsigned, unsigned> &properties, unsigned size)
 {
   for (unsigned i = 0; i < size; ++i)
   {
     unsigned nameId = _readRecordId(input);
     unsigned valueId = _readRecordId(input);
     if (nameId && valueId)
-      propertyList.m_elements[nameId] = valueId;
+      properties[nameId] = valueId;
   }
 }
 

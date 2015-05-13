@@ -162,7 +162,7 @@ private:
   double _readCoordinate(librevenge::RVNGInputStream *input);
   FHRGBColor _readRGBColor(librevenge::RVNGInputStream *input);
   FHRGBColor _readCMYKColor(librevenge::RVNGInputStream *input);
-  void _readPropLstElements(librevenge::RVNGInputStream *input, FHPropList &propertyList, unsigned size);
+  void _readPropLstElements(librevenge::RVNGInputStream *input, std::map<unsigned, unsigned> &properties, unsigned size);
   void _readBlockInformation(librevenge::RVNGInputStream *input, unsigned i, unsigned &layerListId);
   void _readFH3CharProperties(librevenge::RVNGInputStream *input, FH3CharProperties &charProps);
   void _readFH3ParaProperties(librevenge::RVNGInputStream *input, FH3ParaProperties &paraProps);

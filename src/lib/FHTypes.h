@@ -237,7 +237,8 @@ struct FHGraphicStyle
 {
   unsigned m_parentId;
   unsigned m_attrId;
-  FHGraphicStyle() : m_parentId(0), m_attrId(0) {}
+  std::map<unsigned, unsigned> m_elements;
+  FHGraphicStyle() : m_parentId(0), m_attrId(0), m_elements() {}
 };
 
 struct FHAttributeHolder
