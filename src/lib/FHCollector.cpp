@@ -636,17 +636,27 @@ void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHComposi
   const std::vector<unsigned> *elements = _findListElements(compositePath->m_elementsId);
   if (elements && !elements->empty())
   {
-    for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
+    libfreehand::FHPath fhPath;
+    std::vector<unsigned>::const_iterator iter = elements->begin();
+    const libfreehand::FHPath *path = _findPath(*(iter++));
+    if (path)
     {
-      const libfreehand::FHPath *path = _findPath(*iter);
+      fhPath = *path;
+      if (!fhPath.getGraphicStyleId())
+        fhPath.setGraphicStyleId(compositePath->m_graphicStyleId);
+    }
+
+    for (; iter != elements->end(); ++iter)
+    {
+      path = _findPath(*iter);
       if (path)
       {
-        libfreehand::FHPath fhPath(*path);
+        fhPath.appendPath(*path);
         if (!fhPath.getGraphicStyleId())
           fhPath.setGraphicStyleId(compositePath->m_graphicStyleId);
-        _outputPath(&fhPath, painter);
       }
     }
+    _outputPath(&fhPath, painter);
   }
 }
 

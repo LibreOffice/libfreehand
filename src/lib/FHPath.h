@@ -47,6 +47,7 @@ public:
   void appendQuadraticBezierTo(double x1, double y1, double x, double y);
   void appendArcTo(double rx, double ry, double rotation, bool longAngle, bool sweep, double x, double y);
   void appendClosePath();
+  void appendPath(const FHPath &path);
   void setXFormId(unsigned xFormId);
   void setGraphicStyleId(unsigned graphicStyleId);
   void setEvenOdd(bool evenOdd);

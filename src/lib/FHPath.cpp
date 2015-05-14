@@ -625,6 +625,12 @@ libfreehand::FHPath &libfreehand::FHPath::operator=(const libfreehand::FHPath &p
 }
 
 
+void libfreehand::FHPath::appendPath(const FHPath &path)
+{
+  for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
+    m_elements.push_back((*iter)->clone());
+}
+
 libfreehand::FHPath::~FHPath()
 {
   clear();
