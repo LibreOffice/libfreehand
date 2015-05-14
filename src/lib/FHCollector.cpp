@@ -1224,10 +1224,10 @@ void libfreehand::FHCollector::_appendOpacity(::librevenge::RVNGPropertyList &pr
 {
   if (!opacity)
     return;
-  if (!propList["draw:fill"] || propList["draw:fill"]->getStr() == "none")
-    return;
-  if (propList["draw:fill"]->getStr() == "solid")
+  if (propList["draw:fill"] && propList["draw:fill"]->getStr() != "none")
     propList.insert("draw:opacity", *opacity, librevenge::RVNG_PERCENT);
+  if (propList["draw:stroke"] && propList["draw:stroke"]->getStr() != "none")
+    propList.insert("svg:stroke-opacity", *opacity, librevenge::RVNG_PERCENT);
 }
 void libfreehand::FHCollector::_appendLensFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLensFill *lensFill)
 {
