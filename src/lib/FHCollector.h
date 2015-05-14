@@ -121,10 +121,12 @@ private:
   const FHDisplayText *_findDisplayText(unsigned id);
   const FHImageImport *_findImageImport(unsigned id);
   const FHNewBlend *_findNewBlend(unsigned id);
+  const FHFilterAttributeHolder *_findFilterAttributeHolder(unsigned id);
   const ::librevenge::RVNGBinaryData *_findData(unsigned id);
   ::librevenge::RVNGString getColorString(unsigned id);
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
+  const FHFilterAttributeHolder *_findFilterAttributeHolder(const FHGraphicStyle &graphicStyle);
   unsigned _findValueFromAttribute(unsigned id);
   unsigned _findContentId(unsigned graphicStyleId);
   const std::vector<FHColorStop> *_findMultiColorList(unsigned id);

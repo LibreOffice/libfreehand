@@ -1083,6 +1083,15 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           _appendLensFill(propList, _findLensFill(fillId));
           _appendRadialFill(propList, _findRadialFill(fillId));
         }
+        else
+        {
+          const FHFilterAttributeHolder *filterAttributeHolder = _findFilterAttributeHolder(*graphicStyle);
+          if (filterAttributeHolder)
+          {
+            if (filterAttributeHolder->m_graphicStyleId)
+              _appendFillProperties(propList, filterAttributeHolder->m_graphicStyleId);
+          }
+        }
       }
     }
   }
@@ -1115,6 +1124,15 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
         unsigned strokeId = _findStrokeId(*graphicStyle);
         if (strokeId)
           _appendBasicLine(propList, _findBasicLine(strokeId));
+        else
+        {
+          const FHFilterAttributeHolder *filterAttributeHolder = _findFilterAttributeHolder(*graphicStyle);
+          if (filterAttributeHolder)
+          {
+            if (filterAttributeHolder->m_graphicStyleId)
+              _appendFillProperties(propList, filterAttributeHolder->m_graphicStyleId);
+          }
+        }
       }
     }
   }
@@ -1472,6 +1490,16 @@ const ::librevenge::RVNGBinaryData *libfreehand::FHCollector::_findData(unsigned
   return 0;
 }
 
+const ::libfreehand::FHFilterAttributeHolder *libfreehand::FHCollector::_findFilterAttributeHolder(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHFilterAttributeHolder>::const_iterator iter = m_filterAttributeHolders.find(id);
+  if (iter != m_filterAttributeHolders.end())
+    return &(iter->second);
+  return 0;
+}
+
 const std::vector<libfreehand::FHColorStop> *libfreehand::FHCollector::_findMultiColorList(unsigned id)
 {
   if (!id)
@@ -1518,6 +1546,24 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
       fillId = valueId;
   }
   return fillId;
+}
+
+const libfreehand::FHFilterAttributeHolder *libfreehand::FHCollector::_findFilterAttributeHolder(const libfreehand::FHGraphicStyle &graphicStyle)
+{
+  unsigned listId = graphicStyle.m_attrId;
+  if (!listId)
+    return 0;
+  std::map<unsigned, FHList>::const_iterator iter = m_lists.find(listId);
+  if (iter == m_lists.end())
+    return 0;
+  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  {
+    const FHFilterAttributeHolder *attributeHolder = _findFilterAttributeHolder(iter->second.m_elements[i]);
+
+    if (attributeHolder)
+      return attributeHolder;
+  }
+  return 0;
 }
 
 
