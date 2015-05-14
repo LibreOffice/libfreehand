@@ -101,6 +101,8 @@ private:
   void _appendLinearFill(::librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
   void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
   void _appendRadialFill(::librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
+  void _appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity);
+  void _applyFilter(::librevenge::RVNGPropertyList &propList, unsigned filterId);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
   const FHPath *_findPath(unsigned id);
@@ -121,6 +123,7 @@ private:
   const FHDisplayText *_findDisplayText(unsigned id);
   const FHImageImport *_findImageImport(unsigned id);
   const FHNewBlend *_findNewBlend(unsigned id);
+  const double *_findOpacityFilter(unsigned id);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(unsigned id);
   const ::librevenge::RVNGBinaryData *_findData(unsigned id);
   ::librevenge::RVNGString getColorString(unsigned id);

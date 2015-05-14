@@ -1090,6 +1090,8 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           {
             if (filterAttributeHolder->m_graphicStyleId)
               _appendFillProperties(propList, filterAttributeHolder->m_graphicStyleId);
+            if (filterAttributeHolder->m_filterId)
+              _applyFilter(propList, filterAttributeHolder->m_filterId);
           }
         }
       }
@@ -1131,6 +1133,8 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
           {
             if (filterAttributeHolder->m_graphicStyleId)
               _appendFillProperties(propList, filterAttributeHolder->m_graphicStyleId);
+            if (filterAttributeHolder->m_filterId)
+              _applyFilter(propList, filterAttributeHolder->m_filterId);
           }
         }
       }
@@ -1209,6 +1213,22 @@ void libfreehand::FHCollector::_appendLinearFill(::librevenge::RVNGPropertyList 
   }
 }
 
+void libfreehand::FHCollector::_applyFilter(::librevenge::RVNGPropertyList &propList, unsigned filterId)
+{
+  if (!filterId)
+    return;
+  _appendOpacity(propList, _findOpacityFilter(filterId));
+}
+
+void libfreehand::FHCollector::_appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity)
+{
+  if (!opacity)
+    return;
+  if (!propList["draw:fill"] || propList["draw:fill"]->getStr() == "none")
+    return;
+  if (propList["draw:fill"]->getStr() == "solid")
+    propList.insert("draw:opacity", *opacity, librevenge::RVNG_PERCENT);
+}
 void libfreehand::FHCollector::_appendLensFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLensFill *lensFill)
 {
   if (!lensFill)
@@ -1506,6 +1526,16 @@ const std::vector<libfreehand::FHColorStop> *libfreehand::FHCollector::_findMult
     return 0;
   std::map<unsigned, std::vector<libfreehand::FHColorStop> >::const_iterator iter = m_multiColorLists.find(id);
   if (iter != m_multiColorLists.end())
+    return &(iter->second);
+  return 0;
+}
+
+const double *libfreehand::FHCollector::_findOpacityFilter(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, double>::const_iterator iter = m_opacityFilters.find(id);
+  if (iter != m_opacityFilters.end())
     return &(iter->second);
   return 0;
 }
