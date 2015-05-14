@@ -148,7 +148,7 @@ libfreehand::FHCollector::FHCollector() :
   m_layers(), m_groups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(),
   m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(),
+  m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(),
   m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
@@ -293,6 +293,11 @@ void libfreehand::FHCollector::collectAttributeHolder(unsigned recordId, const F
   m_attributeHolders[recordId] = attributeHolder;
 }
 
+void libfreehand::FHCollector::collectFilterAttributeHolder(unsigned recordId, const FHFilterAttributeHolder &filterAttributeHolder)
+{
+  m_filterAttributeHolders[recordId] = filterAttributeHolder;
+}
+
 void libfreehand::FHCollector::collectData(unsigned recordId, const ::librevenge::RVNGBinaryData &data)
 {
   m_data[recordId] = data;
@@ -331,6 +336,11 @@ void libfreehand::FHCollector::collectRadialFill(unsigned recordId, const FHRadi
 void libfreehand::FHCollector::collectNewBlend(unsigned recordId, const FHNewBlend &newBlend)
 {
   m_newBlends[recordId] = newBlend;
+}
+
+void libfreehand::FHCollector::collectOpacityFilter(unsigned recordId, double opacity)
+{
+  m_opacityFilters[recordId] = opacity;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)

@@ -49,11 +49,13 @@ public:
   void collectDisplayText(unsigned recordId, const FHDisplayText &displayText);
   void collectGraphicStyle(unsigned recordId, const FHGraphicStyle &graphicStyle);
   void collectAttributeHolder(unsigned recordId, const FHAttributeHolder &attributeHolder);
+  void collectFilterAttributeHolder(unsigned recordId, const FHFilterAttributeHolder &filterAttributeHolder);
   void collectData(unsigned recordId, const librevenge::RVNGBinaryData &data);
   void collectDataList(unsigned recordId, const FHDataList &list);
   void collectImage(unsigned recordId, const FHImageImport &image);
   void collectMultiColorList(unsigned recordId, const std::vector<FHColorStop> &colorStops);
   void collectNewBlend(unsigned recordId, const FHNewBlend &newBlend);
+  void collectOpacityFilter(unsigned recordId, double opacity);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -164,6 +166,8 @@ private:
   std::map<unsigned, FHLensFill> m_lensFills;
   std::map<unsigned, FHRadialFill> m_radialFills;
   std::map<unsigned, FHNewBlend> m_newBlends;
+  std::map<unsigned, FHFilterAttributeHolder> m_filterAttributeHolders;
+  std::map<unsigned, double> m_opacityFilters;
 
   unsigned m_strokeId;
   unsigned m_fillId;

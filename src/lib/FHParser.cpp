@@ -1000,11 +1000,14 @@ void libfreehand::FHParser::readFileDescriptor(librevenge::RVNGInputStream *inpu
   input->seek(size, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readFilterAttributeHolder(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readFilterAttributeHolder(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
+  FHFilterAttributeHolder filterAttributeHolder;
+  filterAttributeHolder.m_parentId = _readRecordId(input);
+  filterAttributeHolder.m_filterId = _readRecordId(input);
+  filterAttributeHolder.m_graphicStyleId = _readRecordId(input);
+  if (collector)
+    collector->collectFilterAttributeHolder(m_currentRecord+1, filterAttributeHolder);
 }
 
 void libfreehand::FHParser::readFWBevelFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1369,9 +1372,12 @@ void libfreehand::FHParser::readNewRadialFill(librevenge::RVNGInputStream *input
     collector->collectRadialFill(m_currentRecord+1, fill);
 }
 
-void libfreehand::FHParser::readOpacityFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readOpacityFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input);
+  double opacity = (double)(readU16(input)) / 100.0;
+  if (collector)
+    collector->collectOpacityFilter(m_currentRecord+1, opacity);
 }
 
 void libfreehand::FHParser::readOval(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

@@ -248,6 +248,14 @@ struct FHAttributeHolder
   FHAttributeHolder() : m_parentId(0), m_attrId(0) {}
 };
 
+struct FHFilterAttributeHolder
+{
+  unsigned m_parentId;
+  unsigned m_filterId;
+  unsigned m_graphicStyleId;
+  FHFilterAttributeHolder() : m_parentId(0), m_filterId(0), m_graphicStyleId(0) {}
+};
+
 struct FHDataList
 {
   unsigned m_dataSize;
