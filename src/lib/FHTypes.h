@@ -304,6 +304,33 @@ struct FHNewBlend
   FHNewBlend() : m_graphicStyleId(0), m_parentId(0), m_list1Id(0), m_list2Id(0), m_list3Id(0) {}
 };
 
+struct FWShadowFilter
+{
+  unsigned m_colorId;
+  bool m_knockOut;
+  bool m_inner;
+  double m_distribution;
+  double m_opacity;
+  double m_smoothness;
+  double m_angle;
+  FWShadowFilter()
+    : m_colorId(0), m_knockOut(false), m_inner(false),
+      m_distribution(0.0), m_opacity(1.0), m_smoothness(1.0), m_angle(45.0) {}
+};
+
+struct FWGlowFilter
+{
+  unsigned m_colorId;
+  bool m_inner;
+  double m_width;
+  double m_opacity;
+  double m_smoothness;
+  double m_distribution;
+  FWGlowFilter()
+    : m_colorId(0), m_inner(false), m_width(0.0), m_opacity(1.0),
+      m_smoothness(1.0), m_distribution(0.0) {}
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */

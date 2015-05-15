@@ -56,6 +56,8 @@ public:
   void collectMultiColorList(unsigned recordId, const std::vector<FHColorStop> &colorStops);
   void collectNewBlend(unsigned recordId, const FHNewBlend &newBlend);
   void collectOpacityFilter(unsigned recordId, double opacity);
+  void collectFWShadowFilter(unsigned recordId, const FWShadowFilter &filter);
+  void collectFWGlowFilter(unsigned recordId, const FWGlowFilter &filter);
 
   void collectPageInfo(const FHPageInfo &pageInfo);
 
@@ -102,6 +104,8 @@ private:
   void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
   void _appendRadialFill(::librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
   void _appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity);
+  void _appendShadow(::librevenge::RVNGPropertyList &propList, const FWShadowFilter *filter);
+  void _appendGlow(::librevenge::RVNGPropertyList &propList, const FWGlowFilter *filter);
   void _applyFilter(::librevenge::RVNGPropertyList &propList, unsigned filterId);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
@@ -124,6 +128,8 @@ private:
   const FHImageImport *_findImageImport(unsigned id);
   const FHNewBlend *_findNewBlend(unsigned id);
   const double *_findOpacityFilter(unsigned id);
+  const FWShadowFilter *_findFWShadowFilter(unsigned id);
+  const FWGlowFilter *_findFWGlowFilter(unsigned id);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(unsigned id);
   const ::librevenge::RVNGBinaryData *_findData(unsigned id);
   ::librevenge::RVNGString getColorString(unsigned id);
@@ -173,6 +179,8 @@ private:
   std::map<unsigned, FHNewBlend> m_newBlends;
   std::map<unsigned, FHFilterAttributeHolder> m_filterAttributeHolders;
   std::map<unsigned, double> m_opacityFilters;
+  std::map<unsigned, FWShadowFilter> m_shadowFilters;
+  std::map<unsigned, FWGlowFilter> m_glowFilters;
 
   unsigned m_strokeId;
   unsigned m_fillId;

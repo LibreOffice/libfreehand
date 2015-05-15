@@ -1026,16 +1026,36 @@ void libfreehand::FHParser::readFWFeatherFilter(librevenge::RVNGInputStream *inp
   input->seek(8, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readFWGlowFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readFWGlowFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  input->seek(20, librevenge::RVNG_SEEK_CUR);
+  FWGlowFilter filter;
+  filter.m_colorId = _readRecordId(input);
+  input->seek(3, librevenge::RVNG_SEEK_CUR);
+  filter.m_inner = bool(readU8(input));
+  filter.m_width = _readCoordinate(input) / 72.0;
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  filter.m_opacity = (double)(readU16(input)) / 100.0;
+  filter.m_smoothness = _readCoordinate(input);
+  filter.m_distribution = _readCoordinate(input) / 72.0;
+  if (collector)
+    collector->collectFWGlowFilter(m_currentRecord+1, filter);
 }
 
-void libfreehand::FHParser::readFWShadowFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readFWShadowFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  input->seek(20, librevenge::RVNG_SEEK_CUR);
+  FWShadowFilter filter;
+  filter.m_colorId = _readRecordId(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  filter.m_knockOut = bool(readU8(input));
+  filter.m_inner = !readU8(input);
+  filter.m_distribution = _readCoordinate(input) / 72.0;
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  filter.m_opacity = (double)(readU16(input)) / 100.0;
+  filter.m_smoothness = _readCoordinate(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  filter.m_angle = 360.0 - (double)(readU16(input));
+  if (collector)
+    collector->collectFWShadowFilter(m_currentRecord+1, filter);
 }
 
 void libfreehand::FHParser::readFWSharpenFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

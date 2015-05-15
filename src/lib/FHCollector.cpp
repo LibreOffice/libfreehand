@@ -149,7 +149,7 @@ libfreehand::FHCollector::FHCollector() :
   m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
   m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(),
-  m_strokeId(0), m_fillId(0), m_contentId(0)
+  m_shadowFilters(), m_glowFilters(), m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
 
@@ -341,6 +341,16 @@ void libfreehand::FHCollector::collectNewBlend(unsigned recordId, const FHNewBle
 void libfreehand::FHCollector::collectOpacityFilter(unsigned recordId, double opacity)
 {
   m_opacityFilters[recordId] = opacity;
+}
+
+void libfreehand::FHCollector::collectFWShadowFilter(unsigned recordId, const FWShadowFilter &filter)
+{
+  m_shadowFilters[recordId] = filter;
+}
+
+void libfreehand::FHCollector::collectFWGlowFilter(unsigned recordId, const FWGlowFilter &filter)
+{
+  m_glowFilters[recordId] = filter;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -1228,6 +1238,8 @@ void libfreehand::FHCollector::_applyFilter(::librevenge::RVNGPropertyList &prop
   if (!filterId)
     return;
   _appendOpacity(propList, _findOpacityFilter(filterId));
+  _appendShadow(propList, _findFWShadowFilter(filterId));
+  _appendGlow(propList, _findFWGlowFilter(filterId));
 }
 
 void libfreehand::FHCollector::_appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity)
@@ -1239,6 +1251,27 @@ void libfreehand::FHCollector::_appendOpacity(::librevenge::RVNGPropertyList &pr
   if (propList["draw:stroke"] && propList["draw:stroke"]->getStr() != "none")
     propList.insert("svg:stroke-opacity", *opacity, librevenge::RVNG_PERCENT);
 }
+
+void libfreehand::FHCollector::_appendShadow(::librevenge::RVNGPropertyList &propList, const libfreehand::FWShadowFilter *filter)
+{
+  if (!filter)
+    return;
+  if (!filter->m_inner)
+  {
+    propList.insert("draw:shadow","visible"); // for ODG
+    propList.insert("draw:shadow-offset-x",filter->m_distribution * cos(M_PI * filter->m_angle / 180.0));
+    propList.insert("draw:shadow-offset-y",filter->m_distribution * sin(M_PI * filter->m_angle / 180.0));
+    propList.insert("draw:shadow-color",getColorString(filter->m_colorId));
+    propList.insert("draw:shadow-opacity",filter->m_opacity, librevenge::RVNG_PERCENT);
+  }
+}
+
+void libfreehand::FHCollector::_appendGlow(::librevenge::RVNGPropertyList & /* propList */, const libfreehand::FWGlowFilter *filter)
+{
+  if (!filter)
+    return;
+}
+
 void libfreehand::FHCollector::_appendLensFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLensFill *lensFill)
 {
   if (!lensFill)
@@ -1546,6 +1579,26 @@ const double *libfreehand::FHCollector::_findOpacityFilter(unsigned id)
     return 0;
   std::map<unsigned, double>::const_iterator iter = m_opacityFilters.find(id);
   if (iter != m_opacityFilters.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FWShadowFilter *libfreehand::FHCollector::_findFWShadowFilter(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FWShadowFilter>::const_iterator iter = m_shadowFilters.find(id);
+  if (iter != m_shadowFilters.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FWGlowFilter *libfreehand::FHCollector::_findFWGlowFilter(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FWGlowFilter>::const_iterator iter = m_glowFilters.find(id);
+  if (iter != m_glowFilters.end())
     return &(iter->second);
   return 0;
 }
