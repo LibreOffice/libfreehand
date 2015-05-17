@@ -395,9 +395,12 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
     if (trafo)
       fhPath.transform(*trafo);
   }
-  std::stack<FHTransform> groupTransforms = m_currentTransforms;
-  if (!m_currentTransforms.empty())
-    fhPath.transform(m_currentTransforms.top());
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
+  {
+    fhPath.transform(groupTransforms.top());
+    groupTransforms.pop();
+  }
   _normalizePath(fhPath);
   if (!m_fakeTransforms.empty())
     fhPath.transform(m_fakeTransforms.top());
@@ -582,14 +585,14 @@ void libfreehand::FHCollector::outputDrawing(::librevenge::RVNGDrawingInterface 
     librevenge::RVNGStringVector svgOutput;
     librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
     librevenge::RVNGPropertyList propList;
-    propList.insert("svg:width", 1.0);
-    propList.insert("svg:height", 1.0);
+    propList.insert("svg:width", 100.0);
+    propList.insert("svg:height", 100.0);
     generator.startPage(propList);
     const FHTransform *trafo = _findTransform(iterFill->second.m_xFormId);
     if (trafo)
-      m_fakeTransforms.push(*trafo);
+      m_currentTransforms.push(*trafo);
     else
-      m_fakeTransforms.push(FHTransform());
+      m_currentTransforms.push(FHTransform());
 
     _outputSomething(iterFill->second.m_groupId, &generator);
     generator.endPage();
@@ -610,8 +613,8 @@ void libfreehand::FHCollector::outputDrawing(::librevenge::RVNGDrawingInterface 
         fclose(f);
       }
     }
-    if (!m_fakeTransforms.empty())
-      m_fakeTransforms.pop();
+    if (!m_currentTransforms.empty())
+      m_currentTransforms.pop();
   }
 #endif
 
@@ -739,11 +742,13 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
       trafo->applyToPoint(xc, yc);
     }
   }
-  if (!m_currentTransforms.empty())
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
   {
-    m_currentTransforms.top().applyToPoint(xa, ya);
-    m_currentTransforms.top().applyToPoint(xb, yb);
-    m_currentTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.top().applyToPoint(xa, ya);
+    groupTransforms.top().applyToPoint(xb, yb);
+    groupTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.pop();
   }
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
@@ -884,12 +889,13 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
       trafo->applyToPoint(xc, yc);
     }
   }
-  std::stack<FHTransform> groupTransforms = m_currentTransforms;
-  if (!m_currentTransforms.empty())
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
   {
-    m_currentTransforms.top().applyToPoint(xa, ya);
-    m_currentTransforms.top().applyToPoint(xb, yb);
-    m_currentTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.top().applyToPoint(xa, ya);
+    groupTransforms.top().applyToPoint(xb, yb);
+    groupTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.pop();
   }
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
@@ -1033,12 +1039,13 @@ void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::
       trafo->applyToPoint(xc, yc);
     }
   }
-  std::stack<FHTransform> groupTransforms = m_currentTransforms;
-  if (!m_currentTransforms.empty())
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
   {
-    m_currentTransforms.top().applyToPoint(xa, ya);
-    m_currentTransforms.top().applyToPoint(xb, yb);
-    m_currentTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.top().applyToPoint(xa, ya);
+    groupTransforms.top().applyToPoint(xb, yb);
+    groupTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.pop();
   }
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
