@@ -1880,24 +1880,44 @@ void libfreehand::FHParser::readSwfImport(librevenge::RVNGInputStream *input, li
     collector->collectImage(m_currentRecord+1, image);
 }
 
-void libfreehand::FHParser::readSymbolClass(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readSymbolClass(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
-  _readRecordId(input);
+  FHSymbolClass symbolClass;
+  symbolClass.m_nameId = _readRecordId(input);
+  symbolClass.m_groupId = _readRecordId(input);
+  symbolClass.m_dateTimeId = _readRecordId(input);
+  symbolClass.m_symbolLibraryId = _readRecordId(input);
+  symbolClass.m_listId = _readRecordId(input);
+  if (collector)
+    collector->collectSymbolClass(m_currentRecord+1, symbolClass);
 }
 
-void libfreehand::FHParser::readSymbolInstance(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readSymbolInstance(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
+  FHSymbolInstance symbolInstance;
+  symbolInstance.m_graphicStyleId = _readRecordId(input);
+  symbolInstance.m_parentId = _readRecordId(input);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
+  symbolInstance.m_symbolClassId = _readRecordId(input);
   unsigned char var1 = readU8(input);
   unsigned char var2 = readU8(input);
-  input->seek(_xformCalc(var1, var2), librevenge::RVNG_SEEK_CUR);
+  if (!(var1&0x4))
+  {
+    if (!(var1&0x10))
+      symbolInstance.m_xForm.m_m11 = _readCoordinate(input);
+    if (var2&0x40)
+      symbolInstance.m_xForm.m_m21 = _readCoordinate(input);
+    if (var2&0x20)
+      symbolInstance.m_xForm.m_m12 = _readCoordinate(input);
+    if (!(var1&0x20))
+      symbolInstance.m_xForm.m_m22 = _readCoordinate(input);
+    if (var1&0x1)
+      symbolInstance.m_xForm.m_m13 = _readCoordinate(input) / 72.0;
+    if (var1&0x2)
+      symbolInstance.m_xForm.m_m23 = _readCoordinate(input) / 72.0;
+  }
+  if (collector)
+    collector->collectSymbolInstance(m_currentRecord+1, symbolInstance);
 }
 
 void libfreehand::FHParser::readSymbolLibrary(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

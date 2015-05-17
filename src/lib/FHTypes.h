@@ -13,6 +13,7 @@
 #include <vector>
 #include <map>
 #include "FHPath.h"
+#include "FHTransform.h"
 
 namespace libfreehand
 {
@@ -340,6 +341,28 @@ struct FHTileFill
   double m_offsetX;
   double m_offsetY;
   double m_angle;
+  FHTileFill()
+    : m_xFormId(0), m_groupId(0), m_stretchX(0.0), m_stretchY(0.0),
+      m_offsetX(0.0), m_offsetY(0.0), m_angle(0.0) {}
+};
+
+struct FHSymbolClass
+{
+  unsigned m_nameId;
+  unsigned m_groupId;
+  unsigned m_dateTimeId;
+  unsigned m_symbolLibraryId;
+  unsigned m_listId;
+  FHSymbolClass() : m_nameId(0), m_groupId(0), m_dateTimeId(0), m_symbolLibraryId(0), m_listId(0) {}
+};
+
+struct FHSymbolInstance
+{
+  unsigned m_graphicStyleId;
+  unsigned m_parentId;
+  unsigned m_symbolClassId;
+  FHTransform m_xForm;
+  FHSymbolInstance() : m_graphicStyleId(0), m_parentId(0), m_symbolClassId(0), m_xForm() {}
 };
 
 } // namespace libfreehand

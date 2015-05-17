@@ -70,6 +70,9 @@ public:
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
   void collectTileFill(unsigned recordId, const FHTileFill &fill);
 
+  void collectSymbolClass(unsigned recordId, const FHSymbolClass &symbolClass);
+  void collectSymbolInstance(unsigned recordId, const FHSymbolInstance &symbolInstance);
+
   void outputDrawing(::librevenge::RVNGDrawingInterface *painter);
 
 private:
@@ -138,6 +141,8 @@ private:
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(const FHGraphicStyle &graphicStyle);
   unsigned _findValueFromAttribute(unsigned id);
+  const FHSymbolClass *_findSymbolClass(unsigned id);
+  const FHSymbolInstance *_findSymbolInstance(unsigned id);
   unsigned _findContentId(unsigned graphicStyleId);
   const std::vector<FHColorStop> *_findMultiColorList(unsigned id);
   ::librevenge::RVNGBinaryData getImageData(unsigned id);
@@ -183,6 +188,8 @@ private:
   std::map<unsigned, FWShadowFilter> m_shadowFilters;
   std::map<unsigned, FWGlowFilter> m_glowFilters;
   std::map<unsigned, FHTileFill> m_tileFills;
+  std::map<unsigned, FHSymbolClass> m_symbolClasses;
+  std::map<unsigned, FHSymbolInstance> m_symbolInstances;
 
   unsigned m_strokeId;
   unsigned m_fillId;

@@ -152,7 +152,7 @@ libfreehand::FHCollector::FHCollector() :
   m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
   m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(),
-  m_shadowFilters(), m_glowFilters(), m_tileFills(),
+  m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(),
   m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
@@ -360,6 +360,16 @@ void libfreehand::FHCollector::collectFWShadowFilter(unsigned recordId, const FW
 void libfreehand::FHCollector::collectFWGlowFilter(unsigned recordId, const FWGlowFilter &filter)
 {
   m_glowFilters[recordId] = filter;
+}
+
+void libfreehand::FHCollector::collectSymbolClass(unsigned recordId, const FHSymbolClass &symbolClass)
+{
+  m_symbolClasses[recordId] = symbolClass;
+}
+
+void libfreehand::FHCollector::collectSymbolInstance(unsigned recordId, const FHSymbolInstance &symbolInstance)
+{
+  m_symbolInstances[recordId] = symbolInstance;
 }
 
 void libfreehand::FHCollector::_normalizePath(libfreehand::FHPath &path)
@@ -1603,6 +1613,26 @@ const ::librevenge::RVNGBinaryData *libfreehand::FHCollector::_findData(unsigned
     return 0;
   std::map<unsigned, ::librevenge::RVNGBinaryData>::const_iterator iter = m_data.find(id);
   if (iter != m_data.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHSymbolClass *libfreehand::FHCollector::_findSymbolClass(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHSymbolClass>::const_iterator iter = m_symbolClasses.find(id);
+  if (iter != m_symbolClasses.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHSymbolInstance *libfreehand::FHCollector::_findSymbolInstance(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHSymbolInstance>::const_iterator iter = m_symbolInstances.find(id);
+  if (iter != m_symbolInstances.end())
     return &(iter->second);
   return 0;
 }
