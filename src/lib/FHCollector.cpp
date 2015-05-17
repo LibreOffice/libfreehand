@@ -27,7 +27,7 @@
 #define DEBUG_BOUNDING_BOX 0
 #endif
 #ifndef DUMP_TILE_FILLS
-#define DUMP_TILE_FILLS 1
+#define DUMP_TILE_FILLS 0
 #endif
 
 #define FH_UNINITIALIZED(pI) \
@@ -567,7 +567,10 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
 
   librevenge::RVNGPropertyListVector propVec;
   fhPath.writeOut(propVec);
-  _composePath(propVec, fhPath.isClosed());
+  if (propList["draw:fill"] && propList["draw:fill"]->getStr() != "none")
+    _composePath(propVec, true);
+  else
+    _composePath(propVec, fhPath.isClosed());
   librevenge::RVNGPropertyList pList;
   pList.insert("svg:d", propVec);
   if (contentId)
