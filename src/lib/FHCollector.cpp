@@ -26,6 +26,9 @@
 #ifndef DEBUG_BOUNDING_BOX
 #define DEBUG_BOUNDING_BOX 0
 #endif
+#ifndef DUMP_TILE_FILLS
+#define DUMP_TILE_FILLS 0
+#endif
 
 #define FH_UNINITIALIZED(pI) \
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
@@ -149,7 +152,8 @@ libfreehand::FHCollector::FHCollector() :
   m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
   m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(),
-  m_shadowFilters(), m_glowFilters(), m_strokeId(0), m_fillId(0), m_contentId(0)
+  m_shadowFilters(), m_glowFilters(), m_tileFills(),
+  m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
 
@@ -271,6 +275,11 @@ void libfreehand::FHCollector::collectBasicFill(unsigned recordId, const FHBasic
 void libfreehand::FHCollector::collectBasicLine(unsigned recordId, const FHBasicLine &line)
 {
   m_basicLines[recordId] = line;
+}
+
+void libfreehand::FHCollector::collectTileFill(unsigned recordId, const FHTileFill &fill)
+{
+  m_tileFills[recordId] = fill;
 }
 
 void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropList &propertyList)
@@ -488,9 +497,9 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
 
   if (group->m_xFormId)
   {
-    std::map<unsigned, FHTransform>::const_iterator iterTransform = m_transforms.find(group->m_xFormId);
-    if (iterTransform != m_transforms.end())
-      m_currentTransforms.push(iterTransform->second);
+    const FHTransform *trafo = _findTransform(group->m_xFormId);
+    if (trafo)
+      m_currentTransforms.push(*trafo);
     else
       m_currentTransforms.push(libfreehand::FHTransform());
   }
@@ -565,6 +574,44 @@ void libfreehand::FHCollector::outputDrawing(::librevenge::RVNGDrawingInterface 
         fprintf(f, "%c",tmpBuffer[k]);
       fclose(f);
     }
+  }
+#endif
+#if DUMP_TILE_FILLS
+  for (std::map<unsigned, FHTileFill>::const_iterator iterFill = m_tileFills.begin(); iterFill != m_tileFills.end(); ++iterFill)
+  {
+    librevenge::RVNGStringVector svgOutput;
+    librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
+    librevenge::RVNGPropertyList propList;
+    propList.insert("svg:width", 1.0);
+    propList.insert("svg:height", 1.0);
+    generator.startPage(propList);
+    const FHTransform *trafo = _findTransform(iterFill->second.m_xFormId);
+    if (trafo)
+      m_fakeTransforms.push(*trafo);
+    else
+      m_fakeTransforms.push(FHTransform());
+
+    _outputSomething(iterFill->second.m_groupId, &generator);
+    generator.endPage();
+    if (!svgOutput.empty())
+    {
+      const char *header =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+      librevenge::RVNGBinaryData output((const unsigned char *)header, strlen(header));
+      output.append((unsigned char *)svgOutput[0].cstr(), strlen(svgOutput[0].cstr()));
+      librevenge::RVNGString filename;
+      filename.sprintf("freehandtilefill%.4x.svg", iterFill->first);
+      FILE *f = fopen(filename.cstr(), "wb");
+      if (f)
+      {
+        const unsigned char *tmpBuffer = output.getDataBuffer();
+        for (unsigned long k = 0; k < output.size(); k++)
+          fprintf(f, "%c",tmpBuffer[k]);
+        fclose(f);
+      }
+    }
+    if (!m_fakeTransforms.empty())
+      m_fakeTransforms.pop();
   }
 #endif
 
@@ -1602,7 +1649,6 @@ const libfreehand::FWGlowFilter *libfreehand::FHCollector::_findFWGlowFilter(uns
     return &(iter->second);
   return 0;
 }
-
 
 unsigned libfreehand::FHCollector::_findStrokeId(const libfreehand::FHGraphicStyle &graphicStyle)
 {

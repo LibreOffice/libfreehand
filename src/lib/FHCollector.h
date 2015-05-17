@@ -68,6 +68,7 @@ public:
   void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
   void collectRadialFill(unsigned recordId, const FHRadialFill &fill);
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
+  void collectTileFill(unsigned recordId, const FHTileFill &fill);
 
   void outputDrawing(::librevenge::RVNGDrawingInterface *painter);
 
@@ -181,6 +182,7 @@ private:
   std::map<unsigned, double> m_opacityFilters;
   std::map<unsigned, FWShadowFilter> m_shadowFilters;
   std::map<unsigned, FWGlowFilter> m_glowFilters;
+  std::map<unsigned, FHTileFill> m_tileFills;
 
   unsigned m_strokeId;
   unsigned m_fillId;

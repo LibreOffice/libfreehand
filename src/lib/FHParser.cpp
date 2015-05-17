@@ -2034,11 +2034,19 @@ void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, l
     collector->collectTextObject(m_currentRecord+1, textObject);
 }
 
-void libfreehand::FHParser::readTileFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTileFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(28, librevenge::RVNG_SEEK_CUR);
+  FHTileFill fill;
+  fill.m_xFormId = _readRecordId(input);
+  fill.m_groupId = _readRecordId(input);
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  fill.m_stretchX = _readCoordinate(input) / 72.0;
+  fill.m_stretchY = _readCoordinate(input) / 72.0;
+  fill.m_offsetX = _readCoordinate(input) / 72.0;
+  fill.m_offsetY = _readCoordinate(input) / 72.0;
+  fill.m_angle = _readCoordinate(input);
+  if (collector)
+    collector->collectTileFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readTintColor(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

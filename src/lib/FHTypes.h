@@ -331,6 +331,17 @@ struct FWGlowFilter
       m_smoothness(1.0), m_distribution(0.0) {}
 };
 
+struct FHTileFill
+{
+  unsigned m_xFormId;
+  unsigned m_groupId;
+  double m_stretchX;
+  double m_stretchY;
+  double m_offsetX;
+  double m_offsetY;
+  double m_angle;
+};
+
 } // namespace libfreehand
 
 #endif /* __FHTYPES_H__ */
