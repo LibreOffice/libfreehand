@@ -92,6 +92,7 @@ private:
   void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
   void _outputImageImport(const FHImageImport *image, ::librevenge::RVNGDrawingInterface *painter);
   void _outputNewBlend(const FHNewBlend *newBlend, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputSymbolInstance(const FHSymbolInstance *symbolInstance, ::librevenge::RVNGDrawingInterface *painter);
   void _outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter);
 
   const std::vector<unsigned> *_findListElements(unsigned id);

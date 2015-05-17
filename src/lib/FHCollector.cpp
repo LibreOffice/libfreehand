@@ -501,6 +501,7 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::libreven
   _outputDisplayText(_findDisplayText(somethingId), painter);
   _outputImageImport(_findImageImport(somethingId), painter);
   _outputNewBlend(_findNewBlend(somethingId), painter);
+  _outputSymbolInstance(_findSymbolInstance(somethingId), painter);
 }
 
 void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, ::librevenge::RVNGDrawingInterface *painter)
@@ -565,6 +566,23 @@ void libfreehand::FHCollector::_outputNewBlend(const libfreehand::FHNewBlend *ne
       _outputSomething(*iterVec, painter);
   }
   painter->closeGroup();
+
+  if (!m_currentTransforms.empty())
+    m_currentTransforms.pop();
+}
+
+void libfreehand::FHCollector::_outputSymbolInstance(const libfreehand::FHSymbolInstance *symbolInstance, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !symbolInstance)
+    return;
+
+  m_currentTransforms.push(symbolInstance->m_xForm);
+
+  const FHSymbolClass *symbolClass = _findSymbolClass(symbolInstance->m_symbolClassId);
+  if (symbolClass)
+  {
+    _outputSomething(symbolClass->m_groupId, painter);
+  }
 
   if (!m_currentTransforms.empty())
     m_currentTransforms.pop();
