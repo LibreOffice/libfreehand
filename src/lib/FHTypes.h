@@ -10,6 +10,7 @@
 #ifndef __FHTYPES_H__
 #define __FHTYPES_H__
 
+#include <float.h>
 #include <vector>
 #include <map>
 #include "FHPath.h"
@@ -363,6 +364,28 @@ struct FHSymbolInstance
   unsigned m_symbolClassId;
   FHTransform m_xForm;
   FHSymbolInstance() : m_graphicStyleId(0), m_parentId(0), m_symbolClassId(0), m_xForm() {}
+};
+
+struct FHBoundingBox
+{
+  double m_xmin;
+  double m_ymin;
+  double m_xmax;
+  double m_ymax;
+  FHBoundingBox() : m_xmin(DBL_MAX), m_ymin(DBL_MAX), m_xmax(DBL_MIN), m_ymax(DBL_MIN) {}
+  FHBoundingBox(const FHBoundingBox &bBox)
+    : m_xmin(bBox.m_xmin), m_ymin(bBox.m_ymin), m_xmax(bBox.m_xmax), m_ymax(bBox.m_ymax) {}
+  void merge(const FHBoundingBox &bBox)
+  {
+    if (m_xmin > bBox.m_xmin) m_xmin = bBox.m_xmin;
+    if (m_xmin > bBox.m_xmax) m_xmin = bBox.m_xmax;
+    if (m_ymin > bBox.m_ymin) m_ymin = bBox.m_ymin;
+    if (m_ymin > bBox.m_ymax) m_ymin = bBox.m_ymax;
+    if (m_xmax < bBox.m_xmax) m_xmax = bBox.m_xmax;
+    if (m_xmax < bBox.m_xmin) m_xmax = bBox.m_xmin;
+    if (m_ymax < bBox.m_ymax) m_ymax = bBox.m_ymax;
+    if (m_ymax < bBox.m_ymin) m_ymax = bBox.m_ymin;
+  }
 };
 
 } // namespace libfreehand

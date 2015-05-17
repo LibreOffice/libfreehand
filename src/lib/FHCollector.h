@@ -81,6 +81,7 @@ private:
 
   void _normalizePath(FHPath &path);
   void _normalizePoint(double &x, double &y);
+
   void _outputPath(const FHPath *path, ::librevenge::RVNGDrawingInterface *painter);
   void _outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
@@ -95,6 +96,17 @@ private:
   void _outputSymbolInstance(const FHSymbolInstance *symbolInstance, ::librevenge::RVNGDrawingInterface *painter);
   void _outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter);
 
+  void _getBBofPath(const FHPath *path,FHBoundingBox &bBox);
+  void _getBBofLayer(unsigned layerId,FHBoundingBox &bBox);
+  void _getBBofGroup(const FHGroup *group,FHBoundingBox &bBox);
+  void _getBBofCompositePath(const FHCompositePath *compositePath,FHBoundingBox &bBox);
+  void _getBBofTextObject(const FHTextObject *textObject,FHBoundingBox &bBox);
+  void _getBBofDisplayText(const FHDisplayText *displayText,FHBoundingBox &bBox);
+  void _getBBofImageImport(const FHImageImport *image,FHBoundingBox &bBox);
+  void _getBBofNewBlend(const FHNewBlend *newBlend,FHBoundingBox &bBox);
+  void _getBBofSymbolInstance(const FHSymbolInstance *symbolInstance,FHBoundingBox &bBox);
+  void _getBBofSomething(unsigned somethingId,FHBoundingBox &bBox);
+
   const std::vector<unsigned> *_findListElements(unsigned id);
   void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, unsigned paraPropsId);
   void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, const FH3ParaProperties &paraProps);
@@ -108,6 +120,7 @@ private:
   void _appendLinearFill(::librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
   void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
   void _appendRadialFill(::librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
+  void _appendTileFill(::librevenge::RVNGPropertyList &propList, const FHTileFill *tileFill);
   void _appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity);
   void _appendShadow(::librevenge::RVNGPropertyList &propList, const FWShadowFilter *filter);
   void _appendGlow(::librevenge::RVNGPropertyList &propList, const FWGlowFilter *filter);
@@ -127,6 +140,7 @@ private:
   const FHLinearFill *_findLinearFill(unsigned id);
   const FHLensFill *_findLensFill(unsigned id);
   const FHRadialFill *_findRadialFill(unsigned id);
+  const FHTileFill *_findTileFill(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findRGBColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);

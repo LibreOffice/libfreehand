@@ -27,7 +27,7 @@
 #define DEBUG_BOUNDING_BOX 0
 #endif
 #ifndef DUMP_TILE_FILLS
-#define DUMP_TILE_FILLS 0
+#define DUMP_TILE_FILLS 1
 #endif
 
 #define FH_UNINITIALIZED(pI) \
@@ -384,6 +384,156 @@ void libfreehand::FHCollector::_normalizePoint(double &x, double &y)
   trafo.applyToPoint(x, y);
 }
 
+void libfreehand::FHCollector::_getBBofPath(const FHPath *path, libfreehand::FHBoundingBox &bBox)
+{
+  if (!path || path->empty())
+    return;
+
+  FHPath fhPath(*path);
+  unsigned short xform = fhPath.getXFormId();
+
+  if (xform)
+  {
+    const FHTransform *trafo = _findTransform(xform);
+    if (trafo)
+      fhPath.transform(*trafo);
+  }
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
+  {
+    fhPath.transform(groupTransforms.top());
+    groupTransforms.pop();
+  }
+  _normalizePath(fhPath);
+  if (!m_fakeTransforms.empty())
+    fhPath.transform(m_fakeTransforms.top());
+
+  FHBoundingBox tmpBBox(bBox);
+  fhPath.getBoundingBox(tmpBBox.m_xmin, tmpBBox.m_ymin, tmpBBox.m_xmax, tmpBBox.m_ymax);
+  bBox.merge(tmpBBox);
+}
+
+void libfreehand::FHCollector::_getBBofGroup(const FHGroup *group, libfreehand::FHBoundingBox &bBox)
+{
+  if (!group)
+    return;
+
+  if (group->m_xFormId)
+  {
+    const FHTransform *trafo = _findTransform(group->m_xFormId);
+    if (trafo)
+      m_currentTransforms.push(*trafo);
+    else
+      m_currentTransforms.push(libfreehand::FHTransform());
+  }
+  else
+    m_currentTransforms.push(libfreehand::FHTransform());
+
+  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
+  if (!elements)
+  {
+    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
+    return;
+  }
+
+  for (std::vector<unsigned>::const_iterator iterVec = elements->begin(); iterVec != elements->end(); ++iterVec)
+  {
+    FHBoundingBox tmpBBox(bBox);
+    _getBBofSomething(*iterVec, tmpBBox);
+    bBox.merge(tmpBBox);
+  }
+
+  if (!m_currentTransforms.empty())
+    m_currentTransforms.pop();
+}
+
+void libfreehand::FHCollector::_getBBofCompositePath(const FHCompositePath *compositePath, libfreehand::FHBoundingBox &bBox)
+{
+  if (!compositePath)
+    return;
+
+  const std::vector<unsigned> *elements = _findListElements(compositePath->m_elementsId);
+  if (elements && !elements->empty())
+  {
+    libfreehand::FHPath fhPath;
+    std::vector<unsigned>::const_iterator iter = elements->begin();
+    const libfreehand::FHPath *path = _findPath(*(iter++));
+    if (path)
+    {
+      fhPath = *path;
+      if (!fhPath.getGraphicStyleId())
+        fhPath.setGraphicStyleId(compositePath->m_graphicStyleId);
+    }
+
+    for (; iter != elements->end(); ++iter)
+    {
+      path = _findPath(*iter);
+      if (path)
+      {
+        fhPath.appendPath(*path);
+        if (!fhPath.getGraphicStyleId())
+          fhPath.setGraphicStyleId(compositePath->m_graphicStyleId);
+      }
+    }
+    FHBoundingBox tmpBBox(bBox);
+    _getBBofPath(&fhPath, tmpBBox);
+    bBox.merge(tmpBBox);
+  }
+}
+
+void libfreehand::FHCollector::_getBBofTextObject(const FHTextObject * /* textObject */, libfreehand::FHBoundingBox & /* bBox */)
+{
+}
+
+void libfreehand::FHCollector::_getBBofDisplayText(const FHDisplayText * /* displayText */, libfreehand::FHBoundingBox & /* bBox */)
+{
+}
+
+void libfreehand::FHCollector::_getBBofImageImport(const FHImageImport * /* image */, libfreehand::FHBoundingBox & /* bBox */)
+{
+}
+
+void libfreehand::FHCollector::_getBBofNewBlend(const FHNewBlend * /* newBlend */, libfreehand::FHBoundingBox & /* bBox */)
+{
+}
+
+void libfreehand::FHCollector::_getBBofSymbolInstance(const FHSymbolInstance *symbolInstance, libfreehand::FHBoundingBox &bBox)
+{
+  if (!symbolInstance)
+    return;
+
+  m_currentTransforms.push(symbolInstance->m_xForm);
+
+  const FHSymbolClass *symbolClass = _findSymbolClass(symbolInstance->m_symbolClassId);
+  if (symbolClass)
+  {
+    FHBoundingBox tmpBBox(bBox);
+    _getBBofSomething(symbolClass->m_groupId, tmpBBox);
+    bBox.merge(tmpBBox);
+  }
+
+  if (!m_currentTransforms.empty())
+    m_currentTransforms.pop();
+}
+
+void libfreehand::FHCollector::_getBBofSomething(unsigned somethingId, libfreehand::FHBoundingBox &bBox)
+{
+  if (!somethingId)
+    return;
+
+  FHBoundingBox tmpBBox(bBox);
+  _getBBofGroup(_findGroup(somethingId), tmpBBox);
+  _getBBofPath(_findPath(somethingId), tmpBBox);
+  _getBBofCompositePath(_findCompositePath(somethingId), tmpBBox);
+  _getBBofTextObject(_findTextObject(somethingId), tmpBBox);
+  _getBBofDisplayText(_findDisplayText(somethingId), tmpBBox);
+  _getBBofImageImport(_findImageImport(somethingId), tmpBBox);
+  _getBBofNewBlend(_findNewBlend(somethingId), tmpBBox);
+  _getBBofSymbolInstance(_findSymbolInstance(somethingId), tmpBBox);
+  bBox.merge(tmpBBox);
+}
+
+
 void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::librevenge::RVNGDrawingInterface *painter)
 {
   if (!painter || !path || path->empty())
@@ -605,44 +755,6 @@ void libfreehand::FHCollector::outputDrawing(::librevenge::RVNGDrawingInterface 
         fprintf(f, "%c",tmpBuffer[k]);
       fclose(f);
     }
-  }
-#endif
-#if DUMP_TILE_FILLS
-  for (std::map<unsigned, FHTileFill>::const_iterator iterFill = m_tileFills.begin(); iterFill != m_tileFills.end(); ++iterFill)
-  {
-    librevenge::RVNGStringVector svgOutput;
-    librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
-    librevenge::RVNGPropertyList propList;
-    propList.insert("svg:width", 100.0);
-    propList.insert("svg:height", 100.0);
-    generator.startPage(propList);
-    const FHTransform *trafo = _findTransform(iterFill->second.m_xFormId);
-    if (trafo)
-      m_currentTransforms.push(*trafo);
-    else
-      m_currentTransforms.push(FHTransform());
-
-    _outputSomething(iterFill->second.m_groupId, &generator);
-    generator.endPage();
-    if (!svgOutput.empty())
-    {
-      const char *header =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
-      librevenge::RVNGBinaryData output((const unsigned char *)header, strlen(header));
-      output.append((unsigned char *)svgOutput[0].cstr(), strlen(svgOutput[0].cstr()));
-      librevenge::RVNGString filename;
-      filename.sprintf("freehandtilefill%.4x.svg", iterFill->first);
-      FILE *f = fopen(filename.cstr(), "wb");
-      if (f)
-      {
-        const unsigned char *tmpBuffer = output.getDataBuffer();
-        for (unsigned long k = 0; k < output.size(); k++)
-          fprintf(f, "%c",tmpBuffer[k]);
-        fclose(f);
-      }
-    }
-    if (!m_currentTransforms.empty())
-      m_currentTransforms.pop();
   }
 #endif
 
@@ -1168,6 +1280,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendLinearFill(propList, _findLinearFill(iter->second));
         _appendLensFill(propList, _findLensFill(iter->second));
         _appendRadialFill(propList, _findRadialFill(iter->second));
+        _appendTileFill(propList, _findTileFill(iter->second));
       }
     }
     else
@@ -1184,6 +1297,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           _appendLinearFill(propList, _findLinearFill(fillId));
           _appendLensFill(propList, _findLensFill(fillId));
           _appendRadialFill(propList, _findRadialFill(fillId));
+          _appendTileFill(propList, _findTileFill(fillId));
         }
         else
         {
@@ -1432,6 +1546,68 @@ void libfreehand::FHCollector::_appendRadialFill(::librevenge::RVNGPropertyList 
   }
 }
 
+void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHTileFill *tileFill)
+{
+  if (!tileFill)
+    return;
+
+  const FHTransform *trafo = _findTransform(tileFill->m_xFormId);
+  if (trafo)
+    m_currentTransforms.push(*trafo);
+  else
+    m_currentTransforms.push(FHTransform());
+
+  FHBoundingBox bBox;
+  _getBBofSomething(tileFill->m_groupId, bBox);
+  if (!FH_ALMOST_ZERO(bBox.m_xmax - bBox.m_xmin) && !FH_ALMOST_ZERO(bBox.m_ymax - bBox.m_ymin))
+  {
+    FHTransform fakeTrafo(1.0, 0.0, 0.0, 1.0, - bBox.m_xmin, -bBox.m_ymin);
+    m_fakeTransforms.push(fakeTrafo);
+
+    librevenge::RVNGStringVector svgOutput;
+    librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
+    librevenge::RVNGPropertyList pList;
+    pList.insert("svg:width", bBox.m_xmax - bBox.m_xmin);
+    pList.insert("svg:height", bBox.m_ymax - bBox.m_ymin);
+    generator.startPage(pList);
+
+    _outputSomething(tileFill->m_groupId, &generator);
+    generator.endPage();
+    if (!svgOutput.empty())
+    {
+      const char *header =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+      librevenge::RVNGBinaryData output((const unsigned char *)header, strlen(header));
+      output.append((unsigned char *)svgOutput[0].cstr(), strlen(svgOutput[0].cstr()));
+#if DUMP_TILE_FILLS
+      {
+        librevenge::RVNGString filename;
+        filename.sprintf("freehandtilefill%.4x.svg", tileFill->m_groupId);
+        FILE *f = fopen(filename.cstr(), "wb");
+        if (f)
+        {
+          const unsigned char *tmpBuffer = output.getDataBuffer();
+          for (unsigned long k = 0; k < output.size(); k++)
+            fprintf(f, "%c",tmpBuffer[k]);
+          fclose(f);
+        }
+      }
+#endif
+      propList.insert("draw:fill", "bitmap");
+      propList.insert("draw:fill-image", output.getBase64Data());
+      propList.insert("librevenge:mime-type", "image/svg+xml");
+      propList.insert("style:repeat", "repeat");
+    }
+    else
+      propList.insert("draw:fill", "none");
+
+    if (!m_fakeTransforms.empty())
+      m_fakeTransforms.pop();
+  }
+  if (!m_currentTransforms.empty())
+    m_currentTransforms.pop();
+}
+
 void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)
 {
   if (!basicLine)
@@ -1581,6 +1757,16 @@ const libfreehand::FHRadialFill *libfreehand::FHCollector::_findRadialFill(unsig
     return 0;
   std::map<unsigned, FHRadialFill>::const_iterator iter = m_radialFills.find(id);
   if (iter != m_radialFills.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHTileFill *libfreehand::FHCollector::_findTileFill(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHTileFill>::const_iterator iter = m_tileFills.find(id);
+  if (iter != m_tileFills.end())
     return &(iter->second);
   return 0;
 }
@@ -1736,7 +1922,7 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
   {
     unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
     // Add other fills if we support them
-    if (_findBasicFill(valueId) || _findLinearFill(valueId) || _findLensFill(valueId) || _findRadialFill(valueId))
+    if (_findBasicFill(valueId) || _findLinearFill(valueId) || _findLensFill(valueId) || _findRadialFill(valueId) || _findTileFill(valueId))
       fillId = valueId;
   }
   return fillId;
