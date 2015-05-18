@@ -2068,10 +2068,10 @@ void libfreehand::FHParser::readTileFill(librevenge::RVNGInputStream *input, lib
   fill.m_xFormId = _readRecordId(input);
   fill.m_groupId = _readRecordId(input);
   input->seek(8, librevenge::RVNG_SEEK_CUR);
-  fill.m_stretchX = _readCoordinate(input) / 72.0;
-  fill.m_stretchY = _readCoordinate(input) / 72.0;
-  fill.m_offsetX = _readCoordinate(input) / 72.0;
-  fill.m_offsetY = _readCoordinate(input) / 72.0;
+  fill.m_stretchX = _readCoordinate(input);
+  fill.m_stretchY = _readCoordinate(input);
+  fill.m_offsetX = _readCoordinate(input);
+  fill.m_offsetY = _readCoordinate(input);
   fill.m_angle = _readCoordinate(input);
   if (collector)
     collector->collectTileFill(m_currentRecord+1, fill);
