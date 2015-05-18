@@ -1551,7 +1551,7 @@ void libfreehand::FHCollector::_appendRadialFill(::librevenge::RVNGPropertyList 
 
 void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHTileFill *tileFill)
 {
-  if (!tileFill)
+  if (!tileFill || !(tileFill->m_groupId))
     return;
 
   const FHTransform *trafo = _findTransform(tileFill->m_xFormId);
@@ -1601,8 +1601,6 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
       propList.insert("librevenge:mime-type", "image/svg+xml");
       propList.insert("style:repeat", "repeat");
     }
-    else
-      propList.insert("draw:fill", "none");
 
     if (!m_fakeTransforms.empty())
       m_fakeTransforms.pop();
