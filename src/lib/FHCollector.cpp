@@ -1564,14 +1564,14 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
   _getBBofSomething(tileFill->m_groupId, bBox);
   if (!FH_ALMOST_ZERO(bBox.m_xmax - bBox.m_xmin) && !FH_ALMOST_ZERO(bBox.m_ymax - bBox.m_ymin))
   {
-    FHTransform fakeTrafo(1.0, 0.0, 0.0, 1.0, - bBox.m_xmin, -bBox.m_ymin);
+    FHTransform fakeTrafo(tileFill->m_stretchX, 0.0, 0.0, tileFill->m_stretchY, - bBox.m_xmin, -bBox.m_ymin);
     m_fakeTransforms.push(fakeTrafo);
 
     librevenge::RVNGStringVector svgOutput;
     librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
     librevenge::RVNGPropertyList pList;
-    pList.insert("svg:width", bBox.m_xmax - bBox.m_xmin);
-    pList.insert("svg:height", bBox.m_ymax - bBox.m_ymin);
+    pList.insert("svg:width", tileFill->m_stretchX * (bBox.m_xmax - bBox.m_xmin));
+    pList.insert("svg:height", tileFill->m_stretchY * (bBox.m_ymax - bBox.m_ymin));
     generator.startPage(pList);
 
     _outputSomething(tileFill->m_groupId, &generator);
