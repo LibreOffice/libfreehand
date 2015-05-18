@@ -579,7 +579,10 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   painter->drawPath(pList);
   if (contentId)
   {
-    double xmin, ymin, xmax, ymax;
+    double xmin = DBL_MAX;
+    double ymin = DBL_MAX;
+    double xmax = -DBL_MAX;
+    double ymax = -DBL_MAX;
     fhPath.getBoundingBox(xmin, ymin, xmax, ymax);
     FHTransform trafo(1.0, 0.0, 0.0, 1.0, - xmin, -ymin);
     m_fakeTransforms.push(trafo);
