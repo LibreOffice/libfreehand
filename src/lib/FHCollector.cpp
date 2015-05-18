@@ -591,7 +591,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
     generator.startPage(propList);
     _outputSomething(contentId, &generator);
     generator.endPage();
-    if (!svgOutput.empty())
+    if (!svgOutput.empty() && svgOutput[0].size() > 140) // basically empty svg if it is not fullfilled
     {
       const char *header =
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
@@ -1576,7 +1576,7 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
 
     _outputSomething(tileFill->m_groupId, &generator);
     generator.endPage();
-    if (!svgOutput.empty())
+    if (!svgOutput.empty() && svgOutput[0].size() > 140) // basically empty svg if it is not fullfilled
     {
       const char *header =
         "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
