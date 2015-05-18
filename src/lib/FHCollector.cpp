@@ -579,18 +579,15 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   painter->drawPath(pList);
   if (contentId)
   {
-    double xmin = DBL_MAX;
-    double ymin = DBL_MAX;
-    double xmax = -DBL_MAX;
-    double ymax = -DBL_MAX;
-    fhPath.getBoundingBox(xmin, ymin, xmax, ymax);
-    FHTransform trafo(1.0, 0.0, 0.0, 1.0, - xmin, -ymin);
+    FHBoundingBox bBox;
+    fhPath.getBoundingBox(bBox.m_xmin, bBox.m_ymin, bBox.m_xmax, bBox.m_ymax);
+    FHTransform trafo(1.0, 0.0, 0.0, 1.0, - bBox.m_xmin, - bBox.m_ymin);
     m_fakeTransforms.push(trafo);
     librevenge::RVNGStringVector svgOutput;
     librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
     propList.clear();
-    propList.insert("svg:width", xmax - xmin);
-    propList.insert("svg:height", ymax - ymin);
+    propList.insert("svg:width", bBox.m_xmax - bBox.m_xmin);
+    propList.insert("svg:height", bBox.m_ymax - bBox.m_ymin);
     generator.startPage(propList);
     _outputSomething(contentId, &generator);
     generator.endPage();
