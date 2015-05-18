@@ -337,13 +337,13 @@ struct FHTileFill
 {
   unsigned m_xFormId;
   unsigned m_groupId;
-  double m_stretchX;
-  double m_stretchY;
+  double m_scaleX;
+  double m_scaleY;
   double m_offsetX;
   double m_offsetY;
   double m_angle;
   FHTileFill()
-    : m_xFormId(0), m_groupId(0), m_stretchX(0.0), m_stretchY(0.0),
+    : m_xFormId(0), m_groupId(0), m_scaleX(0.0), m_scaleY(0.0),
       m_offsetX(0.0), m_offsetY(0.0), m_angle(0.0) {}
 };
 
@@ -372,7 +372,7 @@ struct FHBoundingBox
   double m_ymin;
   double m_xmax;
   double m_ymax;
-  FHBoundingBox() : m_xmin(DBL_MAX), m_ymin(DBL_MAX), m_xmax(DBL_MIN), m_ymax(DBL_MIN) {}
+  FHBoundingBox() : m_xmin(DBL_MAX), m_ymin(DBL_MAX), m_xmax(-DBL_MAX), m_ymax(-DBL_MAX) {}
   FHBoundingBox(const FHBoundingBox &bBox)
     : m_xmin(bBox.m_xmin), m_ymin(bBox.m_ymin), m_xmax(bBox.m_xmax), m_ymax(bBox.m_ymax) {}
   void merge(const FHBoundingBox &bBox)
@@ -385,6 +385,10 @@ struct FHBoundingBox
     if (m_xmax < bBox.m_xmin) m_xmax = bBox.m_xmin;
     if (m_ymax < bBox.m_ymax) m_ymax = bBox.m_ymax;
     if (m_ymax < bBox.m_ymin) m_ymax = bBox.m_ymin;
+  }
+  bool isValid() const
+  {
+    return ((m_xmin < m_xmax) && (m_ymin < m_ymax));
   }
 };
 

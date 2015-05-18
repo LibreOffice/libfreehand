@@ -408,7 +408,7 @@ void libfreehand::FHCollector::_getBBofPath(const FHPath *path, libfreehand::FHB
   if (!m_fakeTransforms.empty())
     fhPath.transform(m_fakeTransforms.top());
 
-  FHBoundingBox tmpBBox(bBox);
+  FHBoundingBox tmpBBox;
   fhPath.getBoundingBox(tmpBBox.m_xmin, tmpBBox.m_ymin, tmpBBox.m_xmax, tmpBBox.m_ymax);
   bBox.merge(tmpBBox);
 }
@@ -438,7 +438,7 @@ void libfreehand::FHCollector::_getBBofGroup(const FHGroup *group, libfreehand::
 
   for (std::vector<unsigned>::const_iterator iterVec = elements->begin(); iterVec != elements->end(); ++iterVec)
   {
-    FHBoundingBox tmpBBox(bBox);
+    FHBoundingBox tmpBBox;
     _getBBofSomething(*iterVec, tmpBBox);
     bBox.merge(tmpBBox);
   }
@@ -475,7 +475,7 @@ void libfreehand::FHCollector::_getBBofCompositePath(const FHCompositePath *comp
           fhPath.setGraphicStyleId(compositePath->m_graphicStyleId);
       }
     }
-    FHBoundingBox tmpBBox(bBox);
+    FHBoundingBox tmpBBox;
     _getBBofPath(&fhPath, tmpBBox);
     bBox.merge(tmpBBox);
   }
@@ -507,7 +507,7 @@ void libfreehand::FHCollector::_getBBofSymbolInstance(const FHSymbolInstance *sy
   const FHSymbolClass *symbolClass = _findSymbolClass(symbolInstance->m_symbolClassId);
   if (symbolClass)
   {
-    FHBoundingBox tmpBBox(bBox);
+    FHBoundingBox tmpBBox;
     _getBBofSomething(symbolClass->m_groupId, tmpBBox);
     bBox.merge(tmpBBox);
   }
@@ -521,7 +521,7 @@ void libfreehand::FHCollector::_getBBofSomething(unsigned somethingId, libfreeha
   if (!somethingId)
     return;
 
-  FHBoundingBox tmpBBox(bBox);
+  FHBoundingBox tmpBBox;
   _getBBofGroup(_findGroup(somethingId), tmpBBox);
   _getBBofPath(_findPath(somethingId), tmpBBox);
   _getBBofCompositePath(_findCompositePath(somethingId), tmpBBox);
@@ -1562,16 +1562,16 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
 
   FHBoundingBox bBox;
   _getBBofSomething(tileFill->m_groupId, bBox);
-  if (!FH_ALMOST_ZERO(bBox.m_xmax - bBox.m_xmin) && !FH_ALMOST_ZERO(bBox.m_ymax - bBox.m_ymin))
+  if (bBox.isValid() && !FH_ALMOST_ZERO(bBox.m_xmax - bBox.m_xmin) && !FH_ALMOST_ZERO(bBox.m_ymax - bBox.m_ymin))
   {
-    FHTransform fakeTrafo(tileFill->m_stretchX, 0.0, 0.0, tileFill->m_stretchY, - bBox.m_xmin, -bBox.m_ymin);
+    FHTransform fakeTrafo(tileFill->m_scaleX, 0.0, 0.0, tileFill->m_scaleY, - bBox.m_xmin, -bBox.m_ymin);
     m_fakeTransforms.push(fakeTrafo);
 
     librevenge::RVNGStringVector svgOutput;
     librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
     librevenge::RVNGPropertyList pList;
-    pList.insert("svg:width", tileFill->m_stretchX * (bBox.m_xmax - bBox.m_xmin));
-    pList.insert("svg:height", tileFill->m_stretchY * (bBox.m_ymax - bBox.m_ymin));
+    pList.insert("svg:width", tileFill->m_scaleX * (bBox.m_xmax - bBox.m_xmin));
+    pList.insert("svg:height", tileFill->m_scaleY * (bBox.m_ymax - bBox.m_ymin));
     generator.startPage(pList);
 
     _outputSomething(tileFill->m_groupId, &generator);
