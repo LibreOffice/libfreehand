@@ -35,6 +35,68 @@
 
 namespace
 {
+bool isTiff(const unsigned char *buffer, unsigned long size)
+{
+  if (size < 4)
+    return false;
+  if (buffer[0] == 0x49 && buffer[1] == 0x49 && buffer[2] == 0x2a && buffer[3] == 0x00)
+    return true;
+  if (buffer[0] == 0x4d && buffer[1] == 0x4d && buffer[2] == 0x00 && buffer[3] == 0x2a)
+    return true;
+  return false;
+}
+
+bool isBmp(const unsigned char *buffer, unsigned long size)
+{
+  if (size < 6)
+    return false;
+  if (buffer[0] != 0x42)
+    return false;
+  if (buffer[1] != 0x4d)
+    return false;
+  unsigned bufferSize = ((unsigned long)buffer[2] + ((unsigned long)buffer[3] << 8) + ((unsigned long)buffer[4] << 8) + ((unsigned long)buffer[5] << 8));
+  if (bufferSize != size)
+    return false;
+  return true;
+}
+
+bool isJpeg(const unsigned char *buffer, unsigned long size)
+{
+  if (size < 4)
+    return false;
+  if (buffer[0] != 0xff)
+    return false;
+  if (buffer[1] != 0xd8)
+    return false;
+  if (buffer[size-2] != 0xff)
+    return false;
+  if (buffer[size-1] != 0xd9)
+    return false;
+  return true;
+}
+
+bool isPng(const unsigned char *buffer, unsigned long size)
+{
+  if (size < 8)
+    return false;
+  if (buffer[0] != 0x89)
+    return false;
+  if (buffer[1] != 0x50)
+    return false;
+  if (buffer[2] != 0x4e)
+    return false;
+  if (buffer[3] != 0x47)
+    return false;
+  if (buffer[4] != 0x0d)
+    return false;
+  if (buffer[5] != 0x0a)
+    return false;
+  if (buffer[6] != 0x1a)
+    return false;
+  if (buffer[7] != 0x0a)
+    return false;
+  return true;
+}
 
 librevenge::RVNGString _getColorString(const libfreehand::FHRGBColor &color)
 {
@@ -1212,6 +1274,18 @@ void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::
 
   if (data.empty())
     return;
+
+  const unsigned char *buffer = data.getDataBuffer();
+  unsigned long size = data.size();
+  if (isTiff(buffer, size))
+    imageProps.insert("librevenge:mime-type", "image/tiff");
+  else if (isBmp(buffer, size))
+    imageProps.insert("librevenge:mime-type", "image/bmp");
+  else if (isJpeg(buffer, size))
+    imageProps.insert("librevenge:mime-type", "image/jpeg");
+  else if (isPng(buffer, size))
+    imageProps.insert("librevenge:mime-type", "image/png");
+
   imageProps.insert("office:binary-data", data);
   painter->setStyle(propList);
   painter->drawGraphicObject(imageProps);
