@@ -467,8 +467,12 @@ void libfreehand::FHCollector::_getBBofPath(const FHPath *path, libfreehand::FHB
     groupTransforms.pop();
   }
   _normalizePath(fhPath);
-  if (!m_fakeTransforms.empty())
-    fhPath.transform(m_fakeTransforms.top());
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
+  {
+    fhPath.transform(fakeTransforms.top());
+    fakeTransforms.pop();
+  }
 
   FHBoundingBox tmpBBox;
   fhPath.getBoundingBox(tmpBBox.m_xmin, tmpBBox.m_ymin, tmpBBox.m_xmax, tmpBBox.m_ymax);
@@ -543,16 +547,220 @@ void libfreehand::FHCollector::_getBBofCompositePath(const FHCompositePath *comp
   }
 }
 
-void libfreehand::FHCollector::_getBBofTextObject(const FHTextObject * /* textObject */, libfreehand::FHBoundingBox & /* bBox */)
+void libfreehand::FHCollector::_getBBofTextObject(const FHTextObject *textObject, libfreehand::FHBoundingBox &bBox)
 {
+  if (!textObject)
+    return;
+
+  double xa = textObject->m_startX;
+  double ya = textObject->m_startY;
+  double xb = textObject->m_startX + textObject->m_width;
+  double yb = textObject->m_startY + textObject->m_height;
+  double xc = xa;
+  double yc = yb;
+  double xd = xb;
+  double yd = ya;
+  unsigned xFormId = textObject->m_xFormId;
+  if (xFormId)
+  {
+    const FHTransform *trafo = _findTransform(xFormId);
+    if (trafo)
+    {
+      trafo->applyToPoint(xa, ya);
+      trafo->applyToPoint(xb, yb);
+      trafo->applyToPoint(xc, yc);
+      trafo->applyToPoint(xd, yd);
+    }
+  }
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
+  {
+    groupTransforms.top().applyToPoint(xa, ya);
+    groupTransforms.top().applyToPoint(xb, yb);
+    groupTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.top().applyToPoint(xd, yd);
+    groupTransforms.pop();
+  }
+  _normalizePoint(xa, ya);
+  _normalizePoint(xb, yb);
+  _normalizePoint(xc, yc);
+  _normalizePoint(xd, yd);
+
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
+  {
+    fakeTransforms.top().applyToPoint(xa, ya);
+    fakeTransforms.top().applyToPoint(xb, yb);
+    fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.top().applyToPoint(xd, yd);
+    fakeTransforms.pop();
+  }
+
+  FHBoundingBox tmpBBox;
+  if (xa < tmpBBox.m_xmin) tmpBBox.m_xmin = xa;
+  if (xb < tmpBBox.m_xmin) tmpBBox.m_xmin = xb;
+  if (xc < tmpBBox.m_xmin) tmpBBox.m_xmin = xc;
+  if (xd < tmpBBox.m_xmin) tmpBBox.m_xmin = xd;
+
+  if (xa > tmpBBox.m_xmax) tmpBBox.m_xmax = xa;
+  if (xb > tmpBBox.m_xmax) tmpBBox.m_xmax = xb;
+  if (xc > tmpBBox.m_xmax) tmpBBox.m_xmax = xc;
+  if (xd > tmpBBox.m_xmax) tmpBBox.m_xmax = xd;
+
+  if (ya < tmpBBox.m_ymin) tmpBBox.m_ymin = ya;
+  if (yb < tmpBBox.m_ymin) tmpBBox.m_ymin = yb;
+  if (yc < tmpBBox.m_ymin) tmpBBox.m_ymin = yc;
+  if (yd < tmpBBox.m_ymin) tmpBBox.m_ymin = yd;
+
+  if (ya > tmpBBox.m_ymax) tmpBBox.m_ymax = ya;
+  if (yb > tmpBBox.m_ymax) tmpBBox.m_ymax = yb;
+  if (yc > tmpBBox.m_ymax) tmpBBox.m_ymax = yc;
+  if (yd > tmpBBox.m_ymax) tmpBBox.m_ymax = yd;
+  bBox.merge(tmpBBox);
 }
 
-void libfreehand::FHCollector::_getBBofDisplayText(const FHDisplayText * /* displayText */, libfreehand::FHBoundingBox & /* bBox */)
+void libfreehand::FHCollector::_getBBofDisplayText(const FHDisplayText *displayText, libfreehand::FHBoundingBox &bBox)
 {
+  if (!displayText)
+    return;
+
+  double xa = displayText->m_startX;
+  double ya = displayText->m_startY;
+  double xb = displayText->m_startX + displayText->m_width;
+  double yb = displayText->m_startY + displayText->m_height;
+  double xc = xa;
+  double yc = yb;
+  double xd = xb;
+  double yd = ya;
+  unsigned xFormId = displayText->m_xFormId;
+  if (xFormId)
+  {
+    const FHTransform *trafo = _findTransform(xFormId);
+    if (trafo)
+    {
+      trafo->applyToPoint(xa, ya);
+      trafo->applyToPoint(xb, yb);
+      trafo->applyToPoint(xc, yc);
+      trafo->applyToPoint(xd, yd);
+    }
+  }
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
+  {
+    groupTransforms.top().applyToPoint(xa, ya);
+    groupTransforms.top().applyToPoint(xb, yb);
+    groupTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.top().applyToPoint(xd, yd);
+    groupTransforms.pop();
+  }
+  _normalizePoint(xa, ya);
+  _normalizePoint(xb, yb);
+  _normalizePoint(xc, yc);
+  _normalizePoint(xd, yd);
+
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
+  {
+    fakeTransforms.top().applyToPoint(xa, ya);
+    fakeTransforms.top().applyToPoint(xb, yb);
+    fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.top().applyToPoint(xd, yd);
+    fakeTransforms.pop();
+  }
+
+  FHBoundingBox tmpBBox;
+  if (xa < tmpBBox.m_xmin) tmpBBox.m_xmin = xa;
+  if (xb < tmpBBox.m_xmin) tmpBBox.m_xmin = xb;
+  if (xc < tmpBBox.m_xmin) tmpBBox.m_xmin = xc;
+  if (xd < tmpBBox.m_xmin) tmpBBox.m_xmin = xd;
+
+  if (xa > tmpBBox.m_xmax) tmpBBox.m_xmax = xa;
+  if (xb > tmpBBox.m_xmax) tmpBBox.m_xmax = xb;
+  if (xc > tmpBBox.m_xmax) tmpBBox.m_xmax = xc;
+  if (xd > tmpBBox.m_xmax) tmpBBox.m_xmax = xd;
+
+  if (ya < tmpBBox.m_ymin) tmpBBox.m_ymin = ya;
+  if (yb < tmpBBox.m_ymin) tmpBBox.m_ymin = yb;
+  if (yc < tmpBBox.m_ymin) tmpBBox.m_ymin = yc;
+  if (yd < tmpBBox.m_ymin) tmpBBox.m_ymin = yd;
+
+  if (ya > tmpBBox.m_ymax) tmpBBox.m_ymax = ya;
+  if (yb > tmpBBox.m_ymax) tmpBBox.m_ymax = yb;
+  if (yc > tmpBBox.m_ymax) tmpBBox.m_ymax = yc;
+  if (yd > tmpBBox.m_ymax) tmpBBox.m_ymax = yd;
+  bBox.merge(tmpBBox);
 }
 
-void libfreehand::FHCollector::_getBBofImageImport(const FHImageImport * /* image */, libfreehand::FHBoundingBox & /* bBox */)
+void libfreehand::FHCollector::_getBBofImageImport(const FHImageImport *image, libfreehand::FHBoundingBox &bBox)
 {
+  if (!image)
+    return;
+
+  double xa = image->m_startX;
+  double ya = image->m_startY;
+  double xb = image->m_startX + image->m_width;
+  double yb = image->m_startY + image->m_height;
+  double xc = xa;
+  double yc = yb;
+  double xd = xb;
+  double yd = ya;
+  unsigned xFormId = image->m_xFormId;
+  if (xFormId)
+  {
+    const FHTransform *trafo = _findTransform(xFormId);
+    if (trafo)
+    {
+      trafo->applyToPoint(xa, ya);
+      trafo->applyToPoint(xb, yb);
+      trafo->applyToPoint(xc, yc);
+      trafo->applyToPoint(xd, yd);
+    }
+  }
+  std::stack<FHTransform> groupTransforms(m_currentTransforms);
+  while (!groupTransforms.empty())
+  {
+    groupTransforms.top().applyToPoint(xa, ya);
+    groupTransforms.top().applyToPoint(xb, yb);
+    groupTransforms.top().applyToPoint(xc, yc);
+    groupTransforms.top().applyToPoint(xd, yd);
+    groupTransforms.pop();
+  }
+  _normalizePoint(xa, ya);
+  _normalizePoint(xb, yb);
+  _normalizePoint(xc, yc);
+  _normalizePoint(xd, yd);
+
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
+  {
+    fakeTransforms.top().applyToPoint(xa, ya);
+    fakeTransforms.top().applyToPoint(xb, yb);
+    fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.top().applyToPoint(xd, yd);
+    fakeTransforms.pop();
+  }
+
+  FHBoundingBox tmpBBox;
+  if (xa < tmpBBox.m_xmin) tmpBBox.m_xmin = xa;
+  if (xb < tmpBBox.m_xmin) tmpBBox.m_xmin = xb;
+  if (xc < tmpBBox.m_xmin) tmpBBox.m_xmin = xc;
+  if (xd < tmpBBox.m_xmin) tmpBBox.m_xmin = xd;
+
+  if (xa > tmpBBox.m_xmax) tmpBBox.m_xmax = xa;
+  if (xb > tmpBBox.m_xmax) tmpBBox.m_xmax = xb;
+  if (xc > tmpBBox.m_xmax) tmpBBox.m_xmax = xc;
+  if (xd > tmpBBox.m_xmax) tmpBBox.m_xmax = xd;
+
+  if (ya < tmpBBox.m_ymin) tmpBBox.m_ymin = ya;
+  if (yb < tmpBBox.m_ymin) tmpBBox.m_ymin = yb;
+  if (yc < tmpBBox.m_ymin) tmpBBox.m_ymin = yc;
+  if (yd < tmpBBox.m_ymin) tmpBBox.m_ymin = yd;
+
+  if (ya > tmpBBox.m_ymax) tmpBBox.m_ymax = ya;
+  if (yb > tmpBBox.m_ymax) tmpBBox.m_ymax = yb;
+  if (yc > tmpBBox.m_ymax) tmpBBox.m_ymax = yc;
+  if (yd > tmpBBox.m_ymax) tmpBBox.m_ymax = yd;
+  bBox.merge(tmpBBox);
 }
 
 void libfreehand::FHCollector::_getBBofNewBlend(const FHNewBlend * /* newBlend */, libfreehand::FHBoundingBox & /* bBox */)
@@ -624,8 +832,13 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
     groupTransforms.pop();
   }
   _normalizePath(fhPath);
-  if (!m_fakeTransforms.empty())
-    fhPath.transform(m_fakeTransforms.top());
+
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
+  {
+    fhPath.transform(fakeTransforms.top());
+    fakeTransforms.pop();
+  }
 
   librevenge::RVNGPropertyListVector propVec;
   fhPath.writeOut(propVec);
@@ -959,11 +1172,13 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
 
-  if (!m_fakeTransforms.empty())
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
   {
-    m_fakeTransforms.top().applyToPoint(xa, ya);
-    m_fakeTransforms.top().applyToPoint(xb, yb);
-    m_fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.top().applyToPoint(xa, ya);
+    fakeTransforms.top().applyToPoint(xb, yb);
+    fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.pop();
   }
 
   double rotation = atan2(yb-yc, xb-xc);
@@ -1106,11 +1321,13 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
 
-  if (!m_fakeTransforms.empty())
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
   {
-    m_fakeTransforms.top().applyToPoint(xa, ya);
-    m_fakeTransforms.top().applyToPoint(xb, yb);
-    m_fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.top().applyToPoint(xa, ya);
+    fakeTransforms.top().applyToPoint(xb, yb);
+    fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.pop();
   }
 
   double rotation = atan2(yb-yc, xb-xc);
@@ -1255,6 +1472,15 @@ void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
+  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+  while (!fakeTransforms.empty())
+  {
+    fakeTransforms.top().applyToPoint(xa, ya);
+    fakeTransforms.top().applyToPoint(xb, yb);
+    fakeTransforms.top().applyToPoint(xc, yc);
+    fakeTransforms.pop();
+  }
+
   double rotation = atan2(yb-yc, xb-xc);
   double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
   double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
