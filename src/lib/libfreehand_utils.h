@@ -85,6 +85,9 @@ int8_t readS8(librevenge::RVNGInputStream *input);
 int16_t readS16(librevenge::RVNGInputStream *input);
 int32_t readS32(librevenge::RVNGInputStream *input);
 
+void writeU16(librevenge::RVNGBinaryData &buffer, const int value);
+void writeU32(librevenge::RVNGBinaryData &buffer, const int value);
+
 void _appendUTF16(librevenge::RVNGString &text, std::vector<unsigned short> &characters);
 void _appendMacRoman(librevenge::RVNGString &text, unsigned char character);
 

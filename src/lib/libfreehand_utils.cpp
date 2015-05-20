@@ -103,7 +103,8 @@ uint32_t libfreehand::readU32(librevenge::RVNGInputStream *input)
   uint8_t const *p = input->read(sizeof(uint32_t), numBytesRead);
 
   if (p && numBytesRead == sizeof(uint32_t))
-    return (uint32_t)p[3]|((uint32_t)p[2]<<8)|((uint32_t)p[1]<<16)|((uint32_t)p[0]<<24);
+    return (uint32_t)p[3]|((uint32_t)p[2]<<8)
+           |((uint32_t)p[1]<<16)|((uint32_t)p[0]<<24);
 
   FH_DEBUG_MSG(("Throwing EndOfStreamException\n"));
   throw EndOfStreamException();
@@ -134,6 +135,20 @@ void libfreehand::_appendUTF16(librevenge::RVNGString &text, std::vector<unsigne
 
     text.append((char *)outbuf);
   }
+}
+
+void libfreehand::writeU16(librevenge::RVNGBinaryData &buffer, const int value)
+{
+  buffer.append((unsigned char)(value & 0xFF));
+  buffer.append((unsigned char)((value >> 8) & 0xFF));
+}
+
+void libfreehand::writeU32(librevenge::RVNGBinaryData &buffer, const int value)
+{
+  buffer.append((unsigned char)(value & 0xFF));
+  buffer.append((unsigned char)((value >> 8) & 0xFF));
+  buffer.append((unsigned char)((value >> 16) & 0xFF));
+  buffer.append((unsigned char)((value >> 24) & 0xFF));
 }
 
 void libfreehand::_appendMacRoman(librevenge::RVNGString &text, unsigned char character)

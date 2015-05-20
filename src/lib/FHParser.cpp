@@ -1588,9 +1588,14 @@ void libfreehand::FHParser::readPathTextLineInfo(librevenge::RVNGInputStream *in
   input->seek(46, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readPatternFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readPatternFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(10, librevenge::RVNG_SEEK_CUR);
+  FHPatternFill fill;
+  fill.m_colorId = _readRecordId(input);
+  for (unsigned i = 0; i < 8; ++i)
+    fill.m_pattern[i] = readU8(input);
+  if (collector)
+    collector->collectPatternFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readPatternLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

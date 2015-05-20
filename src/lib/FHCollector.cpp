@@ -214,7 +214,7 @@ libfreehand::FHCollector::FHCollector() :
   m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
   m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(),
-  m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(),
+  m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
   m_strokeId(0), m_fillId(0), m_contentId(0)
 {
 }
@@ -342,6 +342,11 @@ void libfreehand::FHCollector::collectBasicLine(unsigned recordId, const FHBasic
 void libfreehand::FHCollector::collectTileFill(unsigned recordId, const FHTileFill &fill)
 {
   m_tileFills[recordId] = fill;
+}
+
+void libfreehand::FHCollector::collectPatternFill(unsigned recordId, const FHPatternFill &fill)
+{
+  m_patternFills[recordId] = fill;
 }
 
 void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropList &propertyList)
@@ -1584,6 +1589,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendLensFill(propList, _findLensFill(iter->second));
         _appendRadialFill(propList, _findRadialFill(iter->second));
         _appendTileFill(propList, _findTileFill(iter->second));
+        _appendPatternFill(propList, _findPatternFill(iter->second));
       }
     }
     else
@@ -1601,6 +1607,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           _appendLensFill(propList, _findLensFill(fillId));
           _appendRadialFill(propList, _findRadialFill(fillId));
           _appendTileFill(propList, _findTileFill(fillId));
+          _appendPatternFill(propList, _findPatternFill(fillId));
         }
         else
         {
@@ -1909,6 +1916,18 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
     m_currentTransforms.pop();
 }
 
+void libfreehand::FHCollector::_appendPatternFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHPatternFill *patternFill)
+{
+  if (!patternFill)
+    return;
+  librevenge::RVNGBinaryData output;
+  _generateBitmapFromPattern(output, patternFill->m_colorId, patternFill->m_pattern);
+  propList.insert("draw:fill", "bitmap");
+  propList.insert("draw:fill-image", output.getBase64Data());
+  propList.insert("librevenge:mime-type", "image/bmp");
+  propList.insert("style:repeat", "repeat");
+}
+
 void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)
 {
   if (!basicLine)
@@ -2072,6 +2091,16 @@ const libfreehand::FHTileFill *libfreehand::FHCollector::_findTileFill(unsigned 
   return 0;
 }
 
+const libfreehand::FHPatternFill *libfreehand::FHCollector::_findPatternFill(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHPatternFill>::const_iterator iter = m_patternFills.find(id);
+  if (iter != m_patternFills.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
 {
   if (!id)
@@ -2088,6 +2117,16 @@ const libfreehand::FHRGBColor *libfreehand::FHCollector::_findRGBColor(unsigned 
     return 0;
   std::map<unsigned, FHRGBColor>::const_iterator iter = m_rgbColors.find(id);
   if (iter != m_rgbColors.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHTintColor *libfreehand::FHCollector::_findTintColor(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHTintColor>::const_iterator iter = m_tints.find(id);
+  if (iter != m_tints.end())
     return &(iter->second);
   return 0;
 }
@@ -2223,7 +2262,9 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
   {
     unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
     // Add other fills if we support them
-    if (_findBasicFill(valueId) || _findLinearFill(valueId) || _findLensFill(valueId) || _findRadialFill(valueId) || _findTileFill(valueId))
+    if (_findBasicFill(valueId) || _findLinearFill(valueId)
+        || _findLensFill(valueId) || _findRadialFill(valueId)
+        || _findTileFill(valueId) || _findPatternFill(valueId))
       fillId = valueId;
   }
   return fillId;
@@ -2283,29 +2324,90 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
   const FHRGBColor *color = _findRGBColor(id);
   if (color)
     return _getColorString(*color);
-  std::map<unsigned, FHTintColor>::const_iterator iterTint = m_tints.find(id);
-  if (iterTint != m_tints.end())
-    return getRGBFromTint(iterTint->second);
+  const FHTintColor *tint = _findTintColor(id);
+  if (tint)
+    return _getColorString(getRGBFromTint(*tint));
   return ::librevenge::RVNGString();
 }
 
-::librevenge::RVNGString libfreehand::FHCollector::getRGBFromTint(const FHTintColor &tint)
+libfreehand::FHRGBColor libfreehand::FHCollector::getRGBFromTint(const FHTintColor &tint)
 {
   if (!tint.m_baseColorId)
-    return librevenge::RVNGString();
+    return FHRGBColor();
   const FHRGBColor *rgbColor = _findRGBColor(tint.m_baseColorId);
-  if (rgbColor)
-  {
-    unsigned red = rgbColor->m_red * tint.m_tint + (65536 - tint.m_tint) * 65536;
-    unsigned green = rgbColor->m_green * tint.m_tint + (65536 - tint.m_tint) * 65536;
-    unsigned blue = rgbColor->m_blue * tint.m_tint + (65536 - tint.m_tint) * 65536;
-    FHRGBColor color;
-    color.m_red = (red >> 16);
-    color.m_green = (green >> 16);
-    color.m_blue = (blue >> 16);
-    return _getColorString(color);
-  }
-  return getColorString(tint.m_baseColorId);
+  if (!rgbColor)
+    return FHRGBColor();
+  unsigned red = rgbColor->m_red * tint.m_tint + (65536 - tint.m_tint) * 65536;
+  unsigned green = rgbColor->m_green * tint.m_tint + (65536 - tint.m_tint) * 65536;
+  unsigned blue = rgbColor->m_blue * tint.m_tint + (65536 - tint.m_tint) * 65536;
+  FHRGBColor color;
+  color.m_red = (red >> 16);
+  color.m_green = (green >> 16);
+  color.m_blue = (blue >> 16);
+  return color;
 }
+
+void libfreehand::FHCollector::_generateBitmapFromPattern(librevenge::RVNGBinaryData &bitmap, unsigned colorId, const std::vector<unsigned char> &pattern)
+{
+  unsigned height = 8;
+  unsigned width = 8;
+  unsigned tmpPixelSize = (unsigned)(height * width);
+
+  unsigned tmpDIBImageSize = tmpPixelSize * 4;
+
+  unsigned tmpDIBOffsetBits = 14 + 40;
+  unsigned tmpDIBFileSize = tmpDIBOffsetBits + tmpDIBImageSize;
+
+  // Create DIB file header
+  writeU16(bitmap, 0x4D42);  // Type
+  writeU32(bitmap, (int)tmpDIBFileSize); // Size
+  writeU16(bitmap, 0); // Reserved1
+  writeU16(bitmap, 0); // Reserved2
+  writeU32(bitmap, (int)tmpDIBOffsetBits); // OffsetBits
+
+  // Create DIB Info header
+  writeU32(bitmap, 40); // Size
+
+  writeU32(bitmap, (int)width);  // Width
+  writeU32(bitmap, (int)height); // Height
+
+  writeU16(bitmap, 1); // Planes
+  writeU16(bitmap, 32); // BitCount
+  writeU32(bitmap, 0); // Compression
+  writeU32(bitmap, (int)tmpDIBImageSize); // SizeImage
+  writeU32(bitmap, 0); // XPelsPerMeter
+  writeU32(bitmap, 0); // YPelsPerMeter
+  writeU32(bitmap, 0); // ColorsUsed
+  writeU32(bitmap, 0); // ColorsImportant
+
+  unsigned foreground = 0x000000; // Initialize to black and override after
+  unsigned background = 0xffffff; // Initialize to white, since that is Freehand behaviour even if overlapping other colors
+
+  const FHRGBColor *color = _findRGBColor(colorId);
+  if (color)
+    foreground = ((unsigned)(color->m_red & 0xff00) << 8)|((unsigned)color->m_green & 0xff00)|((unsigned)color->m_blue >> 8);
+  else
+  {
+    const FHTintColor *tintColor = _findTintColor(colorId);
+    if (tintColor)
+    {
+      FHRGBColor rgbColor = getRGBFromTint(*tintColor);
+      foreground = ((unsigned)(rgbColor.m_red & 0xff00) << 8)|((unsigned)rgbColor.m_green & 0xff00)|((unsigned)rgbColor.m_blue >> 8);
+    }
+  }
+  for (unsigned j = height; j > 0; --j)
+  {
+    unsigned char c(pattern[j-1]);
+    for (unsigned i = 0; i < width; ++i)
+    {
+      if (c & 0x80)
+        writeU32(bitmap, foreground);
+      else
+        writeU32(bitmap, background);
+      c <<= 1;
+    }
+  }
+}
+
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */

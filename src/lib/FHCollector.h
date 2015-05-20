@@ -69,6 +69,7 @@ public:
   void collectRadialFill(unsigned recordId, const FHRadialFill &fill);
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
   void collectTileFill(unsigned recordId, const FHTileFill &fill);
+  void collectPatternFill(unsigned recordId, const FHPatternFill &fill);
 
   void collectSymbolClass(unsigned recordId, const FHSymbolClass &symbolClass);
   void collectSymbolInstance(unsigned recordId, const FHSymbolInstance &symbolInstance);
@@ -121,6 +122,7 @@ private:
   void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
   void _appendRadialFill(::librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
   void _appendTileFill(::librevenge::RVNGPropertyList &propList, const FHTileFill *tileFill);
+  void _appendPatternFill(::librevenge::RVNGPropertyList &propList, const FHPatternFill *patternFill);
   void _appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity);
   void _appendShadow(::librevenge::RVNGPropertyList &propList, const FWShadowFilter *filter);
   void _appendGlow(::librevenge::RVNGPropertyList &propList, const FWGlowFilter *filter);
@@ -141,8 +143,10 @@ private:
   const FHLensFill *_findLensFill(unsigned id);
   const FHRadialFill *_findRadialFill(unsigned id);
   const FHTileFill *_findTileFill(unsigned id);
+  const FHPatternFill *_findPatternFill(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
   const FHRGBColor *_findRGBColor(unsigned id);
+  const FHTintColor *_findTintColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
   const FHImageImport *_findImageImport(unsigned id);
   const FHNewBlend *_findNewBlend(unsigned id);
@@ -161,7 +165,8 @@ private:
   unsigned _findContentId(unsigned graphicStyleId);
   const std::vector<FHColorStop> *_findMultiColorList(unsigned id);
   ::librevenge::RVNGBinaryData getImageData(unsigned id);
-  ::librevenge::RVNGString getRGBFromTint(const FHTintColor &tint);
+  FHRGBColor getRGBFromTint(const FHTintColor &tint);
+  void _generateBitmapFromPattern(librevenge::RVNGBinaryData &bitmap, unsigned colorId, const std::vector<unsigned char> &pattern);
 
   FHPageInfo m_pageInfo;
   FHTail m_fhTail;
@@ -205,6 +210,7 @@ private:
   std::map<unsigned, FHTileFill> m_tileFills;
   std::map<unsigned, FHSymbolClass> m_symbolClasses;
   std::map<unsigned, FHSymbolInstance> m_symbolInstances;
+  std::map<unsigned, FHPatternFill> m_patternFills;
 
   unsigned m_strokeId;
   unsigned m_fillId;
