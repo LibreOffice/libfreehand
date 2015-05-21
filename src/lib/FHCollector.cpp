@@ -284,6 +284,11 @@ void libfreehand::FHCollector::collectGroup(unsigned recordId, const libfreehand
   m_groups[recordId] = group;
 }
 
+void libfreehand::FHCollector::collectClipGroup(unsigned recordId, const libfreehand::FHGroup &group)
+{
+  m_clipGroups[recordId] = group;
+}
+
 void libfreehand::FHCollector::collectCompositePath(unsigned recordId, const libfreehand::FHCompositePath &compositePath)
 {
   m_compositePaths[recordId] = compositePath;
@@ -513,6 +518,38 @@ void libfreehand::FHCollector::_getBBofGroup(const FHGroup *group, libfreehand::
     _getBBofSomething(*iterVec, tmpBBox);
     bBox.merge(tmpBBox);
   }
+
+  if (!m_currentTransforms.empty())
+    m_currentTransforms.pop();
+}
+
+void libfreehand::FHCollector::_getBBofClipGroup(const FHGroup *group, libfreehand::FHBoundingBox &bBox)
+{
+  if (!group)
+    return;
+
+  if (group->m_xFormId)
+  {
+    const FHTransform *trafo = _findTransform(group->m_xFormId);
+    if (trafo)
+      m_currentTransforms.push(*trafo);
+    else
+      m_currentTransforms.push(libfreehand::FHTransform());
+  }
+  else
+    m_currentTransforms.push(libfreehand::FHTransform());
+
+  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
+  if (!elements)
+  {
+    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
+    return;
+  }
+
+  std::vector<unsigned>::const_iterator iterVec = elements->begin();
+  FHBoundingBox tmpBBox;
+  _getBBofSomething(*iterVec, tmpBBox);
+  bBox.merge(tmpBBox);
 
   if (!m_currentTransforms.empty())
     m_currentTransforms.pop();
@@ -798,6 +835,7 @@ void libfreehand::FHCollector::_getBBofSomething(unsigned somethingId, libfreeha
 
   FHBoundingBox tmpBBox;
   _getBBofGroup(_findGroup(somethingId), tmpBBox);
+  _getBBofClipGroup(_findClipGroup(somethingId), tmpBBox);
   _getBBofPath(_findPath(somethingId), tmpBBox);
   _getBBofCompositePath(_findCompositePath(somethingId), tmpBBox);
   _getBBofTextObject(_findTextObject(somethingId), tmpBBox);
@@ -928,6 +966,7 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::libreven
     return;
 
   _outputGroup(_findGroup(somethingId), painter);
+  _outputClipGroup(_findClipGroup(somethingId), painter);
   _outputPath(_findPath(somethingId), painter);
   _outputCompositePath(_findCompositePath(somethingId), painter);
   _outputTextObject(_findTextObject(somethingId), painter);
@@ -970,6 +1009,109 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, :
 
   if (!m_currentTransforms.empty())
     m_currentTransforms.pop();
+}
+
+void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *group, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !group)
+    return;
+
+  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
+  if (!elements)
+  {
+    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
+    return;
+  }
+
+  if (!elements->empty())
+  {
+    std::vector<unsigned>::const_iterator iter = elements->begin();
+    const FHPath *path = _findPath(*iter);
+    if (!path)
+      _outputGroup(group, painter);
+    else
+    {
+      if (group->m_xFormId)
+      {
+        const FHTransform *trafo = _findTransform(group->m_xFormId);
+        if (trafo)
+          m_currentTransforms.push(*trafo);
+        else
+          m_currentTransforms.push(libfreehand::FHTransform());
+      }
+      else
+        m_currentTransforms.push(libfreehand::FHTransform());
+
+      librevenge::RVNGPropertyList propList;
+      FHPath fhPath(*path);
+      _appendStrokeProperties(propList, fhPath.getGraphicStyleId());
+      _appendFillProperties(propList, fhPath.getGraphicStyleId());
+      if (fhPath.getEvenOdd())
+        propList.insert("svg:fill-rule", "evenodd");
+      unsigned short xform = fhPath.getXFormId();
+
+      if (xform)
+      {
+        const FHTransform *trafo = _findTransform(xform);
+        if (trafo)
+          fhPath.transform(*trafo);
+      }
+      std::stack<FHTransform> groupTransforms(m_currentTransforms);
+      while (!groupTransforms.empty())
+      {
+        fhPath.transform(groupTransforms.top());
+        groupTransforms.pop();
+      }
+      _normalizePath(fhPath);
+
+      std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
+      while (!fakeTransforms.empty())
+      {
+        fhPath.transform(fakeTransforms.top());
+        fakeTransforms.pop();
+      }
+
+      if (!m_currentTransforms.empty())
+        m_currentTransforms.pop();
+
+      librevenge::RVNGPropertyListVector propVec;
+      fhPath.writeOut(propVec);
+      _composePath(propVec, true);
+      librevenge::RVNGPropertyList pList;
+      pList.insert("svg:d", propVec);
+
+
+      FHBoundingBox bBox;
+      fhPath.getBoundingBox(bBox.m_xmin, bBox.m_ymin, bBox.m_xmax, bBox.m_ymax);
+      FHTransform trafo(1.0, 0.0, 0.0, 1.0, - bBox.m_xmin, - bBox.m_ymin);
+      m_fakeTransforms.push(trafo);
+      librevenge::RVNGStringVector svgOutput;
+      librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
+      propList.clear();
+      propList.insert("svg:width", bBox.m_xmax - bBox.m_xmin);
+      propList.insert("svg:height", bBox.m_ymax - bBox.m_ymin);
+      generator.startPage(propList);
+      _outputGroup(group, &generator);
+      generator.endPage();
+      if (!svgOutput.empty() && svgOutput[0].size() > 140) // basically empty svg if it is not fullfilled
+      {
+        const char *header =
+          "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
+        librevenge::RVNGBinaryData output((const unsigned char *)header, strlen(header));
+        output.append((unsigned char *)svgOutput[0].cstr(), strlen(svgOutput[0].cstr()));
+        propList.insert("draw:stroke", "none");
+        propList.insert("draw:fill", "bitmap");
+        propList.insert("librevenge:mime-type", "image/svg+xml");
+        propList.insert("style:repeat", "stretch");
+        propList.insert("draw:fill-image", output.getBase64Data());
+        painter->setStyle(propList);
+        painter->drawPath(pList);
+      }
+      if (!m_fakeTransforms.empty())
+        m_fakeTransforms.pop();
+    }
+
+  }
 }
 
 void libfreehand::FHCollector::_outputNewBlend(const libfreehand::FHNewBlend *newBlend, ::librevenge::RVNGDrawingInterface *painter)
@@ -1967,6 +2109,16 @@ const libfreehand::FHGroup *libfreehand::FHCollector::_findGroup(unsigned id)
     return 0;
   std::map<unsigned, FHGroup>::const_iterator iter = m_groups.find(id);
   if (iter != m_groups.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHGroup *libfreehand::FHCollector::_findClipGroup(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHGroup>::const_iterator iter = m_clipGroups.find(id);
+  if (iter != m_clipGroups.end())
     return &(iter->second);
   return 0;
 }

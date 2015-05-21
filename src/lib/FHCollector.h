@@ -38,6 +38,7 @@ public:
   void collectList(unsigned recordId, const FHList &lst);
   void collectLayer(unsigned recordId, const FHLayer &layer);
   void collectGroup(unsigned recordId, const FHGroup &group);
+  void collectClipGroup(unsigned recordId, const FHGroup &group);
   void collectCompositePath(unsigned recordId, const FHCompositePath &compositePath);
   void collectTString(unsigned recordId, const std::vector<unsigned> &elements);
   void collectAGDFont(unsigned recordId, const FHAGDFont &font);
@@ -86,6 +87,7 @@ private:
   void _outputPath(const FHPath *path, ::librevenge::RVNGDrawingInterface *painter);
   void _outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputClipGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
   void _outputCompositePath(const FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter);
   void _outputTextObject(const FHTextObject *textObject, ::librevenge::RVNGDrawingInterface *painter);
   void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter);
@@ -100,6 +102,7 @@ private:
   void _getBBofPath(const FHPath *path,FHBoundingBox &bBox);
   void _getBBofLayer(unsigned layerId,FHBoundingBox &bBox);
   void _getBBofGroup(const FHGroup *group,FHBoundingBox &bBox);
+  void _getBBofClipGroup(const FHGroup *group,FHBoundingBox &bBox);
   void _getBBofCompositePath(const FHCompositePath *compositePath,FHBoundingBox &bBox);
   void _getBBofTextObject(const FHTextObject *textObject,FHBoundingBox &bBox);
   void _getBBofDisplayText(const FHDisplayText *displayText,FHBoundingBox &bBox);
@@ -131,6 +134,7 @@ private:
 
   const FHPath *_findPath(unsigned id);
   const FHGroup *_findGroup(unsigned id);
+  const FHGroup *_findClipGroup(unsigned id);
   const FHCompositePath *_findCompositePath(unsigned id);
   const FHTextObject *_findTextObject(unsigned id);
   const FHTransform *_findTransform(unsigned id);
@@ -178,6 +182,7 @@ private:
   std::map<unsigned, FHList> m_lists;
   std::map<unsigned, FHLayer> m_layers;
   std::map<unsigned, FHGroup> m_groups;
+  std::map<unsigned, FHGroup> m_clipGroups;
   std::stack<FHTransform> m_currentTransforms;
   std::stack<FHTransform> m_fakeTransforms;
   std::map<unsigned, FHCompositePath> m_compositePaths;

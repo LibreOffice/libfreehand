@@ -713,7 +713,7 @@ void libfreehand::FHParser::readClipGroup(librevenge::RVNGInputStream *input, li
   group.m_elementsId = _readRecordId(input);
   group.m_xFormId = _readRecordId(input);
   if (collector)
-    collector->collectGroup(m_currentRecord+1, group);
+    collector->collectClipGroup(m_currentRecord+1, group);
 }
 
 void libfreehand::FHParser::readCollector(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
