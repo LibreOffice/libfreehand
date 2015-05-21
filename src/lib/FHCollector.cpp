@@ -29,6 +29,9 @@
 #ifndef DUMP_TILE_FILLS
 #define DUMP_TILE_FILLS 0
 #endif
+#ifndef DUMP_CLIP_GROUPS
+#define DUMP_CLIP_GROUPS 0
+#endif
 
 #define FH_UNINITIALIZED(pI) \
   FH_ALMOST_ZERO(pI.m_minX) && FH_ALMOST_ZERO(pI.m_minY) && FH_ALMOST_ZERO(pI.m_maxY) && FH_ALMOST_ZERO(pI.m_maxX)
@@ -1099,6 +1102,20 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
           "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>\n<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n";
         librevenge::RVNGBinaryData output((const unsigned char *)header, strlen(header));
         output.append((unsigned char *)svgOutput[0].cstr(), strlen(svgOutput[0].cstr()));
+#if DUMP_CLIP_GROUPS
+        {
+          librevenge::RVNGString filename;
+          filename.sprintf("freehandclipgroup%.4x.svg", group->m_elementsId);
+          FILE *f = fopen(filename.cstr(), "wb");
+          if (f)
+          {
+            const unsigned char *tmpBuffer = output.getDataBuffer();
+            for (unsigned long k = 0; k < output.size(); k++)
+              fprintf(f, "%c",tmpBuffer[k]);
+            fclose(f);
+          }
+        }
+#endif
         propList.insert("draw:stroke", "none");
         propList.insert("draw:fill", "bitmap");
         propList.insert("librevenge:mime-type", "image/svg+xml");
