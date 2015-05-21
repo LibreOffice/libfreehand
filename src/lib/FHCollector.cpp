@@ -934,7 +934,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
       propList.insert("draw:fill", "bitmap");
       propList.insert("librevenge:mime-type", "image/svg+xml");
       propList.insert("style:repeat", "stretch");
-      propList.insert("draw:fill-image", output.getBase64Data());
+      propList.insert("draw:fill-image", output);
       painter->setStyle(propList);
       painter->drawPath(pList);
     }
@@ -1103,7 +1103,7 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
         propList.insert("draw:fill", "bitmap");
         propList.insert("librevenge:mime-type", "image/svg+xml");
         propList.insert("style:repeat", "stretch");
-        propList.insert("draw:fill-image", output.getBase64Data());
+        propList.insert("draw:fill-image", output);
         painter->setStyle(propList);
         painter->drawPath(pList);
       }
@@ -2045,7 +2045,7 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
       }
 #endif
       propList.insert("draw:fill", "bitmap");
-      propList.insert("draw:fill-image", output.getBase64Data());
+      propList.insert("draw:fill-image", output);
       propList.insert("librevenge:mime-type", "image/svg+xml");
       propList.insert("style:repeat", "repeat");
     }
@@ -2064,7 +2064,7 @@ void libfreehand::FHCollector::_appendPatternFill(::librevenge::RVNGPropertyList
   librevenge::RVNGBinaryData output;
   _generateBitmapFromPattern(output, patternFill->m_colorId, patternFill->m_pattern);
   propList.insert("draw:fill", "bitmap");
-  propList.insert("draw:fill-image", output.getBase64Data());
+  propList.insert("draw:fill-image", output);
   propList.insert("librevenge:mime-type", "image/bmp");
   propList.insert("style:repeat", "repeat");
 }
