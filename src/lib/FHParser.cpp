@@ -786,10 +786,21 @@ void libfreehand::FHParser::readContentFill(librevenge::RVNGInputStream * /* inp
 {
 }
 
-void libfreehand::FHParser::readContourFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readContourFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   if (m_version > 9)
-    input->seek(24, librevenge::RVNG_SEEK_CUR);
+  {
+    FHRadialFill fill;
+    fill.m_color1Id = _readRecordId(input);
+    fill.m_color2Id = _readRecordId(input);
+    fill.m_cx = _readCoordinate(input);
+    fill.m_cy = 1.0 - _readCoordinate(input);
+    input->seek(8, librevenge::RVNG_SEEK_CUR);
+    fill.m_multiColorListId = _readRecordId(input);
+    input->seek(2, librevenge::RVNG_SEEK_CUR);
+    if (collector)
+      collector->collectRadialFill(m_currentRecord+1, fill);
+  }
   else
   {
     unsigned short num = readU16(input);
@@ -1368,14 +1379,21 @@ void libfreehand::FHParser::readNewBlend(librevenge::RVNGInputStream *input, lib
     collector->collectNewBlend(m_currentRecord+1, newBlend);
 }
 
-void libfreehand::FHParser::readNewContourFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readNewContourFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(14, librevenge::RVNG_SEEK_CUR);
-  _readRecordId(input);
-  _readRecordId(input);
-  input->seek(14, librevenge::RVNG_SEEK_CUR);
+  FHRadialFill fill;
+  fill.m_color1Id = _readRecordId(input);
+  fill.m_color2Id = _readRecordId(input);
+  fill.m_cx = _readCoordinate(input);
+  fill.m_cy = 1.0 - _readCoordinate(input);
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  fill.m_multiColorListId = _readRecordId(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  _readCoordinate(input); // handle angle
+  _readCoordinate(input); // handle wide
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (collector)
+    collector->collectRadialFill(m_currentRecord+1, fill);
 }
 
 void libfreehand::FHParser::readNewRadialFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

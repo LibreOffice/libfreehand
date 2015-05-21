@@ -1110,7 +1110,6 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
       if (!m_fakeTransforms.empty())
         m_fakeTransforms.pop();
     }
-
   }
 }
 
