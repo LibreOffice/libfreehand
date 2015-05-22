@@ -604,7 +604,9 @@ void libfreehand::FHPath::appendClosePath()
   m_isClosed = true;
 }
 
-libfreehand::FHPath::FHPath(const libfreehand::FHPath &path) : m_elements(), m_isClosed(path.m_isClosed), m_xFormId(path.m_xFormId), m_graphicStyleId(path.m_graphicStyleId)
+libfreehand::FHPath::FHPath(const libfreehand::FHPath &path)
+  : m_elements(), m_isClosed(path.m_isClosed), m_xFormId(path.m_xFormId),
+    m_graphicStyleId(path.m_graphicStyleId), m_evenOdd(path.m_evenOdd)
 {
   for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
     m_elements.push_back((*iter)->clone());

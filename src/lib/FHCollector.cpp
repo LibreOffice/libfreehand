@@ -213,10 +213,11 @@ static void _composePath(::librevenge::RVNGPropertyListVector &path, bool isClos
 
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
-  m_layers(), m_groups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(), m_fonts(), m_paragraphs(),
-  m_textBloks(), m_textObjects(), m_charProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
-  m_displayTexts(), m_graphicStyles(), m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(),
-  m_linearFills(), m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(),
+  m_layers(), m_groups(), m_clipGroups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(),
+  m_tStrings(), m_fonts(), m_paragraphs(), m_textBloks(), m_textObjects(), m_charProperties(),
+  m_rgbColors(), m_basicFills(), m_propertyLists(), m_basicLines(), m_displayTexts(), m_graphicStyles(),
+  m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(), m_linearFills(),
+  m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
   m_strokeId(0), m_fillId(0), m_contentId(0)
 {
