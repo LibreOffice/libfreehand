@@ -2064,6 +2064,8 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
 #endif
       propList.insert("draw:fill", "bitmap");
       propList.insert("draw:fill-image", output);
+      propList.insert("draw:fill-image-width", tileFill->m_scaleX * (bBox.m_xmax - bBox.m_xmin))
+      propList.insert("draw:fill-image-height", tileFill->m_scaleY * (bBox.m_ymax - bBox.m_ymin))
       propList.insert("librevenge:mime-type", "image/svg+xml");
       propList.insert("style:repeat", "repeat");
     }
