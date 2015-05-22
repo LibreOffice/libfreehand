@@ -7,7 +7,7 @@ AC_PREREQ([2.65])
 # ====================
 m4_define([libfreehand_version_major],[0])
 m4_define([libfreehand_version_minor],[1])
-m4_define([libfreehand_version_micro],[0])
+m4_define([libfreehand_version_micro],[1])
 m4_define([libfreehand_version],[libfreehand_version_major.libfreehand_version_minor.libfreehand_version_micro])
 
 # =============
