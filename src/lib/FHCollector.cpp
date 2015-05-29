@@ -481,11 +481,9 @@ void libfreehand::FHCollector::_getBBofPath(const FHPath *path, libfreehand::FHB
     groupTransforms.pop();
   }
   _normalizePath(fhPath);
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fhPath.transform(fakeTransforms.top());
-    fakeTransforms.pop();
+    fhPath.transform(*iter);
   }
 
   FHBoundingBox tmpBBox;
@@ -632,14 +630,12 @@ void libfreehand::FHCollector::_getBBofTextObject(const FHTextObject *textObject
   _normalizePoint(xc, yc);
   _normalizePoint(xd, yd);
 
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fakeTransforms.top().applyToPoint(xa, ya);
-    fakeTransforms.top().applyToPoint(xb, yb);
-    fakeTransforms.top().applyToPoint(xc, yc);
-    fakeTransforms.top().applyToPoint(xd, yd);
-    fakeTransforms.pop();
+    iter->applyToPoint(xa, ya);
+    iter->applyToPoint(xb, yb);
+    iter->applyToPoint(xc, yc);
+    iter->applyToPoint(xd, yd);
   }
 
   FHBoundingBox tmpBBox;
@@ -704,14 +700,12 @@ void libfreehand::FHCollector::_getBBofDisplayText(const FHDisplayText *displayT
   _normalizePoint(xc, yc);
   _normalizePoint(xd, yd);
 
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fakeTransforms.top().applyToPoint(xa, ya);
-    fakeTransforms.top().applyToPoint(xb, yb);
-    fakeTransforms.top().applyToPoint(xc, yc);
-    fakeTransforms.top().applyToPoint(xd, yd);
-    fakeTransforms.pop();
+    iter->applyToPoint(xa, ya);
+    iter->applyToPoint(xb, yb);
+    iter->applyToPoint(xc, yc);
+    iter->applyToPoint(xd, yd);
   }
 
   FHBoundingBox tmpBBox;
@@ -776,14 +770,12 @@ void libfreehand::FHCollector::_getBBofImageImport(const FHImageImport *image, l
   _normalizePoint(xc, yc);
   _normalizePoint(xd, yd);
 
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fakeTransforms.top().applyToPoint(xa, ya);
-    fakeTransforms.top().applyToPoint(xb, yb);
-    fakeTransforms.top().applyToPoint(xc, yc);
-    fakeTransforms.top().applyToPoint(xd, yd);
-    fakeTransforms.pop();
+    iter->applyToPoint(xa, ya);
+    iter->applyToPoint(xb, yb);
+    iter->applyToPoint(xc, yc);
+    iter->applyToPoint(xd, yd);
   }
 
   FHBoundingBox tmpBBox;
@@ -880,11 +872,9 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
   }
   _normalizePath(fhPath);
 
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fhPath.transform(fakeTransforms.top());
-    fakeTransforms.pop();
+    fhPath.transform(*iter);
   }
 
   librevenge::RVNGPropertyListVector propVec;
@@ -904,7 +894,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
     FHBoundingBox bBox;
     fhPath.getBoundingBox(bBox.m_xmin, bBox.m_ymin, bBox.m_xmax, bBox.m_ymax);
     FHTransform trafo(1.0, 0.0, 0.0, 1.0, - bBox.m_xmin, - bBox.m_ymin);
-    m_fakeTransforms.push(trafo);
+    m_fakeTransforms.push_back(trafo);
     librevenge::RVNGStringVector svgOutput;
     librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
     propList.clear();
@@ -943,7 +933,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, ::li
       painter->drawPath(pList);
     }
     if (!m_fakeTransforms.empty())
-      m_fakeTransforms.pop();
+      m_fakeTransforms.pop_back();
     painter->closeGroup();
   }
 #if DEBUG_BOUNDING_BOX
@@ -1068,11 +1058,9 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
       }
       _normalizePath(fhPath);
 
-      std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-      while (!fakeTransforms.empty())
+      for (std::vector<FHTransform>::const_iterator iterVec = m_fakeTransforms.begin(); iterVec != m_fakeTransforms.end(); ++iterVec)
       {
-        fhPath.transform(fakeTransforms.top());
-        fakeTransforms.pop();
+        fhPath.transform(*iterVec);
       }
 
       if (!m_currentTransforms.empty())
@@ -1088,7 +1076,7 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
       FHBoundingBox bBox;
       fhPath.getBoundingBox(bBox.m_xmin, bBox.m_ymin, bBox.m_xmax, bBox.m_ymax);
       FHTransform trafo(1.0, 0.0, 0.0, 1.0, - bBox.m_xmin, - bBox.m_ymin);
-      m_fakeTransforms.push(trafo);
+      m_fakeTransforms.push_back(trafo);
       librevenge::RVNGStringVector svgOutput;
       librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
       propList.clear();
@@ -1126,7 +1114,7 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
         painter->drawPath(pList);
       }
       if (!m_fakeTransforms.empty())
-        m_fakeTransforms.pop();
+        m_fakeTransforms.pop_back();
     }
   }
 }
@@ -1336,13 +1324,11 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
 
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fakeTransforms.top().applyToPoint(xa, ya);
-    fakeTransforms.top().applyToPoint(xb, yb);
-    fakeTransforms.top().applyToPoint(xc, yc);
-    fakeTransforms.pop();
+    iter->applyToPoint(xa, ya);
+    iter->applyToPoint(xb, yb);
+    iter->applyToPoint(xc, yc);
   }
 
   double rotation = atan2(yb-yc, xb-xc);
@@ -1485,13 +1471,11 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
 
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fakeTransforms.top().applyToPoint(xa, ya);
-    fakeTransforms.top().applyToPoint(xb, yb);
-    fakeTransforms.top().applyToPoint(xc, yc);
-    fakeTransforms.pop();
+    iter->applyToPoint(xa, ya);
+    iter->applyToPoint(xb, yb);
+    iter->applyToPoint(xc, yc);
   }
 
   double rotation = atan2(yb-yc, xb-xc);
@@ -1636,13 +1620,12 @@ void libfreehand::FHCollector::_outputImageImport(const FHImageImport *image, ::
   _normalizePoint(xa, ya);
   _normalizePoint(xb, yb);
   _normalizePoint(xc, yc);
-  std::stack<FHTransform> fakeTransforms(m_fakeTransforms);
-  while (!fakeTransforms.empty())
+
+  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
   {
-    fakeTransforms.top().applyToPoint(xa, ya);
-    fakeTransforms.top().applyToPoint(xb, yb);
-    fakeTransforms.top().applyToPoint(xc, yc);
-    fakeTransforms.pop();
+    iter->applyToPoint(xa, ya);
+    iter->applyToPoint(xb, yb);
+    iter->applyToPoint(xc, yc);
   }
 
   double rotation = atan2(yb-yc, xb-xc);
@@ -2031,7 +2014,7 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
   if (bBox.isValid() && !FH_ALMOST_ZERO(bBox.m_xmax - bBox.m_xmin) && !FH_ALMOST_ZERO(bBox.m_ymax - bBox.m_ymin))
   {
     FHTransform fakeTrafo(tileFill->m_scaleX, 0.0, 0.0, tileFill->m_scaleY, - bBox.m_xmin, -bBox.m_ymin);
-    m_fakeTransforms.push(fakeTrafo);
+    m_fakeTransforms.push_back(fakeTrafo);
 
     librevenge::RVNGStringVector svgOutput;
     librevenge::RVNGSVGDrawingGenerator generator(svgOutput, "");
@@ -2064,14 +2047,14 @@ void libfreehand::FHCollector::_appendTileFill(::librevenge::RVNGPropertyList &p
 #endif
       propList.insert("draw:fill", "bitmap");
       propList.insert("draw:fill-image", output);
-      propList.insert("draw:fill-image-width", tileFill->m_scaleX * (bBox.m_xmax - bBox.m_xmin))
-      propList.insert("draw:fill-image-height", tileFill->m_scaleY * (bBox.m_ymax - bBox.m_ymin))
+      propList.insert("draw:fill-image-width", tileFill->m_scaleX * (bBox.m_xmax - bBox.m_xmin));
+      propList.insert("draw:fill-image-height", tileFill->m_scaleY * (bBox.m_ymax - bBox.m_ymin));
       propList.insert("librevenge:mime-type", "image/svg+xml");
       propList.insert("style:repeat", "repeat");
     }
 
     if (!m_fakeTransforms.empty())
-      m_fakeTransforms.pop();
+      m_fakeTransforms.pop_back();
   }
   if (!m_currentTransforms.empty())
     m_currentTransforms.pop();

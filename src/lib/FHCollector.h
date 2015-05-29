@@ -184,7 +184,7 @@ private:
   std::map<unsigned, FHGroup> m_groups;
   std::map<unsigned, FHGroup> m_clipGroups;
   std::stack<FHTransform> m_currentTransforms;
-  std::stack<FHTransform> m_fakeTransforms;
+  std::vector<FHTransform> m_fakeTransforms;
   std::map<unsigned, FHCompositePath> m_compositePaths;
   std::map<unsigned, std::vector<unsigned> > m_tStrings;
   std::map<unsigned, FHAGDFont> m_fonts;
