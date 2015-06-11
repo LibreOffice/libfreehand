@@ -16,7 +16,7 @@
 namespace libfreehand
 {
 
-class FHTransform;
+struct FHTransform;
 
 class FHPathElement
 {
