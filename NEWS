@@ -1,3 +1,13 @@
+libfreehand 0.1.1
+
+- drastical improvement of all features
+  * fills
+  * strokes
+  * embedded images
+  * embedded text
+- output of visible elements only in right place on the canvas
+- coverage from Freehand 3.0 to Freehand 11
+
 libfreehand 0.1.0
 
 - switch to librevenge
