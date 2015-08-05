@@ -1562,7 +1562,8 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
         std::pair<double, double> tmpPoint = std::make_pair(x, y);
         segment.push_back(tmpPoint);
       }
-      path.push_back(segment);
+      if (segment.size() == 3)
+        path.push_back(segment);
       segment.clear();
     }
     input->seek((size-numPoints)*27, librevenge::RVNG_SEEK_CUR);
