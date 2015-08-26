@@ -10,6 +10,7 @@
 #ifndef __FHCOLLECTOR_H__
 #define __FHCOLLECTOR_H__
 
+#include <deque>
 #include <map>
 #include <stack>
 #include <librevenge/librevenge.h>
@@ -220,6 +221,8 @@ private:
   unsigned m_strokeId;
   unsigned m_fillId;
   unsigned m_contentId;
+
+  std::deque<unsigned> m_visitedObjects;
 };
 
 } // namespace libfreehand

@@ -7,6 +7,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <algorithm>
+#include <cassert>
 #include <string.h>
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
@@ -208,6 +210,28 @@ static void _composePath(::librevenge::RVNGPropertyListVector &path, bool isClos
       path.append(*iter);
   }
 }
+
+class ObjectRecursionGuard
+{
+public:
+  ObjectRecursionGuard(std::deque<unsigned> &objectStack, const unsigned id)
+    : m_objectStack(objectStack)
+    , m_id(id)
+  {
+    m_objectStack.push_front(m_id);
+  }
+
+  ~ObjectRecursionGuard()
+  {
+    assert(!m_objectStack.empty());
+    assert(m_objectStack.front() == m_id);
+    m_objectStack.pop_front();
+  }
+
+private:
+  std::deque<unsigned> &m_objectStack;
+  const unsigned m_id;
+};
 
 }
 
@@ -1716,8 +1740,9 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
 {
   if (!propList["draw:fill"])
     propList.insert("draw:fill", "none");
-  if (graphicStyleId)
+  if (graphicStyleId && find(m_visitedObjects.begin(), m_visitedObjects.end(), graphicStyleId) == m_visitedObjects.end())
   {
+    const ObjectRecursionGuard guard(m_visitedObjects, graphicStyleId);
     const FHPropList *propertyList = _findPropList(graphicStyleId);
     if (propertyList)
     {
@@ -1771,8 +1796,9 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
 {
   if (!propList["draw:stroke"])
     propList.insert("draw:stroke", "none");
-  if (graphicStyleId)
+  if (graphicStyleId && find(m_visitedObjects.begin(), m_visitedObjects.end(), graphicStyleId) == m_visitedObjects.end())
   {
+    const ObjectRecursionGuard guard(m_visitedObjects, graphicStyleId);
     const FHPropList *propertyList = _findPropList(graphicStyleId);
     if (propertyList)
     {
