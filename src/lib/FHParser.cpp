@@ -10,6 +10,9 @@
 #include <sstream>
 #include <string>
 #include <string.h>
+
+#include <boost/scoped_ptr.hpp>
+
 #include <unicode/utf8.h>
 #include <unicode/utf16.h>
 #include <lcms2.h>
@@ -2209,7 +2212,7 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
   double minY = 0.0;
   double maxX = 0.0;
   double maxY = 0.0;
-  libfreehand::FHCharProperties *charProps = 0;
+  boost::scoped_ptr<libfreehand::FHCharProperties> charProps;
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
@@ -2259,42 +2262,42 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
     case FH_TEFFECT_ID:
     {
       if (!charProps)
-        charProps = new libfreehand::FHCharProperties();
+        charProps.reset(new libfreehand::FHCharProperties());
       _readRecordId(input);
       break;
     }
     case FH_TXT_COLOR_ID:
     {
       if (!charProps)
-        charProps = new libfreehand::FHCharProperties();
+        charProps.reset(new libfreehand::FHCharProperties());
       charProps->m_textColorId = _readRecordId(input);
       break;
     }
     case FH_FONT_ID:
     {
       if (!charProps)
-        charProps = new libfreehand::FHCharProperties();
+        charProps.reset(new libfreehand::FHCharProperties());
       charProps->m_fontId = _readRecordId(input);
       break;
     }
     case FH_FONT_SIZE:
     {
       if (!charProps)
-        charProps = new libfreehand::FHCharProperties();
+        charProps.reset(new libfreehand::FHCharProperties());
       charProps->m_fontSize = _readCoordinate(input);
       break;
     }
     case FH_FONT_NAME:
     {
       if (!charProps)
-        charProps = new libfreehand::FHCharProperties();
+        charProps.reset(new libfreehand::FHCharProperties());
       charProps->m_fontNameId = _readRecordId(input);
       break;
     }
     case FH_HOR_SCALE:
     {
       if (!charProps)
-        charProps = new libfreehand::FHCharProperties();
+        charProps.reset(new libfreehand::FHCharProperties());
       charProps->m_horizontalScale = _readCoordinate(input);
       break;
     }
@@ -2309,7 +2312,6 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
   {
     if (collector)
       collector->collectCharProps(m_currentRecord+1, *charProps);
-    delete charProps;
   }
 }
 
