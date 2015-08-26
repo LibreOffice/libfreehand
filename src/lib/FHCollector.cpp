@@ -982,6 +982,10 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::libreven
 {
   if (!painter || !somethingId)
     return;
+  if (find(m_visitedObjects.begin(), m_visitedObjects.end(), somethingId) != m_visitedObjects.end())
+    return;
+
+  const ObjectRecursionGuard guard(m_visitedObjects, somethingId);
 
   _outputGroup(_findGroup(somethingId), painter);
   _outputClipGroup(_findClipGroup(somethingId), painter);
