@@ -243,7 +243,7 @@ libfreehand::FHCollector::FHCollector() :
   m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(), m_linearFills(),
   m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
-  m_strokeId(0), m_fillId(0), m_contentId(0)
+  m_strokeId(0), m_fillId(0), m_contentId(0), m_visitedObjects()
 {
 }
 
