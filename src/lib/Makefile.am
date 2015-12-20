@@ -19,9 +19,7 @@ AM_CXXFLAGS = \
 	$(LCMS2_CFLAGS) \
 	$(DEBUG_CXXFLAGS)
 
-generated_files = \
-	$(top_builddir)/src/lib/tokens.h \
-	$(top_builddir)/src/lib/tokenhash.h
+BUILT_SOURCES = tokens.h tokenhash.h
 
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LIBADD = \
 	$(REVENGE_LIBS) \
@@ -50,17 +48,15 @@ libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
 	libfreehand_utils.h \
 	$(generated_files)
 
-FHParser.lo : $(generated_files)
+tokens.h : tokens.gperf
 
-$(top_builddir)/src/lib/tokens.h : $(top_builddir)/src/lib/tokens.gperf
+tokenhash.h : tokens.gperf
+	$(GPERF) --compare-strncmp -C -m 20 tokens.gperf \
+		| $(SED) -e 's/(char\*)0/(char\*)0, 0/g' -e 's/register //g' > tokenhash.h
 
-$(top_builddir)/src/lib/tokenhash.h : $(top_builddir)/src/lib/tokens.gperf
-	$(GPERF) --compare-strncmp -C -m 20 $(top_builddir)/src/lib/tokens.gperf \
-		| $(SED) -e 's/(char\*)0/(char\*)0, 0/g' -e 's/register //g' > $(top_builddir)/src/lib/tokenhash.h
-
-$(top_builddir)/src/lib/tokens.gperf : $(top_srcdir)/src/lib/tokens.txt gentoken.pl
-	perl $(top_srcdir)/src/lib/gentoken.pl $(top_srcdir)/src/lib/tokens.txt \
-		$(top_builddir)/src/lib/tokens.h $(top_builddir)/src/lib/tokens.gperf
+tokens.gperf : $(top_srcdir)/src/lib/tokens.txt $(top_srcdir)/src/lib/gentoken.pl
+	$(PERL) $(top_srcdir)/src/lib/gentoken.pl $(top_srcdir)/src/lib/tokens.txt \
+		tokens.h tokens.gperf
 
 if OS_WIN32
 
@@ -70,14 +66,13 @@ if OS_WIN32
 
 endif
 
-distclean-local :
-	rm -f $(generated_files) $(top_builddir)/src/lib/*.gperf
+MOSTLYCLEANFILES = \
+	$(BUILT_SOURCES) \
+	tokens.gperf
 
 EXTRA_DIST = \
+	$(BUILT_SOURCES) \
 	tokens.txt \
-    gentoken.pl \
+	gentoken.pl \
+	libfreehand.rc \
 	libfreehand.rc.in
-
-# These may be in the builddir too
-BUILD_EXTRA_DIST = \
-	libfreehand.rc
