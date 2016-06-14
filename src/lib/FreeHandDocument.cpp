@@ -104,7 +104,7 @@ librevenge::RVNGDrawingInterface class implementation when needed. This is often
 */
 FHAPI bool libfreehand::FreeHandDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
 {
-  if (!input || !painter)
+  if (!input)
     return false;
 
   try
