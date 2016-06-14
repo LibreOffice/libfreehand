@@ -14,10 +14,11 @@
 #include "FHParser.h"
 #include "libfreehand_utils.h"
 
-namespace
+namespace libfreehand
 {
 
-using namespace libfreehand;
+namespace
+{
 
 bool findAGD(librevenge::RVNGInputStream *input)
 {
@@ -73,7 +74,7 @@ Analyzes the content of an input stream to see if it can be parsed
 \return A value that indicates whether the content from the input
 stream is a FreeHand Document that libfreehand is able to parse
 */
-FHAPI bool libfreehand::FreeHandDocument::isSupported(librevenge::RVNGInputStream *input)
+FHAPI bool FreeHandDocument::isSupported(librevenge::RVNGInputStream *input)
 {
   if (!input)
     return false;
@@ -102,7 +103,7 @@ librevenge::RVNGDrawingInterface class implementation when needed. This is often
 \param painter A librevenge::RVNGDrawingerInterface implementation
 \return A value that indicates whether the parsing was successful
 */
-FHAPI bool libfreehand::FreeHandDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
+FHAPI bool FreeHandDocument::parse(librevenge::RVNGInputStream *input, librevenge::RVNGDrawingInterface *painter)
 {
   if (!input)
     return false;
@@ -124,6 +125,8 @@ FHAPI bool libfreehand::FreeHandDocument::parse(librevenge::RVNGInputStream *inp
   {
   }
   return false;
+}
+
 }
 
 /* vim:set shiftwidth=2 softtabstop=2 expandtab: */
