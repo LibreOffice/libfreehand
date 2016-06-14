@@ -19,7 +19,7 @@ namespace
 
 using namespace libfreehand;
 
-static bool findAGD(librevenge::RVNGInputStream *input)
+bool findAGD(librevenge::RVNGInputStream *input)
 {
   unsigned agd = readU32(input);
   input->seek(-4, librevenge::RVNG_SEEK_CUR);
