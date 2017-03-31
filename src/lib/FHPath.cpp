@@ -674,7 +674,7 @@ void libfreehand::FHPath::clear()
 {
   for (std::vector<FHPathElement *>::iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
     if (*iter)
-      delete(*iter);
+      delete (*iter);
   m_elements.clear();
   m_isClosed = false;
   m_xFormId = 0;
