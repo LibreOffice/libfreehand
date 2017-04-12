@@ -18,7 +18,6 @@ libfreehand.spec
 libfreehand-zip
 libfreehand-*.tar.*
 ltmain.sh
-m4
 missing
 mkinstalldirs
 stamp-h1
