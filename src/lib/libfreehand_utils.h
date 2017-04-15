@@ -30,18 +30,10 @@
 #define FH_EPSILON 1E-6
 #define FH_ALMOST_ZERO(m) (fabs(m) <= FH_EPSILON)
 
-// debug message includes source file and line number
-//#define VERBOSE_DEBUG 1
-
 // do nothing with debug messages in a release compile
 #ifdef DEBUG
-#ifdef VERBOSE_DEBUG
-#define FH_DEBUG_MSG(M) printf("%15s:%5d: ", __FILE__, __LINE__); printf M
-#define FH_DEBUG(M) M
-#else
 #define FH_DEBUG_MSG(M) printf M
 #define FH_DEBUG(M) M
-#endif
 #else
 #define FH_DEBUG_MSG(M)
 #define FH_DEBUG(M)
