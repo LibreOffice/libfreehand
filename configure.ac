@@ -133,7 +133,6 @@ AC_SUBST([LCMS_LIBS])
 # Find boost
 # ==========
 AC_CHECK_HEADERS([\
-        boost/scoped_ptr.hpp \
     ],
     [],
     [AC_MSG_ERROR([Required boost headers not found.])],

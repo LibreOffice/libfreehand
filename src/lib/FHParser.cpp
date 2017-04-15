@@ -7,11 +7,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <memory>
 #include <sstream>
 #include <string>
 #include <string.h>
-
-#include <boost/scoped_ptr.hpp>
 
 #include <unicode/utf8.h>
 #include <unicode/utf16.h>
@@ -2212,7 +2211,7 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
   double minY = 0.0;
   double maxX = 0.0;
   double maxY = 0.0;
-  boost::scoped_ptr<libfreehand::FHCharProperties> charProps;
+  std::unique_ptr<libfreehand::FHCharProperties> charProps;
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
