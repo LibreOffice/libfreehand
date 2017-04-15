@@ -7,6 +7,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <cstdarg>
+#include <cstdio>
+
 #include <unicode/utf8.h>
 #include <unicode/utf16.h>
 #include "libfreehand_utils.h"
@@ -48,6 +51,15 @@ static const unsigned _macRomanCharacterMap[] =
 
 }
 
+#ifdef DEBUG
+void libfreehand::debugPrint(const char *format, ...)
+{
+  va_list args;
+  va_start(args, format);
+  std::vfprintf(stderr, format, args);
+  va_end(args);
+}
+#endif
 
 uint8_t libfreehand::readU8(librevenge::RVNGInputStream *input)
 {

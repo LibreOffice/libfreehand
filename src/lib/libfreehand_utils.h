@@ -15,7 +15,6 @@
 #endif
 
 #include <vector>
-#include <stdio.h>
 #include <string>
 #include <math.h>
 
@@ -32,8 +31,21 @@
 
 // do nothing with debug messages in a release compile
 #ifdef DEBUG
-#define FH_DEBUG_MSG(M) printf M
+
+#if defined(HAVE_FUNC_ATTRIBUTE_FORMAT)
+#define FH_ATTRIBUTE_PRINTF(fmt, arg) __attribute__((format(printf, fmt, arg)))
+#else
+#define FH_ATTRIBUTE_PRINTF(fmt, arg)
+#endif
+
+namespace libfreehand
+{
+void debugPrint(const char *format, ...) FH_ATTRIBUTE_PRINTF(1, 2);
+}
+
+#define FH_DEBUG_MSG(M) debugPrint M
 #define FH_DEBUG(M) M
+
 #else
 #define FH_DEBUG_MSG(M)
 #define FH_DEBUG(M)
