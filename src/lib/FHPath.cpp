@@ -212,6 +212,12 @@ static double cubicBase(double t, double a, double b, double c, double d)
   return (1.0-t)*(1.0-t)*(1.0-t)*a + 3.0*(1.0-t)*(1.0-t)*t*b + 3.0*(1.0-t)*t*t*c + t*t*t*d;
 }
 
+template<typename T, typename... Args>
+std::unique_ptr<T> make_unique(Args &&... args)
+{
+  return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+}
+
 }
 
 namespace libfreehand
@@ -576,27 +582,27 @@ void libfreehand::FHArcToElement::getBoundingBox(double x0, double y0, double &x
 
 void libfreehand::FHPath::appendMoveTo(double x, double y)
 {
-  m_elements.push_back(new libfreehand::FHMoveToElement(x, y));
+  m_elements.push_back(make_unique<libfreehand::FHMoveToElement>(x, y));
 }
 
 void libfreehand::FHPath::appendLineTo(double x, double y)
 {
-  m_elements.push_back(new libfreehand::FHLineToElement(x, y));
+  m_elements.push_back(make_unique<libfreehand::FHLineToElement>(x, y));
 }
 
 void libfreehand::FHPath::appendCubicBezierTo(double x1, double y1, double x2, double y2, double x, double y)
 {
-  m_elements.push_back(new libfreehand::FHCubicBezierToElement(x1, y1, x2, y2, x, y));
+  m_elements.push_back(make_unique<libfreehand::FHCubicBezierToElement>(x1, y1, x2, y2, x, y));
 }
 
 void libfreehand::FHPath::appendQuadraticBezierTo(double x1, double y1, double x, double y)
 {
-  m_elements.push_back(new libfreehand::FHQuadraticBezierToElement(x1, y1, x, y));
+  m_elements.push_back(make_unique<libfreehand::FHQuadraticBezierToElement>(x1, y1, x, y));
 }
 
 void libfreehand::FHPath::appendArcTo(double rx, double ry, double rotation, bool longAngle, bool sweep, double x, double y)
 {
-  m_elements.push_back(new libfreehand::FHArcToElement(rx, ry, rotation, longAngle, sweep, x, y));
+  m_elements.push_back(make_unique<libfreehand::FHArcToElement>(rx, ry, rotation, longAngle, sweep, x, y));
 }
 
 void libfreehand::FHPath::appendClosePath()
@@ -608,8 +614,7 @@ libfreehand::FHPath::FHPath(const libfreehand::FHPath &path)
   : m_elements(), m_isClosed(path.m_isClosed), m_xFormId(path.m_xFormId),
     m_graphicStyleId(path.m_graphicStyleId), m_evenOdd(path.m_evenOdd)
 {
-  for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
-    m_elements.push_back((*iter)->clone());
+  appendPath(path);
 }
 
 libfreehand::FHPath &libfreehand::FHPath::operator=(const libfreehand::FHPath &path)
@@ -618,8 +623,7 @@ libfreehand::FHPath &libfreehand::FHPath::operator=(const libfreehand::FHPath &p
   if (this == &path)
     return *this;
   clear();
-  for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
-    m_elements.push_back((*iter)->clone());
+  appendPath(path);
   m_isClosed = path.m_isClosed;
   m_xFormId = path.m_xFormId;
   m_graphicStyleId = path.m_graphicStyleId;
@@ -629,13 +633,12 @@ libfreehand::FHPath &libfreehand::FHPath::operator=(const libfreehand::FHPath &p
 
 void libfreehand::FHPath::appendPath(const FHPath &path)
 {
-  for (std::vector<FHPathElement *>::const_iterator iter = path.m_elements.begin(); iter != path.m_elements.end(); ++iter)
-    m_elements.push_back((*iter)->clone());
+  for (const auto &element : path.m_elements)
+    m_elements.push_back(std::unique_ptr<FHPathElement>(element->clone()));
 }
 
 libfreehand::FHPath::~FHPath()
 {
-  clear();
 }
 
 void libfreehand::FHPath::setXFormId(unsigned xFormId)
@@ -655,14 +658,14 @@ void libfreehand::FHPath::setEvenOdd(bool evenOdd)
 
 void libfreehand::FHPath::writeOut(librevenge::RVNGPropertyListVector &vec) const
 {
-  for (std::vector<FHPathElement *>::const_iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
-    (*iter)->writeOut(vec);
+  for (const auto &element : m_elements)
+    element->writeOut(vec);
 }
 
 void libfreehand::FHPath::transform(const FHTransform &trafo)
 {
-  for (std::vector<FHPathElement *>::iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
-    (*iter)->transform(trafo);
+  for (const auto &element : m_elements)
+    element->transform(trafo);
 }
 
 libfreehand::FHPathElement *libfreehand::FHPath::clone()
@@ -672,9 +675,6 @@ libfreehand::FHPathElement *libfreehand::FHPath::clone()
 
 void libfreehand::FHPath::clear()
 {
-  for (std::vector<FHPathElement *>::iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
-    if (*iter)
-      delete *iter;
   m_elements.clear();
   m_isClosed = false;
   m_xFormId = 0;
@@ -722,10 +722,10 @@ bool libfreehand::FHPath::getEvenOdd() const
 
 void libfreehand::FHPath::getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const
 {
-  for (std::vector<FHPathElement *>::const_iterator iter = m_elements.begin(); iter != m_elements.end(); ++iter)
+  for (const auto &element : m_elements)
   {
-    double x = (*iter)->getX();
-    double y = (*iter)->getY();
+    double x = element->getX();
+    double y = element->getY();
 
     if (x0 < xmin) xmin = x0;
     if (x < xmin) xmin = x;
@@ -739,9 +739,9 @@ void libfreehand::FHPath::getBoundingBox(double x0, double y0, double &xmin, dou
     if (y0 > ymax) ymax = y0;
     if (y > ymax) ymax = y;
 
-    (*iter)->getBoundingBox(x0, y0, xmin, ymin, xmax, ymax);
-    x0 = (*iter)->getX();
-    y0 = (*iter)->getY();
+    element->getBoundingBox(x0, y0, xmin, ymin, xmax, ymax);
+    x0 = element->getX();
+    y0 = element->getY();
   }
 }
 

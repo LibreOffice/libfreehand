@@ -10,7 +10,9 @@
 #ifndef __FHPATH_H__
 #define __FHPATH_H__
 
+#include <memory>
 #include <vector>
+
 #include <librevenge/librevenge.h>
 
 namespace libfreehand
@@ -68,7 +70,7 @@ public:
   void getBoundingBox(double &xmin, double &ymin, double &xmax, double &ymax) const;
 
 private:
-  std::vector<FHPathElement *> m_elements;
+  std::vector<std::unique_ptr<FHPathElement>> m_elements;
   bool m_isClosed;
   unsigned m_xFormId;
   unsigned m_graphicStyleId;
