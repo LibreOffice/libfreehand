@@ -238,14 +238,14 @@ private:
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_clipGroups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(),
-  m_pathTexts(), m_tStrings(), m_fonts(), m_paragraphs(), m_tabs(), m_textBloks(), m_textObjects(), m_charProperties(),
+  m_pathTexts(), m_tStrings(), m_fonts(), m_tEffects(), m_paragraphs(), m_tabs(), m_textBloks(), m_textObjects(), m_charProperties(),
   m_paragraphProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
   m_basicLines(), m_customProcs(), m_patternLines(), m_displayTexts(), m_graphicStyles(),
   m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(), m_linearFills(),
   m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
   m_linePatterns(), m_arrowPaths(),
-  m_strokeId(0), m_fillId(0), m_contentId(0), m_visitedObjects()
+  m_strokeId(0), m_fillId(0), m_contentId(0), m_textBoxNumberId(0), m_visitedObjects()
 {
 }
 
@@ -337,6 +337,11 @@ void libfreehand::FHCollector::collectTString(unsigned recordId, const std::vect
 void libfreehand::FHCollector::collectAGDFont(unsigned recordId, const FHAGDFont &font)
 {
   m_fonts[recordId] = font;
+}
+
+void libfreehand::FHCollector::collectTEffect(unsigned recordId, const FHTEffect &tEffect)
+{
+  m_tEffects[recordId] = tEffect;
 }
 
 void libfreehand::FHCollector::collectParagraph(unsigned recordId, const FHParagraph &paragraph)
@@ -1380,93 +1385,192 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   if (!painter || !textObject)
     return;
 
-  double xa = textObject->m_startX;
-  double ya = textObject->m_startY;
-  double xb = textObject->m_startX + textObject->m_width;
-  double yb = textObject->m_startY + textObject->m_height;
-  double xc = xa;
-  double yc = yb;
-  unsigned xFormId = textObject->m_xFormId;
-  if (xFormId)
+  double width=textObject->m_width;
+  double height=textObject->m_height;
+  unsigned num[]= {textObject->m_colNum,textObject->m_rowNum};
+  double decalX[]= {width+textObject->m_colSep,0};
+  double decalY[]= {0, height+textObject->m_rowSep};
+  if (textObject->m_rowBreakFirst)
   {
-    const FHTransform *trafo = _findTransform(xFormId);
-    if (trafo)
+    std::swap(num[0],num[1]);
+    std::swap(decalX[0],decalX[1]);
+    std::swap(decalY[0],decalY[1]);
+  }
+  for (int i=0; i<2; ++i)
+  {
+    if (num[i]<=0 || num[i]>10)
     {
-      trafo->applyToPoint(xa, ya);
-      trafo->applyToPoint(xb, yb);
-      trafo->applyToPoint(xc, yc);
+      FH_DEBUG_MSG(("libfreehand::FHCollector::_outputTextObject: the number of row/col seems bad\n"));
+      num[i]=1;
     }
   }
-  std::stack<FHTransform> groupTransforms(m_currentTransforms);
-  while (!groupTransforms.empty())
+  ++m_textBoxNumberId;
+  for (unsigned dim0=0; dim0<num[0]; ++dim0)
   {
-    groupTransforms.top().applyToPoint(xa, ya);
-    groupTransforms.top().applyToPoint(xb, yb);
-    groupTransforms.top().applyToPoint(xc, yc);
-    groupTransforms.pop();
+    for (unsigned dim1=0; dim1<num[1]; ++dim1)
+    {
+      unsigned id = dim0*num[1]+dim1;
+      double rotation = 0, finalHeight = 0, finalWidth = 0, xmid=0, ymid=0;
+      bool useShapeBox=false;
+      if ((width<=0 || height<=0) && textObject->m_pathId)
+      {
+        /* the position are not set for TFOnPath, so we must look for the shape box
+
+           Note: the width and height seem better, the x,y position are still quite random :-~
+        */
+        FHBoundingBox bbox;
+        _getBBofSomething(textObject->m_pathId, bbox);
+        useShapeBox=true;
+        xmid=0.5*(bbox.m_xmin+bbox.m_xmax);
+        ymid=0.5*(bbox.m_ymin+bbox.m_ymax);
+        width=finalWidth=(bbox.m_xmax-bbox.m_xmin);
+        height=finalHeight=(bbox.m_ymax-bbox.m_ymin);
+      }
+      if (!useShapeBox)
+      {
+#ifdef HAVE_CHAINED_TEXTBOX
+        // useme when we can chain frames in Draw
+        double startX=textObject->m_startX+dim0*decalX[0]+dim1*decalX[1];
+        double startY=textObject->m_startY+dim0*decalY[0]+dim1*decalY[1];
+#else
+        /* if the number of row/column is greater than 1, we have a
+           big problem. Let increase the text-box size to contain all
+           the chained text-boxes...
+         */
+        double startX=textObject->m_startX;
+        double startY=textObject->m_startY;
+        width += (num[0]-1)*decalX[0]+(num[1]-1)*decalX[1];
+        height += (num[0]-1)*decalY[0]+(num[1]-1)*decalY[1];
+#endif
+        double xa = startX;
+        double ya = startY;
+        double xb = startX + width;
+        double yb = startY + height;
+        double xc = xa;
+        double yc = yb;
+        unsigned xFormId = textObject->m_xFormId;
+        if (xFormId)
+        {
+          const FHTransform *trafo = _findTransform(xFormId);
+          if (trafo)
+          {
+            trafo->applyToPoint(xa, ya);
+            trafo->applyToPoint(xb, yb);
+            trafo->applyToPoint(xc, yc);
+          }
+        }
+        std::stack<FHTransform> groupTransforms(m_currentTransforms);
+        while (!groupTransforms.empty())
+        {
+          groupTransforms.top().applyToPoint(xa, ya);
+          groupTransforms.top().applyToPoint(xb, yb);
+          groupTransforms.top().applyToPoint(xc, yc);
+          groupTransforms.pop();
+        }
+        _normalizePoint(xa, ya);
+        _normalizePoint(xb, yb);
+        _normalizePoint(xc, yc);
+
+        for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
+        {
+          iter->applyToPoint(xa, ya);
+          iter->applyToPoint(xb, yb);
+          iter->applyToPoint(xc, yc);
+        }
+
+        rotation = atan2(yb-yc, xb-xc);
+        finalHeight = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
+        finalWidth = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
+        xmid = (xa + xb) / 2.0;
+        ymid = (ya + yb) / 2.0;
+      }
+
+      librevenge::RVNGPropertyList textObjectProps;
+      textObjectProps.insert("svg:x", xmid - width / 2.0);
+      textObjectProps.insert("svg:y", ymid + height / 2.0);
+      textObjectProps.insert("svg:height", finalHeight);
+      textObjectProps.insert("svg:width", finalWidth);
+      if (!FH_ALMOST_ZERO(rotation))
+      {
+        textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
+        textObjectProps.insert("librevenge:rotate-cx",xmid);
+        textObjectProps.insert("librevenge:rotate-cy",ymid);
+      }
+#ifdef HAVE_CHAINED_TEXTBOX
+      if (id)
+      {
+        librevenge::RVNGString name;
+        name.sprintf("Textbox%d-%d",m_textBoxNumberId,id);
+        textObjectProps.insert("librevenge:frame-name",name);
+      }
+      if (id+1!=num[0]*num[1])
+      {
+        librevenge::RVNGString name;
+        name.sprintf("Textbox%d-%d",m_textBoxNumberId,id+1);
+        textObjectProps.insert("librevenge:next-frame-name",name);
+      }
+#endif
+      painter->startTextObject(textObjectProps);
+
+      if (id==0)
+      {
+        const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
+        unsigned actPos=0;
+        if (elements && !elements->empty())
+        {
+          for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
+            _outputParagraph(_findParagraph(*iter), painter, actPos, textObject->m_beginPos, textObject->m_endPos);
+        }
+      }
+      painter->endTextObject();
+
+#if !defined(HAVE_CHAINED_TEXTBOX)
+      break;
+#endif
+    }
+#if !defined(HAVE_CHAINED_TEXTBOX)
+    break;
+#endif
   }
-  _normalizePoint(xa, ya);
-  _normalizePoint(xb, yb);
-  _normalizePoint(xc, yc);
-
-  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
-  {
-    iter->applyToPoint(xa, ya);
-    iter->applyToPoint(xb, yb);
-    iter->applyToPoint(xc, yc);
-  }
-
-  double rotation = atan2(yb-yc, xb-xc);
-  double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
-  double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
-  double xmid = (xa + xb) / 2.0;
-  double ymid = (ya + yb) / 2.0;
-
-  librevenge::RVNGPropertyList textObjectProps;
-  textObjectProps.insert("svg:x", xmid - textObject->m_width / 2.0);
-  textObjectProps.insert("svg:y", ymid + textObject->m_height / 2.0);
-  textObjectProps.insert("svg:height", height);
-  textObjectProps.insert("svg:width", width);
-  if (!FH_ALMOST_ZERO(rotation))
-  {
-    textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
-    textObjectProps.insert("librevenge:rotate-cx",xmid);
-    textObjectProps.insert("librevenge:rotate-cy",ymid);
-  }
-  painter->startTextObject(textObjectProps);
-
-  const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
-  if (elements && !elements->empty())
-  {
-    for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
-      _outputParagraph(_findParagraph(*iter), painter);
-  }
-
-  painter->endTextObject();
 }
 
-void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *paragraph, librevenge::RVNGDrawingInterface *painter)
+void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *paragraph, librevenge::RVNGDrawingInterface *painter, unsigned &actPos, unsigned minPos, unsigned maxPos)
 {
   if (!painter || !paragraph)
     return;
-  librevenge::RVNGPropertyList propList;
-  _appendParagraphProperties(propList, paragraph->m_paraStyleId);
-  painter->openParagraph(propList);
-
+  bool paragraphOpened=false;
   std::map<unsigned, std::vector<unsigned short> >::const_iterator iter = m_textBloks.find(paragraph->m_textBlokId);
   if (iter != m_textBloks.end())
   {
 
     for (std::vector<std::pair<unsigned, unsigned> >::size_type i = 0; i < paragraph->m_charStyleIds.size(); ++i)
     {
-      _outputTextRun(&(iter->second), paragraph->m_charStyleIds[i].first,
-                     (i+1 < paragraph->m_charStyleIds.size() ? paragraph->m_charStyleIds[i+1].first : iter->second.size()) - paragraph->m_charStyleIds[i].first,
-                     paragraph->m_charStyleIds[i].second, painter);
+      if (actPos>=maxPos) break;
+      unsigned lastChar=i+1 < paragraph->m_charStyleIds.size() ? paragraph->m_charStyleIds[i+1].first : iter->second.size();
+      unsigned numChar=lastChar-paragraph->m_charStyleIds[i].first;
+      unsigned nextPos=actPos+numChar;
+      if (nextPos<minPos)
+      {
+        actPos=nextPos;
+        continue;
+      }
+      if (!paragraphOpened)
+      {
+        librevenge::RVNGPropertyList propList;
+        _appendParagraphProperties(propList, paragraph->m_paraStyleId);
+        painter->openParagraph(propList);
+        paragraphOpened=true;
+      }
+      unsigned fChar=paragraph->m_charStyleIds[i].first + (actPos<minPos ? minPos-actPos : 0);
+      numChar=lastChar-fChar;
+      if (actPos+numChar>maxPos) numChar=maxPos-actPos;
+      _outputTextRun(&(iter->second), fChar, numChar, paragraph->m_charStyleIds[i].second, painter);
+      actPos=nextPos;
     }
-
   }
-
-  painter->closeParagraph();
+  ++actPos; // EOL
+  if (paragraphOpened)
+    painter->closeParagraph();
 }
 
 void libfreehand::FHCollector::_appendCharacterProperties(librevenge::RVNGPropertyList &propList, unsigned charPropsId)
@@ -1492,6 +1596,36 @@ void libfreehand::FHCollector::_appendCharacterProperties(librevenge::RVNGProper
       librevenge::RVNGString color = getColorString(iterBasicFill->second.m_colorId);
       if (!color.empty())
         propList.insert("fo:color", color);
+    }
+  }
+  FHTEffect const *eff=_findTEffect(charProps.m_tEffectId);
+  if (eff && eff->m_nameId)
+  {
+    std::map<unsigned, librevenge::RVNGString>::const_iterator iterString = m_strings.find(eff->m_nameId);
+    if (iterString != m_strings.end())
+    {
+      librevenge::RVNGString const &type=iterString->second;
+      if (type=="InlineEffect")   // inside col1, outside col0
+      {
+        propList.insert("fo:font-weight", "bold");
+        librevenge::RVNGString color = getColorString(eff->m_colorId[1]);
+        if (!color.empty())
+          propList.insert("fo:color", color);
+      }
+      else if (type=="ShadowEffect")
+        propList.insert("fo:text-shadow", "1pt 1pt");
+      else if (type=="ZoomEffect")
+      {
+        propList.insert("style:font-relief", "embossed");
+        propList.insert("fo:text-shadow", "1pt -1pt");
+        librevenge::RVNGString color = getColorString(eff->m_colorId[0]);
+        if (!color.empty())
+          propList.insert("fo:color", color);
+      }
+      else
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendCharacterProperties: find unknown effect %s\n",type.cstr()));
+      }
     }
   }
   for (std::map<unsigned,double>::const_iterator it=charProps.m_idToDoubleMap.begin(); it!=charProps.m_idToDoubleMap.end(); ++it)
@@ -1550,6 +1684,37 @@ void libfreehand::FHCollector::_appendCharacterProperties(librevenge::RVNGProper
     double fontSize=(charProps.m_fontSize>0) ? charProps.m_fontSize : 24.;
     value.sprintf("%g%%",100.*charProps.m_baselineShift/fontSize);
     propList.insert("style:text-position", value);
+  }
+  FHTEffect const *eff=_findTEffect(charProps.m_textEffsId);
+  if (eff && eff->m_shortNameId)
+  {
+    std::map<unsigned, librevenge::RVNGString>::const_iterator iterString = m_strings.find(eff->m_shortNameId);
+    if (iterString != m_strings.end())
+    {
+      librevenge::RVNGString const &type=iterString->second;
+      if (type=="inlin")   // inside col1, outside col0
+        propList.insert("fo:font-weight", "bold");
+      else if (type=="otw stol")
+        propList.insert("style:text-outline", "true");
+      else if (type=="stob")
+        propList.insert("fo:font-style", "italic");
+      else if (type=="stsh")
+        propList.insert("fo:text-shadow", "1pt 1pt");
+      else if (type=="sthv")
+        propList.insert("fo:font-weight", "bold");
+      else if (type=="extrude")
+      {
+        propList.insert("style:font-relief", "embossed");
+        propList.insert("fo:text-shadow", "1pt -1pt");
+        librevenge::RVNGString color = getColorString(eff->m_colorId[0]);
+        if (!color.empty())
+          propList.insert("fo:color", color);
+      }
+      else
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendCharacterProperties: find unknown effect %s\n",type.cstr()));
+      }
+    }
   }
 }
 
@@ -2603,6 +2768,16 @@ const libfreehand::FHTransform *libfreehand::FHCollector::_findTransform(unsigne
     return 0;
   std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(id);
   if (iter != m_transforms.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHTEffect *libfreehand::FHCollector::_findTEffect(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHTEffect>::const_iterator iter = m_tEffects.find(id);
+  if (iter != m_tEffects.end())
     return &(iter->second);
   return 0;
 }
