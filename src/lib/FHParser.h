@@ -44,6 +44,7 @@ private:
   void readBasicFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBasicLine(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBendFilter(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readBlendObject(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBlock(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBrush(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBrushStroke(librevenge::RVNGInputStream *input, FHCollector *collector);
