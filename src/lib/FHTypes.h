@@ -35,6 +35,13 @@ struct FHBlock
   FHBlock(unsigned layerListId) : m_layerListId(layerListId) {}
 };
 
+struct FHTab
+{
+  unsigned m_type;
+  double m_position;
+  FHTab() : m_type(0), m_position(0) {}
+};
+
 struct FHTail
 {
   unsigned m_blockId;
@@ -116,8 +123,17 @@ struct FHTextObject
       m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0) {}
 };
 
-struct FHParaProperties
+struct FHParagraphProperties
 {
+  std::map<unsigned,unsigned> m_idToIntMap; // id to enum, int map
+  std::map<unsigned,double> m_idToDoubleMap;
+  std::map<unsigned,unsigned> m_idToZoneIdMap;
+  FHParagraphProperties() : m_idToIntMap(), m_idToDoubleMap(), m_idToZoneIdMap()
+  {}
+  bool empty() const
+  {
+    return m_idToIntMap.empty() && m_idToDoubleMap.empty() && m_idToZoneIdMap.empty();
+  }
 };
 
 struct FHCharProperties
@@ -126,9 +142,9 @@ struct FHCharProperties
   double m_fontSize;
   unsigned m_fontNameId;
   unsigned m_fontId;
-  double m_horizontalScale;
+  std::map<unsigned,double> m_idToDoubleMap;
   FHCharProperties()
-    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0), m_horizontalScale(1.0) {}
+    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0), m_idToDoubleMap() {}
 };
 
 struct FHRGBColor

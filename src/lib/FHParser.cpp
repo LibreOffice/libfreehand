@@ -7,6 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+#include <algorithm>
 #include <memory>
 #include <sstream>
 #include <string>
@@ -171,6 +172,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
     break;
   case FH_BENDFILTER:
     readBendFilter(input, collector);
+    break;
+  case FH_BLENDOBJECT:
+    readBlendObject(input, collector);
     break;
   case FH_BLOCK:
     readBlock(input, collector);
@@ -679,6 +683,15 @@ void libfreehand::FHParser::readBendFilter(librevenge::RVNGInputStream *input, l
   input->seek(10, librevenge::RVNG_SEEK_CUR);
 }
 
+void libfreehand::FHParser::readBlendObject(librevenge::RVNGInputStream *input, libfreehand::FHCollector */*collector*/)
+{
+  // osnola useme
+  for (int i=0; i<2; ++i) _readRecordId(input);
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input);
+  input->seek(16, librevenge::RVNG_SEEK_CUR);
+}
+
 void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned layerListId = 0;
@@ -1159,6 +1172,7 @@ void libfreehand::FHParser::readGuides(librevenge::RVNGInputStream *input, libfr
   unsigned short size = readU16(input);
   _readRecordId(input);
   _readRecordId(input);
+  /* osnola: todo, useme, there is one guide by "page", ... */
   if (m_version > 3)
     input->seek(4, librevenge::RVNG_SEEK_CUR);
   input->seek(12+size*8, librevenge::RVNG_SEEK_CUR);
@@ -1791,6 +1805,8 @@ void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libf
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   FHPropList propertyList;
   _readPropLstElements(input, propertyList.m_elements, size);
+  /* osnola: TODO
+     - if version>3, look if pages is defined, if yes, the zone defines the list of pages, */
   if (m_version < 9)
     input->seek((size2 - size)*4, librevenge::RVNG_SEEK_CUR);
   if (collector)
@@ -2047,13 +2063,27 @@ void libfreehand::FHParser::readSymbolLibrary(librevenge::RVNGInputStream *input
     _readRecordId(input);
 }
 
-void libfreehand::FHParser::readTabTable(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTabTable(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short size = readU16(input);
-  if (m_version < 10)
-    input->seek(2+size*2, librevenge::RVNG_SEEK_CUR);
-  else
-    input->seek(2+size*6, librevenge::RVNG_SEEK_CUR);
+  unsigned short n = readU16(input);
+  long endPos=input->tell()+6*size;
+  if (n>size)
+  {
+    FH_DEBUG_MSG(("libfreehand::FHParser::readTabTable: the number of tabs seems bad\n"));
+    input->seek(endPos, librevenge::RVNG_SEEK_SET);
+    return;
+  }
+  std::vector<FHTab> tabs;
+  tabs.resize(size_t(n));
+  for (size_t i=0; i<size_t(n); ++i)
+  {
+    tabs[i].m_type=readU16(input);
+    tabs[i].m_position=_readCoordinate(input);
+  }
+  if (collector)
+    collector->collectTabTable(m_currentRecord+1, tabs);
+  input->seek(endPos, librevenge::RVNG_SEEK_SET);
 }
 
 void libfreehand::FHParser::readTaperedFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -2295,6 +2325,7 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
   double minY = 0.0;
   double maxX = 0.0;
   double maxY = 0.0;
+  FHParagraphProperties paraProps;
   std::unique_ptr<libfreehand::FHCharProperties> charProps;
   for (unsigned short i = 0; i < num; ++i)
   {
@@ -2307,10 +2338,7 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
     {
       minX = _readCoordinate(input) / 72.0;
       if (m_pageInfo.m_minX > 0.0)
-      {
-        if (m_pageInfo.m_minX > minX)
-          m_pageInfo.m_minX = minX;
-      }
+        m_pageInfo.m_minX=std::min(minX,m_pageInfo.m_minX);
       else
         m_pageInfo.m_minX = minX;
       break;
@@ -2320,10 +2348,7 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
     {
       minY = _readCoordinate(input) / 72.0;
       if (m_pageInfo.m_minY > 0.0)
-      {
-        if (m_pageInfo.m_minY > minY)
-          m_pageInfo.m_minY = minY;
-      }
+        m_pageInfo.m_minY=std::min(minY,m_pageInfo.m_minY);
       else
         m_pageInfo.m_minY = minY;
       break;
@@ -2331,17 +2356,32 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
     case FH_PAGE_WIDTH:
     {
       maxX = minX + _readCoordinate(input) / 72.0;
-      if (m_pageInfo.m_maxX < maxX)
-        m_pageInfo.m_maxX = maxX;
+      m_pageInfo.m_maxX = std::max(maxX,m_pageInfo.m_maxX);
       break;
     }
     case FH_PAGE_HEIGHT:
     {
       maxY = minY + _readCoordinate(input) / 72.0;
-      if (m_pageInfo.m_maxY < maxY)
-        m_pageInfo.m_maxY = maxY;
+      m_pageInfo.m_maxY = std::max(maxY,m_pageInfo.m_maxY);
       break;
     }
+    case FH_PARA_LEFT_INDENT:
+    case FH_PARA_RIGHT_INDENT:
+    case FH_PARA_TEXT_INDENT:
+    case FH_PARA_SPC_ABOVE:
+    case FH_PARA_SPC_BELLOW:
+    case FH_PARA_LEADING:
+      paraProps.m_idToDoubleMap[rec]=_readCoordinate(input);
+      break;
+    case FH_PARA_LINE_TOGETHER:
+    case FH_PARA_TEXT_ALIGN:
+    case FH_PARA_LEADING_TYPE:
+    case FH_PARA_KEEP_SAME_LINE:
+      paraProps.m_idToIntMap[rec]=readU32(input);
+      break;
+    case FH_PARA_TAB_TABLE_ID:
+      paraProps.m_idToZoneIdMap[rec]=_readRecordId(input);
+      break;
     case FH_TEFFECT_ID:
     {
       if (!charProps)
@@ -2377,13 +2417,13 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
       charProps->m_fontNameId = _readRecordId(input);
       break;
     }
+    case FH_BASELN_SHIFT:
     case FH_HOR_SCALE:
-    {
+    case FH_RNG_KERN:
       if (!charProps)
         charProps.reset(new libfreehand::FHCharProperties());
-      charProps->m_horizontalScale = _readCoordinate(input);
+      charProps->m_idToDoubleMap[rec]=_readCoordinate(input);
       break;
-    }
     default:
       if (key == 2)
         _readRecordId(input);
@@ -2391,10 +2431,12 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
         input->seek(4, librevenge::RVNG_SEEK_CUR);
     }
   }
-  if (charProps)
+  if (collector)
   {
-    if (collector)
+    if (charProps)
       collector->collectCharProps(m_currentRecord+1, *charProps);
+    if (!paraProps.empty())
+      collector->collectParagraphProps(m_currentRecord+1, paraProps);
   }
 }
 

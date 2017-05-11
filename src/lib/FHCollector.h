@@ -45,9 +45,11 @@ public:
   void collectTString(unsigned recordId, const std::vector<unsigned> &elements);
   void collectAGDFont(unsigned recordId, const FHAGDFont &font);
   void collectParagraph(unsigned recordId, const FHParagraph &paragraph);
+  void collectTabTable(unsigned recordId, const std::vector<FHTab> &tabs);
   void collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters);
   void collectTextObject(unsigned recordId, const FHTextObject &textObject);
   void collectCharProps(unsigned recordId, const FHCharProperties &charProps);
+  void collectParagraphProps(unsigned recordId, const FHParagraphProperties &paragraphProps);
   void collectPropList(unsigned recordId, const FHPropList &propertyList);
   void collectDisplayText(unsigned recordId, const FHDisplayText &displayText);
   void collectGraphicStyle(unsigned recordId, const FHGraphicStyle &graphicStyle);
@@ -123,6 +125,7 @@ private:
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps);
   void _appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId);
+  void _appendTabProperties(::librevenge::RVNGPropertyList &propList, const FHTab &tab);
   void _appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
   void _appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
   void _appendBasicFill(::librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
@@ -148,6 +151,7 @@ private:
   const FHTextObject *_findTextObject(unsigned id);
   const FHTransform *_findTransform(unsigned id);
   const FHParagraph *_findParagraph(unsigned id);
+  const std::vector<FHTab> *_findTabTable(unsigned id);
   const FHPropList *_findPropList(unsigned id);
   const FHGraphicStyle *_findGraphicStyle(unsigned id);
   const std::vector<unsigned short> *_findTextBlok(unsigned id);
@@ -201,9 +205,11 @@ private:
   std::map<unsigned, std::vector<unsigned> > m_tStrings;
   std::map<unsigned, FHAGDFont> m_fonts;
   std::map<unsigned, FHParagraph> m_paragraphs;
+  std::map<unsigned, std::vector<FHTab> > m_tabs;
   std::map<unsigned, std::vector<unsigned short> > m_textBloks;
   std::map<unsigned, FHTextObject> m_textObjects;
   std::map<unsigned, FHCharProperties> m_charProperties;
+  std::map<unsigned, FHParagraphProperties> m_paragraphProperties;
   std::map<unsigned, FHRGBColor> m_rgbColors;
   std::map<unsigned, FHBasicFill> m_basicFills;
   std::map<unsigned, FHPropList> m_propertyLists;

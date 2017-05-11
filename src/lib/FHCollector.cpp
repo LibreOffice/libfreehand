@@ -238,8 +238,8 @@ private:
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_clipGroups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(),
-  m_pathTexts(), m_tStrings(), m_fonts(), m_paragraphs(), m_textBloks(), m_textObjects(), m_charProperties(),
-  m_rgbColors(), m_basicFills(), m_propertyLists(), m_basicLines(), m_displayTexts(), m_graphicStyles(),
+  m_pathTexts(), m_tStrings(), m_fonts(), m_paragraphs(), m_tabs(), m_textBloks(), m_textObjects(), m_charProperties(),
+  m_paragraphProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(), m_basicLines(), m_displayTexts(), m_graphicStyles(),
   m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(), m_linearFills(),
   m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
@@ -343,6 +343,12 @@ void libfreehand::FHCollector::collectParagraph(unsigned recordId, const FHParag
   m_paragraphs[recordId] = paragraph;
 }
 
+void libfreehand::FHCollector::collectTabTable(unsigned recordId, const std::vector<FHTab> &tabs)
+{
+  if (tabs.empty()) return;
+  m_tabs[recordId] = tabs;
+}
+
 void libfreehand::FHCollector::collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters)
 {
   m_textBloks[recordId]  = characters;
@@ -356,6 +362,11 @@ void libfreehand::FHCollector::collectTextObject(unsigned recordId, const FHText
 void libfreehand::FHCollector::collectCharProps(unsigned recordId, const FHCharProperties &charProps)
 {
   m_charProperties[recordId] = charProps;
+}
+
+void libfreehand::FHCollector::collectParagraphProps(unsigned recordId, const FHParagraphProperties &paragraphProps)
+{
+  m_paragraphProperties[recordId] = paragraphProps;
 }
 
 void libfreehand::FHCollector::collectColor(unsigned recordId, const FHRGBColor &color)
@@ -1468,7 +1479,31 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
         propList.insert("fo:color", color);
     }
   }
-  propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
+  for (std::map<unsigned,double>::const_iterator it=charProps.m_idToDoubleMap.begin(); it!=charProps.m_idToDoubleMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_BASELN_SHIFT:
+    {
+      if (it->second<=0 && it->second>=0) break;
+      librevenge::RVNGString value;
+      double fontSize=(charProps.m_fontSize>0) ? charProps.m_fontSize : 24.;
+      value.sprintf("%g%%",100.*it->second/fontSize);
+      propList.insert("style:text-position", value);
+      break;
+    }
+    case FH_HOR_SCALE:
+      if (it->second<=1 && it->second>=1) break;
+      propList.insert("style:text-scale", it->second, librevenge::RVNG_PERCENT);
+      break;
+    case FH_RNG_KERN:
+      if (it->second<=0 && it->second>=0) break;
+      propList.insert("fo:letter-spacing", it->second*charProps.m_fontSize, librevenge::RVNG_POINT);
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps)
@@ -1497,18 +1532,145 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
   if (charProps.m_baselineShift<0 || charProps.m_baselineShift>0)
   {
     librevenge::RVNGString value;
-    double fontSize=(charProps.m_fontSize>0) ? charProps.m_fontSize : 12.;
+    double fontSize=(charProps.m_fontSize>0) ? charProps.m_fontSize : 24.;
     value.sprintf("%g%%",100.*charProps.m_baselineShift/fontSize);
     propList.insert("style:text-position", value);
   }
+}
+
+void libfreehand::FHCollector::_appendTabProperties(::librevenge::RVNGPropertyList &propList, const libfreehand::FHTab &tab)
+{
+  switch (tab.m_type)
+  {
+  case 0:
+  case 4: // unsure, look like a left tab
+  default:
+    break;
+  case 1:
+    propList.insert("style:type", "right");
+    break;
+  case 2:
+    propList.insert("style:type", "center");
+    break;
+  case 3:
+    propList.insert("style:type", "char");
+    propList.insert("style:char", "."); // checkme
+    break;
+  }
+  propList.insert("style:position", tab.m_position, librevenge::RVNG_POINT);
 }
 
 void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, const FH3ParaProperties & /* paraProps */)
 {
 }
 
-void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, unsigned /* paraPropsId */)
+void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList &propList, unsigned paragraphPropsId)
 {
+  std::map<unsigned, FHParagraphProperties>::const_iterator iter = m_paragraphProperties.find(paragraphPropsId);
+  if (iter == m_paragraphProperties.end())
+    return;
+  FHParagraphProperties const &para=iter->second;
+  for (std::map<unsigned,unsigned>::const_iterator it=para.m_idToZoneIdMap.begin(); it!=para.m_idToZoneIdMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_PARA_TAB_TABLE_ID:
+      if (m_tabs.find(it->second)!=m_tabs.end())
+      {
+        std::vector<FHTab> const &tabs=m_tabs.find(it->second)->second;
+        if (tabs.empty())
+          break;
+        librevenge::RVNGPropertyListVector tabVect;
+        for (size_t i=0; i<tabs.size(); i++)
+        {
+          librevenge::RVNGPropertyList tabList;
+          _appendTabProperties(tabList, tabs[i]);
+          tabVect.append(tabList);
+        }
+        propList.insert("style:tab-stops", tabVect);
+      }
+      break;
+    default:
+      break;
+    }
+  }
+  for (std::map<unsigned,double>::const_iterator it=para.m_idToDoubleMap.begin(); it!=para.m_idToDoubleMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_PARA_LEFT_INDENT:
+      propList.insert("fo:margin-left", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_RIGHT_INDENT:
+      propList.insert("fo:margin-right", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_TEXT_INDENT:
+      propList.insert("fo:text-indent", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_SPC_ABOVE:
+      propList.insert("fo:margin-top", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_SPC_BELLOW:
+      propList.insert("fo:margin-bottom", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_LEADING:
+      if (it->second<=0 && it->second>=0) break;
+      if (para.m_idToIntMap.find(FH_PARA_LEADING_TYPE)==para.m_idToIntMap.end())
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendParagraphProperties: can not find the leading type\n"));
+        break;
+      }
+      switch (para.m_idToIntMap.find(FH_PARA_LEADING_TYPE)->second)
+      {
+      case 0: // delta in point
+        propList.insert("fo:line-height",1.+it->second/(it->second>0 ? 12 : 24), librevenge::RVNG_PERCENT);
+        break;
+      case 1:
+        propList.insert("fo:line-height",it->second, librevenge::RVNG_POINT);
+        break;
+      case 2:
+        propList.insert("fo:line-height",it->second, librevenge::RVNG_PERCENT);
+        break;
+      default:
+        break;
+      }
+      break;
+    default:
+      break;
+    }
+  }
+  for (std::map<unsigned,unsigned>::const_iterator it=para.m_idToIntMap.begin(); it!=para.m_idToIntMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_PARA_TEXT_ALIGN:
+      switch (it->second)
+      {
+      case 0:
+        propList.insert("fo:text-align", "left");
+        break;
+      case 1:
+        propList.insert("fo:text-align", "end");
+        break;
+      case 2:
+        propList.insert("fo:text-align", "center");
+        break;
+      case 3:
+        propList.insert("fo:text-align", "justify");
+        break;
+      default:
+        break;
+      }
+      break;
+    case FH_PARA_KEEP_SAME_LINE:
+      if (it->second==1)
+        propList.insert("fo:keep-together", "always");
+      break;
+    case FH_PARA_LEADING_TYPE: // done with FH_PARA_LEADING
+    default:
+      break;
+    }
+  }
 }
 
 void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter)
@@ -1780,8 +1942,45 @@ void libfreehand::FHCollector::_outputTextRun(const std::vector<unsigned short> 
   _appendCharacterProperties(propList, charStyleId);
   painter->openSpan(propList);
   std::vector<unsigned short> tmpChars;
+  bool lastIsSpace=false;
   for (unsigned i = offset; i < length+offset && i < characters->size(); ++i)
-    tmpChars.push_back((*characters)[i]);
+  {
+    unsigned c=(*characters)[i];
+    if (c=='\t' || (c==' ' && lastIsSpace))
+    {
+      if (!tmpChars.empty())
+      {
+        librevenge::RVNGString text;
+        _appendUTF16(text, tmpChars);
+        painter->insertText(text);
+        tmpChars.clear();
+      }
+      if (c=='\t')
+        painter->insertTab();
+      else
+        painter->insertSpace();
+      continue;
+    }
+    else
+    {
+      if (c<=0x1f)
+      {
+        switch (c)
+        {
+        case 0xb: // end of column
+          break;
+        case 0x1f: // optional hyphen
+          break;
+        default:
+          FH_DEBUG_MSG(("libfreehand::FHCollector::_outputTextRun: find character %x\n", c));
+          break;
+        }
+      }
+      else
+        tmpChars.push_back(c);
+    }
+    lastIsSpace=c==' ';
+  }
   if (!tmpChars.empty())
   {
     librevenge::RVNGString text;
@@ -2348,6 +2547,16 @@ const libfreehand::FHParagraph *libfreehand::FHCollector::_findParagraph(unsigne
     return 0;
   std::map<unsigned, FHParagraph>::const_iterator iter = m_paragraphs.find(id);
   if (iter != m_paragraphs.end())
+    return &(iter->second);
+  return 0;
+}
+
+const std::vector<libfreehand::FHTab> *libfreehand::FHCollector::_findTabTable(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, std::vector<libfreehand::FHTab> >::const_iterator iter = m_tabs.find(id);
+  if (iter != m_tabs.end())
     return &(iter->second);
   return 0;
 }

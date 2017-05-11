@@ -5,6 +5,7 @@ AttributeHolder
 BasicFill
 BasicLine
 BendFilter
+BlendObject
 Block
 Brush
 BrushList
