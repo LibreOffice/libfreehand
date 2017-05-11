@@ -239,7 +239,8 @@ libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_clipGroups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(),
   m_pathTexts(), m_tStrings(), m_fonts(), m_paragraphs(), m_tabs(), m_textBloks(), m_textObjects(), m_charProperties(),
-  m_paragraphProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(), m_basicLines(), m_displayTexts(), m_graphicStyles(),
+  m_paragraphProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
+  m_basicLines(), m_customProcs(), m_patternLines(), m_displayTexts(), m_graphicStyles(),
   m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(), m_linearFills(),
   m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
@@ -387,6 +388,16 @@ void libfreehand::FHCollector::collectBasicFill(unsigned recordId, const FHBasic
 void libfreehand::FHCollector::collectBasicLine(unsigned recordId, const FHBasicLine &line)
 {
   m_basicLines[recordId] = line;
+}
+
+void libfreehand::FHCollector::collectCustomProc(unsigned recordId, const FHCustomProc &line)
+{
+  m_customProcs[recordId] = line;
+}
+
+void libfreehand::FHCollector::collectPatternLine(unsigned recordId, const FHPatternLine &line)
+{
+  m_patternLines[recordId] = line;
 }
 
 void libfreehand::FHCollector::collectTileFill(unsigned recordId, const FHTileFill &fill)
@@ -1417,7 +1428,11 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   textObjectProps.insert("svg:height", height);
   textObjectProps.insert("svg:width", width);
   if (!FH_ALMOST_ZERO(rotation))
+  {
     textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
+    textObjectProps.insert("librevenge:rotate-cx",xmid);
+    textObjectProps.insert("librevenge:rotate-cy",ymid);
+  }
   painter->startTextObject(textObjectProps);
 
   const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
@@ -1731,7 +1746,11 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
     textObjectProps.insert(padding[i],0,librevenge::RVNG_POINT);
   }
   if (!FH_ALMOST_ZERO(rotation))
+  {
     textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
+    textObjectProps.insert("librevenge:rotate-cx",xmid);
+    textObjectProps.insert("librevenge:rotate-cy",ymid);
+  }
   if (displayText->m_justify==4)  // top-down: checkme do nothing
     textObjectProps.insert("style:writing-mode", "tb-lr");
   painter->startTextObject(textObjectProps);
@@ -2039,6 +2058,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendRadialFill(propList, _findRadialFill(iter->second));
         _appendTileFill(propList, _findTileFill(iter->second));
         _appendPatternFill(propList, _findPatternFill(iter->second));
+        _appendCustomProcFill(propList, _findCustomProc(iter->second));
       }
     }
     else
@@ -2057,6 +2077,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           _appendRadialFill(propList, _findRadialFill(fillId));
           _appendTileFill(propList, _findTileFill(fillId));
           _appendPatternFill(propList, _findPatternFill(fillId));
+          _appendCustomProcFill(propList, _findCustomProc(fillId));
         }
         else
         {
@@ -2090,6 +2111,8 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
       if (iter != propertyList->m_elements.end())
       {
         _appendBasicLine(propList, _findBasicLine(iter->second));
+        _appendPatternLine(propList, _findPatternLine(iter->second));
+        _appendCustomProcLine(propList, _findCustomProc(iter->second));
       }
     }
     else
@@ -2101,7 +2124,11 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
           _appendStrokeProperties(propList, graphicStyle->m_parentId);
         unsigned strokeId = _findStrokeId(*graphicStyle);
         if (strokeId)
+        {
           _appendBasicLine(propList, _findBasicLine(strokeId));
+          _appendPatternLine(propList, _findPatternLine(strokeId));
+          _appendCustomProcLine(propList, _findCustomProc(strokeId));
+        }
         else
         {
           const FHFilterAttributeHolder *filterAttributeHolder = _findFilterAttributeHolder(*graphicStyle);
@@ -2124,6 +2151,18 @@ void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &
     return;
   propList.insert("draw:fill", "solid");
   librevenge::RVNGString color = getColorString(basicFill->m_colorId);
+  if (!color.empty())
+    propList.insert("draw:fill-color", color);
+  else
+    propList.insert("draw:fill-color", "#000000");
+}
+
+void libfreehand::FHCollector::_appendCustomProcFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHCustomProc *fill)
+{
+  if (!fill || fill->m_ids.empty())
+    return;
+  propList.insert("draw:fill", "solid");
+  librevenge::RVNGString color = getColorString(fill->m_ids[0]);
   if (!color.empty())
     propList.insert("draw:fill-color", color);
   else
@@ -2461,6 +2500,33 @@ void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &
   _appendArrowPath(propList, _findArrowPath(basicLine->m_endArrowId), false);
 }
 
+void libfreehand::FHCollector::_appendCustomProcLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHCustomProc *customProc)
+{
+  if (!customProc)
+    return;
+  propList.insert("draw:stroke", "solid");
+  librevenge::RVNGString color;
+  if (!customProc->m_ids.empty())
+    color= getColorString(customProc->m_ids[0]);
+  if (!color.empty())
+    propList.insert("svg:stroke-color", color);
+  if (!customProc->m_widths.empty())
+    propList.insert("svg:stroke-width", customProc->m_widths[0], librevenge::RVNG_POINT);
+}
+
+void libfreehand::FHCollector::_appendPatternLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHPatternLine *patternLine)
+{
+  if (!patternLine)
+    return;
+  propList.insert("draw:stroke", "solid");
+  librevenge::RVNGString color = getColorString(patternLine->m_colorId, patternLine->m_percentPattern);
+  if (!color.empty())
+    propList.insert("svg:stroke-color", color);
+  else if (!propList["svg:stroke-color"]) // set to default
+    propList.insert("svg:stroke-color", "#000000");
+  propList.insert("svg:stroke-width", patternLine->m_width);
+}
+
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
 {
   if (!id)
@@ -2681,6 +2747,26 @@ const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigne
   return 0;
 }
 
+const libfreehand::FHCustomProc *libfreehand::FHCollector::_findCustomProc(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHCustomProc>::const_iterator iter = m_customProcs.find(id);
+  if (iter != m_customProcs.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHPatternLine *libfreehand::FHCollector::_findPatternLine(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHPatternLine>::const_iterator iter = m_patternLines.find(id);
+  if (iter != m_patternLines.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHRGBColor *libfreehand::FHCollector::_findRGBColor(unsigned id)
 {
   if (!id)
@@ -2834,7 +2920,7 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
     // Add other fills if we support them
     if (_findBasicFill(valueId) || _findLinearFill(valueId)
         || _findLensFill(valueId) || _findRadialFill(valueId)
-        || _findTileFill(valueId) || _findPatternFill(valueId))
+        || _findTileFill(valueId) || _findPatternFill(valueId) || _findCustomProc(valueId))
       fillId = valueId;
   }
   return fillId;
@@ -2889,15 +2975,27 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
   return data;
 }
 
-::librevenge::RVNGString libfreehand::FHCollector::getColorString(unsigned id)
+::librevenge::RVNGString libfreehand::FHCollector::getColorString(unsigned id, double tintVal)
 {
+  FHRGBColor col;
   const FHRGBColor *color = _findRGBColor(id);
   if (color)
-    return _getColorString(*color);
-  const FHTintColor *tint = _findTintColor(id);
-  if (tint)
-    return _getColorString(getRGBFromTint(*tint));
-  return ::librevenge::RVNGString();
+    col=*color;
+  else
+  {
+    const FHTintColor *tint = _findTintColor(id);
+    if (!tint)
+      return ::librevenge::RVNGString();
+    col=getRGBFromTint(*tint);
+  }
+  if (tintVal<=0 || tintVal>=1)
+    return _getColorString(col);
+
+  FHRGBColor finalColor;
+  finalColor.m_red = col.m_red * tintVal + (1 - tintVal) * 65536;
+  finalColor.m_green = col.m_green * tintVal + (1 - tintVal) * 65536;
+  finalColor.m_blue = col.m_blue * tintVal + (1 - tintVal) * 65536;
+  return _getColorString(finalColor);
 }
 
 libfreehand::FHRGBColor libfreehand::FHCollector::getRGBFromTint(const FHTintColor &tint)
