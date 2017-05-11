@@ -391,6 +391,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
   case FH_PATH:
     readPath(input, collector);
     break;
+  case FH_PATHTEXT:
+    readPathText(input, collector);
+    break;
   case FH_PATHTEXTLINEINFO:
     readPathTextLineInfo(input, collector);
     break;
@@ -417,6 +420,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
     break;
   case FH_PROPLST:
     readPropLst(input, collector);
+    break;
+  case FH_PSFILL:
+    readPSFill(input, collector);
     break;
   case FH_PSLINE:
     readPSLine(input, collector);
@@ -575,16 +581,65 @@ void libfreehand::FHParser::readAGDSelection(librevenge::RVNGInputStream *input,
   input->seek(6+size*4, librevenge::RVNG_SEEK_CUR);
 }
 
-void libfreehand::FHParser::readArrowPath(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readArrowPath(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   if (m_version > 8)
     input->seek(20, librevenge::RVNG_SEEK_CUR);
-  unsigned size = readU16(input);
+  unsigned numPoints = readU16(input);
   if (m_version <= 8)
     input->seek(20, librevenge::RVNG_SEEK_CUR);
   if (m_version > 3)
     input->seek(4, librevenge::RVNG_SEEK_CUR);
-  input->seek(size*27+4, librevenge::RVNG_SEEK_CUR);
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+
+  long endPos=input->tell()+27*numPoints;
+  std::vector<unsigned char> ptrTypes;
+  std::vector<std::vector<std::pair<double, double> > > path;
+  try
+  {
+    for (unsigned short i = 0; i < numPoints  && !input->isEnd(); ++i)
+    {
+      input->seek(1, librevenge::RVNG_SEEK_CUR);
+      ptrTypes.push_back(readU8(input));
+      input->seek(1, librevenge::RVNG_SEEK_CUR);
+      std::vector<std::pair<double, double> > segment;
+      for (unsigned short j = 0; j < 3 && !input->isEnd(); ++j)
+      {
+        double x = _readCoordinate(input);
+        double y = _readCoordinate(input);
+        std::pair<double, double> tmpPoint = std::make_pair(x, y);
+        segment.push_back(tmpPoint);
+      }
+      if (segment.size() == 3)
+        path.push_back(segment);
+      segment.clear();
+    }
+  }
+  catch (const EndOfStreamException &)
+  {
+    FH_DEBUG_MSG(("libfreehand::FHParser::readArrowPath:Caught EndOfStreamException, continuing\n"));
+  }
+  input->seek(endPos, librevenge::RVNG_SEEK_SET);
+
+  if (path.empty())
+  {
+    FH_DEBUG_MSG(("libfreehand::FHParser::readArrowPath:No path was read\n"));
+    return;
+  }
+
+  FHPath fhPath;
+  fhPath.appendMoveTo(path[0][0].first / 72.0, path[0][0].second / 72.0);
+  unsigned i = 0;
+  for (i = 0; i<path.size()-1; ++i)
+    fhPath.appendCubicBezierTo(path[i][2].first / 72.0, path[i][2].second / 72.0,
+                               path[i+1][1].first / 72.0, path[i+1][1].second / 72.0,
+                               path[i+1][0].first / 72.0,  path[i+1][0].second / 72.0);
+  fhPath.appendCubicBezierTo(path[i][2].first / 72.0, path[i][2].second / 72.0,
+                             path[0][1].first / 72.0, path[0][1].second / 72.0,
+                             path[0][0].first / 72.0, path[0][0].second / 72.0);
+  fhPath.appendClosePath();
+  if (collector && !fhPath.empty())
+    collector->collectArrowPath(m_currentRecord+1, fhPath);
 }
 
 void libfreehand::FHParser::readAttributeHolder(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -872,25 +927,16 @@ void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, 
   displayText.m_height = dimT - dimB;
   input->seek(32, librevenge::RVNG_SEEK_CUR);
   unsigned short textLength = readU16(input);
-  input->seek(2, librevenge::RVNG_SEEK_CUR);
+  displayText.m_justify=readU8(input);
+  input->seek(1, librevenge::RVNG_SEEK_CUR);
+
   FH3CharProperties charProps;
-  charProps.m_offset = readU16(input);
-
-  input->seek(6, librevenge::RVNG_SEEK_CUR);
-  charProps.m_fontNameId = _readRecordId(input);
-  charProps.m_fontSize = _readCoordinate(input);
-
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
-  charProps.m_fontStyle = readU32(input);
-  charProps.m_fontColorId = _readRecordId(input);
-
-  input->seek(18, librevenge::RVNG_SEEK_CUR);
-  displayText.m_charProps.push_back(charProps);
-  while (charProps.m_offset < textLength)
+  do
   {
     _readFH3CharProperties(input, charProps);
     displayText.m_charProps.push_back(charProps);
   }
+  while (charProps.m_offset < textLength);
   FH3ParaProperties paraProps;
   do
   {
@@ -1210,13 +1256,23 @@ void libfreehand::FHParser::readLinearFill(librevenge::RVNGInputStream *input, l
     collector->collectLinearFill(m_currentRecord+1, fill);
 }
 
-void libfreehand::FHParser::readLinePat(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readLinePat(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned short numStrokes = readU16(input);
   if (!numStrokes && m_version == 8)
+  {
+    // osnola: does not seems logical, what is that ?
+    FH_DEBUG_MSG(("libfreehand::FHParser::readLinePat: checkme something is not right here"));
     input->seek(26, librevenge::RVNG_SEEK_CUR);
-  else
-    input->seek(8+numStrokes*4, librevenge::RVNG_SEEK_CUR);
+    return;
+  }
+  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  FHLinePattern pattern;
+  pattern.m_dashes.resize(size_t(numStrokes));
+  for (unsigned short i=0; i<numStrokes; ++i)
+    pattern.m_dashes[size_t(i)]=_readCoordinate(input);
+  if (collector)
+    collector->collectLinePattern(m_currentRecord+1, pattern);
 }
 
 void libfreehand::FHParser::readLineTable(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1604,6 +1660,21 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
     collector->collectPath(m_currentRecord+1, fhPath);
 }
 
+void libfreehand::FHParser::readPathText(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
+{
+  FHPathText group;
+  group.m_elementsId=_readRecordId(input);
+  group.m_layerId=_readRecordId(input);
+  input->seek(2, librevenge::RVNG_SEEK_CUR); // debText?
+  group.m_textSize=readU16(input);
+  input->seek(4, librevenge::RVNG_SEEK_CUR); // 0,0
+  group.m_displayTextId=_readRecordId(input);
+  group.m_shapeId=_readRecordId(input);
+
+  if (collector)
+    collector->collectPathText(m_currentRecord+1, group);
+}
+
 void libfreehand::FHParser::readPathTextLineInfo(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(46, librevenge::RVNG_SEEK_CUR);
@@ -1726,6 +1797,11 @@ void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libf
     collector->collectPropList(m_currentRecord+1, propertyList);
 }
 
+void libfreehand::FHParser::readPSFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+{
+  input->seek(4, librevenge::RVNG_SEEK_CUR);
+}
+
 void libfreehand::FHParser::readPSLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(8, librevenge::RVNG_SEEK_CUR);
@@ -1736,8 +1812,16 @@ void libfreehand::FHParser::readRadialFill(librevenge::RVNGInputStream *input, l
   FHRadialFill fill;
   fill.m_color1Id = _readRecordId(input);
   fill.m_color2Id = _readRecordId(input);
-  fill.m_cx = _readCoordinate(input);
-  fill.m_cy = 1.0 - _readCoordinate(input);
+  if (m_version==3)   // 0,0 => center
+  {
+    fill.m_cx = 0.5+0.5*_readCoordinate(input);
+    fill.m_cy = 0.5+0.5*_readCoordinate(input);
+  }
+  else
+  {
+    fill.m_cx = _readCoordinate(input);
+    fill.m_cy = 1.0 - _readCoordinate(input);
+  }
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectRadialFill(m_currentRecord+1, fill);
@@ -1977,7 +2061,7 @@ void libfreehand::FHParser::readTaperedFill(librevenge::RVNGInputStream *input, 
   FHLinearFill fill;
   fill.m_color1Id = _readRecordId(input);
   fill.m_color2Id = _readRecordId(input);
-  fill.m_angle = _readCoordinate(input);
+  fill.m_angle = -_readCoordinate(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   if (collector)
     collector->collectLinearFill(m_currentRecord+1, fill);
@@ -2031,7 +2115,7 @@ void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, lib
 void libfreehand::FHParser::readTextEffs(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   unsigned num = readU16(input);
-  input->seek(22, librevenge::RVNG_SEEK_CUR);
+  input->seek(num==0 ? 20 : 22, librevenge::RVNG_SEEK_CUR);
   for (unsigned i = 0; i < num; ++i)
   {
     readU16(input);
@@ -2390,9 +2474,7 @@ unsigned libfreehand::FHParser::_xformCalc(unsigned char var1, unsigned char var
 
 double libfreehand::FHParser::_readCoordinate(librevenge::RVNGInputStream *input)
 {
-  double value = (double)readS16(input);
-  value += (double)readU16(input) / 65536.0;
-  return value;
+  return (double)readS32(input)/65536.;
 }
 
 libfreehand::FHRGBColor libfreehand::FHParser::_readRGBColor(librevenge::RVNGInputStream *input)
@@ -2447,7 +2529,7 @@ void libfreehand::FHParser::_readFH3CharProperties(librevenge::RVNGInputStream *
 {
   charProps.m_offset = readU16(input);
   unsigned flags = readU16(input);
-  if (flags & 0x1)// some kind of float
+  if (flags & 0x1) // xPos
     _readCoordinate(input);
   if (flags & 0x2) // kerning
     _readCoordinate(input);
@@ -2457,7 +2539,17 @@ void libfreehand::FHParser::_readFH3CharProperties(librevenge::RVNGInputStream *
     charProps.m_fontSize = _readCoordinate(input);
   if (flags & 0x10)
   {
-    FH_DEBUG_MSG(("FHParser::_readFH3CharProperties: NEW FLAG IN DISPLAY TEXT! %x\n", flags));
+    unsigned long leading=readU32(input);
+    if (leading==0xFFFF0000)
+      charProps.m_leading=-1;
+    else if (leading==0xFFFE0000)
+      charProps.m_leading=-1;
+    else if (leading&0x80000000)
+    {
+      FH_DEBUG_MSG(("FHParser::_readFH3CharProperties: unexpected! %lx\n", leading));
+    }
+    else
+      charProps.m_leading=double(leading)/65536.;
   }
   if (flags & 0x20)
     charProps.m_fontStyle = readU32(input);
@@ -2466,11 +2558,11 @@ void libfreehand::FHParser::_readFH3CharProperties(librevenge::RVNGInputStream *
   if (flags & 0x80)
     charProps.m_textEffsId = _readRecordId(input);
   if (flags & 0x100)
-    _readCoordinate(input);
+    charProps.m_letterSpacing=_readCoordinate(input);
   if (flags & 0x200)
-    _readCoordinate(input);
-  if (flags & 0x400)
-    _readCoordinate(input);
+    charProps.m_wordSpacing=_readCoordinate(input);
+  if (flags & 0x400) // in percent
+    charProps.m_horizontalScale=_readCoordinate(input);
   if (flags & 0x800)
     charProps.m_baselineShift = _readCoordinate(input);
   if (flags & 0x1000)
@@ -2483,6 +2575,7 @@ void libfreehand::FHParser::_readFH3ParaProperties(librevenge::RVNGInputStream *
 {
   paraProps.m_offset = readU16(input);
   input->seek(28, librevenge::RVNG_SEEK_CUR);
+  // osnola: todo
 }
 
 

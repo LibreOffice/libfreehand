@@ -238,11 +238,12 @@ private:
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_clipGroups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(),
-  m_tStrings(), m_fonts(), m_paragraphs(), m_textBloks(), m_textObjects(), m_charProperties(),
+  m_pathTexts(), m_tStrings(), m_fonts(), m_paragraphs(), m_textBloks(), m_textObjects(), m_charProperties(),
   m_rgbColors(), m_basicFills(), m_propertyLists(), m_basicLines(), m_displayTexts(), m_graphicStyles(),
   m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(), m_linearFills(),
   m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
+  m_linePatterns(), m_arrowPaths(),
   m_strokeId(0), m_fillId(0), m_contentId(0), m_visitedObjects()
 {
 }
@@ -322,6 +323,11 @@ void libfreehand::FHCollector::collectCompositePath(unsigned recordId, const lib
   m_compositePaths[recordId] = compositePath;
 }
 
+void libfreehand::FHCollector::collectPathText(unsigned recordId, const libfreehand::FHPathText &pathText)
+{
+  m_pathTexts[recordId] = pathText;
+}
+
 void libfreehand::FHCollector::collectTString(unsigned recordId, const std::vector<unsigned> &elements)
 {
   m_tStrings[recordId] = elements;
@@ -380,6 +386,17 @@ void libfreehand::FHCollector::collectTileFill(unsigned recordId, const FHTileFi
 void libfreehand::FHCollector::collectPatternFill(unsigned recordId, const FHPatternFill &fill)
 {
   m_patternFills[recordId] = fill;
+}
+
+void libfreehand::FHCollector::collectLinePattern(unsigned recordId, const FHLinePattern &line)
+{
+  m_linePatterns[recordId] = line;
+}
+
+void libfreehand::FHCollector::collectArrowPath(unsigned recordId, const FHPath &path)
+{
+  // osnola: useme
+  m_arrowPaths[recordId] = path;
 }
 
 void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropList &propertyList)
@@ -613,6 +630,14 @@ void libfreehand::FHCollector::_getBBofCompositePath(const FHCompositePath *comp
     _getBBofPath(&fhPath, tmpBBox);
     bBox.merge(tmpBBox);
   }
+}
+
+void libfreehand::FHCollector::_getBBofPathText(const FHPathText *pathText, libfreehand::FHBoundingBox &bBox)
+{
+  if (!pathText)
+    return;
+
+  _getBBofDisplayText(_findDisplayText(pathText->m_displayTextId),bBox);
 }
 
 void libfreehand::FHCollector::_getBBofTextObject(const FHTextObject *textObject, libfreehand::FHBoundingBox &bBox)
@@ -856,6 +881,7 @@ void libfreehand::FHCollector::_getBBofSomething(unsigned somethingId, libfreeha
   FHBoundingBox tmpBBox;
   _getBBofGroup(_findGroup(somethingId), tmpBBox);
   _getBBofClipGroup(_findClipGroup(somethingId), tmpBBox);
+  _getBBofPathText(_findPathText(somethingId), tmpBBox);
   _getBBofPath(_findPath(somethingId), tmpBBox);
   _getBBofCompositePath(_findCompositePath(somethingId), tmpBBox);
   _getBBofTextObject(_findTextObject(somethingId), tmpBBox);
@@ -989,6 +1015,7 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::libreven
 
   _outputGroup(_findGroup(somethingId), painter);
   _outputClipGroup(_findClipGroup(somethingId), painter);
+  _outputPathText(_findPathText(somethingId), painter);
   _outputPath(_findPath(somethingId), painter);
   _outputCompositePath(_findCompositePath(somethingId), painter);
   _outputTextObject(_findTextObject(somethingId), painter);
@@ -1145,6 +1172,14 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
         m_fakeTransforms.pop_back();
     }
   }
+}
+
+void libfreehand::FHCollector::_outputPathText(const libfreehand::FHPathText *pathText, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !pathText)
+    return;
+
+  _outputDisplayText(_findDisplayText(pathText->m_displayTextId), painter);
 }
 
 void libfreehand::FHCollector::_outputNewBlend(const libfreehand::FHNewBlend *newBlend, ::librevenge::RVNGDrawingInterface *painter)
@@ -1455,6 +1490,17 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
     propList.insert("fo:font-weight", "bold");
   if (charProps.m_fontStyle & 2)
     propList.insert("fo:font-style", "italic");
+  if (charProps.m_letterSpacing<0 || charProps.m_letterSpacing>0)
+    propList.insert("fo:letter-spacing", charProps.m_letterSpacing, librevenge::RVNG_POINT);
+  if (charProps.m_horizontalScale<1 || charProps.m_horizontalScale>1)
+    propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
+  if (charProps.m_baselineShift<0 || charProps.m_baselineShift>0)
+  {
+    librevenge::RVNGString value;
+    double fontSize=(charProps.m_fontSize>0) ? charProps.m_fontSize : 12.;
+    value.sprintf("%g%%",100.*charProps.m_baselineShift/fontSize);
+    propList.insert("style:text-position", value);
+  }
 }
 
 void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, const FH3ParaProperties & /* paraProps */)
@@ -1517,9 +1563,15 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   textObjectProps.insert("svg:y", ymid + displayText->m_height / 2.0);
   textObjectProps.insert("svg:height", height);
   textObjectProps.insert("svg:width", width);
+  for (int i=0; i<4; ++i) // osnola: let assume that there is no padding
+  {
+    char const *(padding[])= {"fo:padding-left","fo:padding-right","fo:padding-top","fo:padding-bottom"};
+    textObjectProps.insert(padding[i],0,librevenge::RVNG_POINT);
+  }
   if (!FH_ALMOST_ZERO(rotation))
     textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
-
+  if (displayText->m_justify==4)  // top-down: checkme do nothing
+    textObjectProps.insert("style:writing-mode", "tb-lr");
   painter->startTextObject(textObjectProps);
 
   std::vector<FH3ParaProperties>::const_iterator iterPara = displayText->m_paraProps.begin();
@@ -1532,6 +1584,27 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
 
   librevenge::RVNGPropertyList paraPropList;
   _appendParagraphProperties(paraPropList, paraProps);
+  switch (displayText->m_justify)
+  {
+  case 0: // left
+    break;
+  case 1:
+    paraPropList.insert("fo:text-align", "center");
+    break;
+  case 2:
+    paraPropList.insert("fo:text-align", "end");
+    break;
+  case 3:
+    paraPropList.insert("fo:text-align", "justify");
+    break;
+  case 4:
+  default:
+    break;
+  }
+  if (charProps.m_leading>0)
+    paraPropList.insert("fo:line-height",charProps.m_leading,librevenge::RVNG_POINT);
+  else
+    paraPropList.insert("fo:line-height",1.,librevenge::RVNG_PERCENT);
   painter->openParagraph(paraPropList);
   bool isParagraphOpened = true;
 
@@ -1582,8 +1655,14 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
       break;
     if (!isParagraphOpened)
     {
+#if 0
       paraPropList.clear();
       _appendParagraphProperties(paraPropList, paraProps);
+#endif
+      if (charProps.m_leading>0)
+        paraPropList.insert("fo:line-height",charProps.m_leading,librevenge::RVNG_POINT);
+      else
+        paraPropList.insert("fo:line-height",1.,librevenge::RVNG_PERCENT);
       painter->openParagraph(paraPropList);
       isParagraphOpened = true;
       if (!isSpanOpened)
@@ -2102,17 +2181,85 @@ void libfreehand::FHCollector::_appendPatternFill(::librevenge::RVNGPropertyList
   propList.insert("style:repeat", "repeat");
 }
 
+void libfreehand::FHCollector::_appendLinePattern(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLinePattern *linePattern)
+{
+  if (!linePattern || linePattern->m_dashes.size()<=1)
+    return;
+  int nDots1=0, nDots2=0;
+  double size1=0, size2=0, totalGap=0.0;
+  for (size_t c=0; c+1 < linePattern->m_dashes.size();)
+  {
+    double sz=linePattern->m_dashes[c++];
+    if (nDots2 && (sz<size2||sz>size2))
+    {
+      static bool first=true;
+      if (first)
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendLinePattern: can not set some dash\n"));
+        first = false;
+      }
+      break;
+    }
+    if (nDots2)
+      nDots2++;
+    else if (!nDots1 || (sz>=size1 && sz <= size1))
+    {
+      nDots1++;
+      size1=sz;
+    }
+    else
+    {
+      nDots2=1;
+      size2=sz;
+    }
+    totalGap += linePattern->m_dashes[c++];
+  }
+  propList.insert("draw:stroke", "dash");
+  propList.insert("draw:dots1", nDots1);
+  propList.insert("draw:dots1-length", double(size1), librevenge::RVNG_POINT);
+  if (nDots2)
+  {
+    propList.insert("draw:dots2", nDots2);
+    propList.insert("draw:dots2-length", double(size2), librevenge::RVNG_POINT);
+  }
+  const double distance = ((nDots1 + nDots2) > 0) ? double(totalGap)/double(nDots1+nDots2) : double(totalGap);
+  propList.insert("draw:distance", distance, librevenge::RVNG_POINT);;
+}
+
+void libfreehand::FHCollector::_appendArrowPath(::librevenge::RVNGPropertyList &propList, const FHPath *arrow, bool startArrow)
+{
+  if (!arrow)
+    return;
+
+  FHPath path=*arrow;
+  path.transform(FHTransform(0,-1,1,0,0,0));
+  std::string pString=path.getPathString();
+  if (pString.empty()) return;
+  std::string wh(startArrow ? "start" : "end");
+  propList.insert((std::string("draw:marker-")+wh+"-path").c_str(), pString.c_str());
+  FHBoundingBox box;
+  path.getBoundingBox(box.m_xmin, box.m_ymin, box.m_xmax, box.m_ymax);
+  librevenge::RVNGString boxString;
+  boxString.sprintf("%d %d %d %d", int(box.m_xmin*35), int(box.m_ymin*35), int(35*(box.m_xmax-box.m_xmin)), int(35*(box.m_ymax-box.m_ymin)));
+  propList.insert((std::string("draw:marker-")+wh+"-viewbox").c_str(), boxString);
+  propList.insert((std::string("draw:marker-")+wh+"-width").c_str(), 10, librevenge::RVNG_POINT); // change me
+}
+
 void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)
 {
   if (!basicLine)
     return;
+  // osnola: we do not want to change draw:stroke, if stroke is defined recursively
   propList.insert("draw:stroke", "solid");
   librevenge::RVNGString color = getColorString(basicLine->m_colorId);
   if (!color.empty())
     propList.insert("svg:stroke-color", color);
-  else
+  else if (!propList["svg:stroke-color"]) // set to default
     propList.insert("svg:stroke-color", "#000000");
   propList.insert("svg:stroke-width", basicLine->m_width);
+  _appendLinePattern(propList, _findLinePattern(basicLine->m_linePatternId));
+  _appendArrowPath(propList, _findArrowPath(basicLine->m_startArrowId), true);
+  _appendArrowPath(propList, _findArrowPath(basicLine->m_endArrowId), false);
 }
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
@@ -2161,6 +2308,16 @@ const libfreehand::FHCompositePath *libfreehand::FHCollector::_findCompositePath
     return 0;
   std::map<unsigned, FHCompositePath>::const_iterator iter = m_compositePaths.find(id);
   if (iter != m_compositePaths.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHPathText *libfreehand::FHCollector::_findPathText(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHPathText>::const_iterator iter = m_pathTexts.find(id);
+  if (iter != m_pathTexts.end())
     return &(iter->second);
   return 0;
 }
@@ -2281,6 +2438,26 @@ const libfreehand::FHPatternFill *libfreehand::FHCollector::_findPatternFill(uns
     return 0;
   std::map<unsigned, FHPatternFill>::const_iterator iter = m_patternFills.find(id);
   if (iter != m_patternFills.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHLinePattern *libfreehand::FHCollector::_findLinePattern(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHLinePattern>::const_iterator iter = m_linePatterns.find(id);
+  if (iter != m_linePatterns.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHPath *libfreehand::FHCollector::_findArrowPath(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHPath>::const_iterator iter = m_arrowPaths.find(id);
+  if (iter != m_arrowPaths.end())
     return &(iter->second);
   return 0;
 }

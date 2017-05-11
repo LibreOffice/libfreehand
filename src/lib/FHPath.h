@@ -12,6 +12,7 @@
 
 #include <memory>
 #include <vector>
+#include <ostream>
 
 #include <librevenge/librevenge.h>
 
@@ -26,6 +27,7 @@ public:
   FHPathElement() {}
   virtual ~FHPathElement() {}
   virtual void writeOut(librevenge::RVNGPropertyListVector &vec) const = 0;
+  virtual void writeOut(std::ostream &s) const = 0;
   virtual void transform(const FHTransform &trafo) = 0;
   virtual FHPathElement *clone() = 0;
   virtual void getBoundingBox(double x0, double y0, double &px, double &py, double &qx, double &qy) const = 0;
@@ -34,7 +36,7 @@ public:
 };
 
 
-class FHPath : public FHPathElement
+class FHPath
 {
 public:
   FHPath() : m_elements(), m_isClosed(false), m_xFormId(0), m_graphicStyleId(0), m_evenOdd(false) {}
@@ -55,8 +57,8 @@ public:
   void setEvenOdd(bool evenOdd);
 
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
+  std::string getPathString() const;
   void transform(const FHTransform &trafo);
-  FHPathElement *clone();
   void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
   double getX() const;
   double getY() const;
