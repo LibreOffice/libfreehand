@@ -44,6 +44,7 @@ private:
   void readBasicFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBasicLine(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBendFilter(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readBlendObject(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBlock(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBrush(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readBrushStroke(librevenge::RVNGInputStream *input, FHCollector *collector);
@@ -116,6 +117,7 @@ private:
   void readPantoneColor(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readParagraph(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPath(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readPathText(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPathTextLineInfo(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPatternFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPatternLine(librevenge::RVNGInputStream *input, FHCollector *collector);
@@ -125,6 +127,7 @@ private:
   void readProcedure(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readProcessColor(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPropLst(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readPSFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readPSLine(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readRadialFill(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readRadialFillX(librevenge::RVNGInputStream *input, FHCollector *collector);

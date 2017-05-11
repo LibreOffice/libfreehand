@@ -40,13 +40,17 @@ public:
   void collectLayer(unsigned recordId, const FHLayer &layer);
   void collectGroup(unsigned recordId, const FHGroup &group);
   void collectClipGroup(unsigned recordId, const FHGroup &group);
+  void collectPathText(unsigned recordId, const FHPathText &group);
   void collectCompositePath(unsigned recordId, const FHCompositePath &compositePath);
   void collectTString(unsigned recordId, const std::vector<unsigned> &elements);
   void collectAGDFont(unsigned recordId, const FHAGDFont &font);
+  void collectTEffect(unsigned recordId, const FHTEffect &tEffect);
   void collectParagraph(unsigned recordId, const FHParagraph &paragraph);
+  void collectTabTable(unsigned recordId, const std::vector<FHTab> &tabs);
   void collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters);
   void collectTextObject(unsigned recordId, const FHTextObject &textObject);
   void collectCharProps(unsigned recordId, const FHCharProperties &charProps);
+  void collectParagraphProps(unsigned recordId, const FHParagraphProperties &paragraphProps);
   void collectPropList(unsigned recordId, const FHPropList &propertyList);
   void collectDisplayText(unsigned recordId, const FHDisplayText &displayText);
   void collectGraphicStyle(unsigned recordId, const FHGraphicStyle &graphicStyle);
@@ -70,8 +74,12 @@ public:
   void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
   void collectRadialFill(unsigned recordId, const FHRadialFill &fill);
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
+  void collectPatternLine(unsigned recordId, const FHPatternLine &line);
+  void collectCustomProc(unsigned recordId, const FHCustomProc &lineFill);
   void collectTileFill(unsigned recordId, const FHTileFill &fill);
   void collectPatternFill(unsigned recordId, const FHPatternFill &fill);
+  void collectLinePattern(unsigned recordId, const FHLinePattern &line);
+  void collectArrowPath(unsigned recordId, const FHPath &path);
 
   void collectSymbolClass(unsigned recordId, const FHSymbolClass &symbolClass);
   void collectSymbolInstance(unsigned recordId, const FHSymbolInstance &symbolInstance);
@@ -90,8 +98,9 @@ private:
   void _outputGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
   void _outputClipGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
   void _outputCompositePath(const FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputPathText(const FHPathText *pathText, ::librevenge::RVNGDrawingInterface *painter);
   void _outputTextObject(const FHTextObject *textObject, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter, unsigned &actPos, unsigned minPos, unsigned maxPos);
   void _outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
                       unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
@@ -104,6 +113,7 @@ private:
   void _getBBofLayer(unsigned layerId,FHBoundingBox &bBox);
   void _getBBofGroup(const FHGroup *group,FHBoundingBox &bBox);
   void _getBBofClipGroup(const FHGroup *group,FHBoundingBox &bBox);
+  void _getBBofPathText(const FHPathText *pathText,FHBoundingBox &bBox);
   void _getBBofCompositePath(const FHCompositePath *compositePath,FHBoundingBox &bBox);
   void _getBBofTextObject(const FHTextObject *textObject,FHBoundingBox &bBox);
   void _getBBofDisplayText(const FHDisplayText *displayText,FHBoundingBox &bBox);
@@ -118,15 +128,21 @@ private:
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);
   void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps);
   void _appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId);
+  void _appendTabProperties(::librevenge::RVNGPropertyList &propList, const FHTab &tab);
   void _appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
   void _appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
   void _appendBasicFill(::librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
   void _appendBasicLine(::librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
+  void _appendPatternLine(::librevenge::RVNGPropertyList &propList, const FHPatternLine *basicLine);
+  void _appendCustomProcFill(::librevenge::RVNGPropertyList &propList, const FHCustomProc *customProc);
+  void _appendCustomProcLine(::librevenge::RVNGPropertyList &propList, const FHCustomProc *customProc);
   void _appendLinearFill(::librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
   void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
   void _appendRadialFill(::librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
   void _appendTileFill(::librevenge::RVNGPropertyList &propList, const FHTileFill *tileFill);
   void _appendPatternFill(::librevenge::RVNGPropertyList &propList, const FHPatternFill *patternFill);
+  void _appendLinePattern(::librevenge::RVNGPropertyList &propList, const FHLinePattern *linePattern);
+  void _appendArrowPath(::librevenge::RVNGPropertyList &propList, const FHPath *arrow, bool startArrow);
   void _appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity);
   void _appendShadow(::librevenge::RVNGPropertyList &propList, const FWShadowFilter *filter);
   void _appendGlow(::librevenge::RVNGPropertyList &propList, const FWGlowFilter *filter);
@@ -137,9 +153,12 @@ private:
   const FHGroup *_findGroup(unsigned id);
   const FHGroup *_findClipGroup(unsigned id);
   const FHCompositePath *_findCompositePath(unsigned id);
+  const FHPathText *_findPathText(unsigned id);
   const FHTextObject *_findTextObject(unsigned id);
   const FHTransform *_findTransform(unsigned id);
+  const FHTEffect *_findTEffect(unsigned id);
   const FHParagraph *_findParagraph(unsigned id);
+  const std::vector<FHTab> *_findTabTable(unsigned id);
   const FHPropList *_findPropList(unsigned id);
   const FHGraphicStyle *_findGraphicStyle(unsigned id);
   const std::vector<unsigned short> *_findTextBlok(unsigned id);
@@ -149,7 +168,11 @@ private:
   const FHRadialFill *_findRadialFill(unsigned id);
   const FHTileFill *_findTileFill(unsigned id);
   const FHPatternFill *_findPatternFill(unsigned id);
+  const FHLinePattern *_findLinePattern(unsigned id);
+  const FHPath *_findArrowPath(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
+  const FHCustomProc *_findCustomProc(unsigned id);
+  const FHPatternLine *_findPatternLine(unsigned id);
   const FHRGBColor *_findRGBColor(unsigned id);
   const FHTintColor *_findTintColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
@@ -160,7 +183,7 @@ private:
   const FWGlowFilter *_findFWGlowFilter(unsigned id);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(unsigned id);
   const ::librevenge::RVNGBinaryData *_findData(unsigned id);
-  ::librevenge::RVNGString getColorString(unsigned id);
+  ::librevenge::RVNGString getColorString(unsigned id, double tint=1);
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(const FHGraphicStyle &graphicStyle);
@@ -187,16 +210,22 @@ private:
   std::stack<FHTransform> m_currentTransforms;
   std::vector<FHTransform> m_fakeTransforms;
   std::map<unsigned, FHCompositePath> m_compositePaths;
+  std::map<unsigned, FHPathText> m_pathTexts;
   std::map<unsigned, std::vector<unsigned> > m_tStrings;
   std::map<unsigned, FHAGDFont> m_fonts;
+  std::map<unsigned, FHTEffect> m_tEffects;
   std::map<unsigned, FHParagraph> m_paragraphs;
+  std::map<unsigned, std::vector<FHTab> > m_tabs;
   std::map<unsigned, std::vector<unsigned short> > m_textBloks;
   std::map<unsigned, FHTextObject> m_textObjects;
   std::map<unsigned, FHCharProperties> m_charProperties;
+  std::map<unsigned, FHParagraphProperties> m_paragraphProperties;
   std::map<unsigned, FHRGBColor> m_rgbColors;
   std::map<unsigned, FHBasicFill> m_basicFills;
   std::map<unsigned, FHPropList> m_propertyLists;
   std::map<unsigned, FHBasicLine> m_basicLines;
+  std::map<unsigned, FHCustomProc> m_customProcs;
+  std::map<unsigned, FHPatternLine> m_patternLines;
   std::map<unsigned, FHDisplayText> m_displayTexts;
   std::map<unsigned, FHGraphicStyle> m_graphicStyles;
   std::map<unsigned, FHAttributeHolder> m_attributeHolders;
@@ -217,11 +246,13 @@ private:
   std::map<unsigned, FHSymbolClass> m_symbolClasses;
   std::map<unsigned, FHSymbolInstance> m_symbolInstances;
   std::map<unsigned, FHPatternFill> m_patternFills;
+  std::map<unsigned, FHLinePattern> m_linePatterns;
+  std::map<unsigned, FHPath> m_arrowPaths;
 
   unsigned m_strokeId;
   unsigned m_fillId;
   unsigned m_contentId;
-
+  unsigned m_textBoxNumberId;
   std::deque<unsigned> m_visitedObjects;
 };
 

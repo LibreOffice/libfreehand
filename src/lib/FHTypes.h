@@ -35,6 +35,13 @@ struct FHBlock
   FHBlock(unsigned layerListId) : m_layerListId(layerListId) {}
 };
 
+struct FHTab
+{
+  unsigned m_type;
+  double m_position;
+  FHTab() : m_type(0), m_position(0) {}
+};
+
 struct FHTail
 {
   unsigned m_blockId;
@@ -67,6 +74,16 @@ struct FHGroup
   FHGroup() : m_graphicStyleId(0), m_elementsId(0), m_xFormId(0) {}
 };
 
+struct FHPathText
+{
+  unsigned m_elementsId;
+  unsigned m_layerId;
+  unsigned m_displayTextId;
+  unsigned m_shapeId;
+  unsigned m_textSize;
+  FHPathText() : m_elementsId(0), m_layerId(0), m_displayTextId(0), m_shapeId(0), m_textSize(0) {}
+};
+
 struct FHCompositePath
 {
   unsigned m_graphicStyleId;
@@ -96,18 +113,36 @@ struct FHTextObject
   unsigned m_xFormId;
   unsigned m_tStringId;
   unsigned m_vmpObjId;
+  unsigned m_pathId;
   double m_startX;
   double m_startY;
   double m_width;
   double m_height;
+  unsigned m_beginPos;
+  unsigned m_endPos;
+  unsigned m_colNum;
+  unsigned m_rowNum;
+  double m_colSep;
+  double m_rowSep;
+  unsigned m_rowBreakFirst;
 
   FHTextObject()
-    : m_graphicStyleId(0), m_xFormId(0), m_tStringId(0), m_vmpObjId(0),
-      m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0) {}
+    : m_graphicStyleId(0), m_xFormId(0), m_tStringId(0), m_vmpObjId(0), m_pathId(0),
+      m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0), m_beginPos(0), m_endPos(0xffff),
+      m_colNum(1), m_rowNum(1), m_colSep(0.0), m_rowSep(0.0), m_rowBreakFirst(0) {}
 };
 
-struct FHParaProperties
+struct FHParagraphProperties
 {
+  std::map<unsigned,unsigned> m_idToIntMap; // id to enum, int map
+  std::map<unsigned,double> m_idToDoubleMap;
+  std::map<unsigned,unsigned> m_idToZoneIdMap;
+  FHParagraphProperties() : m_idToIntMap(), m_idToDoubleMap(), m_idToZoneIdMap()
+  {}
+  bool empty() const
+  {
+    return m_idToIntMap.empty() && m_idToDoubleMap.empty() && m_idToZoneIdMap.empty();
+  }
 };
 
 struct FHCharProperties
@@ -116,9 +151,10 @@ struct FHCharProperties
   double m_fontSize;
   unsigned m_fontNameId;
   unsigned m_fontId;
-  double m_horizontalScale;
+  unsigned m_tEffectId;
+  std::map<unsigned,double> m_idToDoubleMap;
   FHCharProperties()
-    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0), m_horizontalScale(1.0) {}
+    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0), m_tEffectId(0), m_idToDoubleMap() {}
 };
 
 struct FHRGBColor
@@ -172,6 +208,25 @@ struct FHBasicLine
       m_endArrowId(0), m_mitter(0.0), m_width(0.0) {}
 };
 
+struct FHPatternLine
+{
+  unsigned m_colorId;
+  double m_percentPattern; // percentage of 1 in the pattern
+  double m_mitter;
+  double m_width;
+  FHPatternLine()
+    : m_colorId(0), m_percentPattern(1), m_mitter(0.0), m_width(0.0) {}
+};
+
+struct FHCustomProc
+{
+  std::vector<unsigned> m_ids;
+  std::vector<double> m_widths;
+  std::vector<double> m_params;
+  std::vector<double> m_angles;
+  FHCustomProc() : m_ids(), m_widths(), m_params(), m_angles() {}
+};
+
 struct FHBasicFill
 {
   unsigned m_colorId;
@@ -213,10 +268,14 @@ struct FH3CharProperties
   unsigned m_fontStyle;
   unsigned m_fontColorId;
   unsigned m_textEffsId;
+  double m_leading; // -1 solid, -2 auto, >0 interline in point
+  double m_letterSpacing;
+  double m_wordSpacing;
+  double m_horizontalScale;
   double m_baselineShift;
   FH3CharProperties()
     : m_offset(0), m_fontNameId(0), m_fontSize(12.0), m_fontStyle(0),
-      m_fontColorId(0), m_textEffsId(0), m_baselineShift(0.0) {}
+      m_fontColorId(0), m_textEffsId(0), m_leading(-1), m_letterSpacing(0), m_wordSpacing(0), m_horizontalScale(1), m_baselineShift(0.0) {}
 };
 
 struct FH3ParaProperties
@@ -225,6 +284,16 @@ struct FH3ParaProperties
   FH3ParaProperties() : m_offset(0) {}
 };
 
+struct FHTEffect
+{
+  unsigned m_nameId;
+  unsigned m_shortNameId;
+  unsigned m_colorId[2];
+  FHTEffect() : m_nameId(0), m_shortNameId(0)
+  {
+    for (int i=0; i<2; ++i) m_colorId[i]=0;
+  }
+};
 struct FHDisplayText
 {
   unsigned m_graphicStyleId;
@@ -234,12 +303,13 @@ struct FHDisplayText
   double m_width;
   double m_height;
   std::vector<FH3CharProperties> m_charProps;
+  int m_justify;
   std::vector<FH3ParaProperties> m_paraProps;
   std::vector<unsigned char> m_characters;
   FHDisplayText()
     : m_graphicStyleId(0), m_xFormId(0),
       m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0),
-      m_charProps(), m_paraProps(), m_characters() {}
+      m_charProps(), m_justify(0), m_paraProps(), m_characters() {}
 };
 
 struct FHGraphicStyle
@@ -352,6 +422,13 @@ struct FHTileFill
   FHTileFill()
     : m_xFormId(0), m_groupId(0), m_scaleX(0.0), m_scaleY(0.0),
       m_offsetX(0.0), m_offsetY(0.0), m_angle(0.0) {}
+};
+
+struct FHLinePattern
+{
+  std::vector<double> m_dashes;
+  FHLinePattern()
+    : m_dashes() {}
 };
 
 struct FHSymbolClass

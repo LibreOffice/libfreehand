@@ -5,6 +5,7 @@ AttributeHolder
 BasicFill
 BasicLine
 BendFilter
+BlendObject
 Block
 Brush
 BrushList
@@ -78,6 +79,7 @@ Oval
 PantoneColor
 Paragraph
 Path
+PathText
 PathTextLineInfo
 PatternFill
 PatternLine
@@ -87,6 +89,7 @@ PolygonFigure
 Procedure
 ProcessColor
 PropLst
+PSFill
 PSLine
 RadialFill
 RadialFillX

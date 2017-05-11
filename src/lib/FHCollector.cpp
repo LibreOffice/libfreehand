@@ -238,12 +238,14 @@ private:
 libfreehand::FHCollector::FHCollector() :
   m_pageInfo(), m_fhTail(), m_block(), m_transforms(), m_paths(), m_strings(), m_names(), m_lists(),
   m_layers(), m_groups(), m_clipGroups(), m_currentTransforms(), m_fakeTransforms(), m_compositePaths(),
-  m_tStrings(), m_fonts(), m_paragraphs(), m_textBloks(), m_textObjects(), m_charProperties(),
-  m_rgbColors(), m_basicFills(), m_propertyLists(), m_basicLines(), m_displayTexts(), m_graphicStyles(),
+  m_pathTexts(), m_tStrings(), m_fonts(), m_tEffects(), m_paragraphs(), m_tabs(), m_textBloks(), m_textObjects(), m_charProperties(),
+  m_paragraphProperties(), m_rgbColors(), m_basicFills(), m_propertyLists(),
+  m_basicLines(), m_customProcs(), m_patternLines(), m_displayTexts(), m_graphicStyles(),
   m_attributeHolders(), m_data(), m_dataLists(), m_images(), m_multiColorLists(), m_linearFills(),
   m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
-  m_strokeId(0), m_fillId(0), m_contentId(0), m_visitedObjects()
+  m_linePatterns(), m_arrowPaths(),
+  m_strokeId(0), m_fillId(0), m_contentId(0), m_textBoxNumberId(0), m_visitedObjects()
 {
 }
 
@@ -322,6 +324,11 @@ void libfreehand::FHCollector::collectCompositePath(unsigned recordId, const lib
   m_compositePaths[recordId] = compositePath;
 }
 
+void libfreehand::FHCollector::collectPathText(unsigned recordId, const libfreehand::FHPathText &pathText)
+{
+  m_pathTexts[recordId] = pathText;
+}
+
 void libfreehand::FHCollector::collectTString(unsigned recordId, const std::vector<unsigned> &elements)
 {
   m_tStrings[recordId] = elements;
@@ -332,9 +339,20 @@ void libfreehand::FHCollector::collectAGDFont(unsigned recordId, const FHAGDFont
   m_fonts[recordId] = font;
 }
 
+void libfreehand::FHCollector::collectTEffect(unsigned recordId, const FHTEffect &tEffect)
+{
+  m_tEffects[recordId] = tEffect;
+}
+
 void libfreehand::FHCollector::collectParagraph(unsigned recordId, const FHParagraph &paragraph)
 {
   m_paragraphs[recordId] = paragraph;
+}
+
+void libfreehand::FHCollector::collectTabTable(unsigned recordId, const std::vector<FHTab> &tabs)
+{
+  if (tabs.empty()) return;
+  m_tabs[recordId] = tabs;
 }
 
 void libfreehand::FHCollector::collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters)
@@ -350,6 +368,11 @@ void libfreehand::FHCollector::collectTextObject(unsigned recordId, const FHText
 void libfreehand::FHCollector::collectCharProps(unsigned recordId, const FHCharProperties &charProps)
 {
   m_charProperties[recordId] = charProps;
+}
+
+void libfreehand::FHCollector::collectParagraphProps(unsigned recordId, const FHParagraphProperties &paragraphProps)
+{
+  m_paragraphProperties[recordId] = paragraphProps;
 }
 
 void libfreehand::FHCollector::collectColor(unsigned recordId, const FHRGBColor &color)
@@ -372,6 +395,16 @@ void libfreehand::FHCollector::collectBasicLine(unsigned recordId, const FHBasic
   m_basicLines[recordId] = line;
 }
 
+void libfreehand::FHCollector::collectCustomProc(unsigned recordId, const FHCustomProc &line)
+{
+  m_customProcs[recordId] = line;
+}
+
+void libfreehand::FHCollector::collectPatternLine(unsigned recordId, const FHPatternLine &line)
+{
+  m_patternLines[recordId] = line;
+}
+
 void libfreehand::FHCollector::collectTileFill(unsigned recordId, const FHTileFill &fill)
 {
   m_tileFills[recordId] = fill;
@@ -380,6 +413,17 @@ void libfreehand::FHCollector::collectTileFill(unsigned recordId, const FHTileFi
 void libfreehand::FHCollector::collectPatternFill(unsigned recordId, const FHPatternFill &fill)
 {
   m_patternFills[recordId] = fill;
+}
+
+void libfreehand::FHCollector::collectLinePattern(unsigned recordId, const FHLinePattern &line)
+{
+  m_linePatterns[recordId] = line;
+}
+
+void libfreehand::FHCollector::collectArrowPath(unsigned recordId, const FHPath &path)
+{
+  // osnola: useme
+  m_arrowPaths[recordId] = path;
 }
 
 void libfreehand::FHCollector::collectPropList(unsigned recordId, const FHPropList &propertyList)
@@ -613,6 +657,14 @@ void libfreehand::FHCollector::_getBBofCompositePath(const FHCompositePath *comp
     _getBBofPath(&fhPath, tmpBBox);
     bBox.merge(tmpBBox);
   }
+}
+
+void libfreehand::FHCollector::_getBBofPathText(const FHPathText *pathText, libfreehand::FHBoundingBox &bBox)
+{
+  if (!pathText)
+    return;
+
+  _getBBofDisplayText(_findDisplayText(pathText->m_displayTextId),bBox);
 }
 
 void libfreehand::FHCollector::_getBBofTextObject(const FHTextObject *textObject, libfreehand::FHBoundingBox &bBox)
@@ -856,6 +908,7 @@ void libfreehand::FHCollector::_getBBofSomething(unsigned somethingId, libfreeha
   FHBoundingBox tmpBBox;
   _getBBofGroup(_findGroup(somethingId), tmpBBox);
   _getBBofClipGroup(_findClipGroup(somethingId), tmpBBox);
+  _getBBofPathText(_findPathText(somethingId), tmpBBox);
   _getBBofPath(_findPath(somethingId), tmpBBox);
   _getBBofCompositePath(_findCompositePath(somethingId), tmpBBox);
   _getBBofTextObject(_findTextObject(somethingId), tmpBBox);
@@ -989,6 +1042,7 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, ::libreven
 
   _outputGroup(_findGroup(somethingId), painter);
   _outputClipGroup(_findClipGroup(somethingId), painter);
+  _outputPathText(_findPathText(somethingId), painter);
   _outputPath(_findPath(somethingId), painter);
   _outputCompositePath(_findCompositePath(somethingId), painter);
   _outputTextObject(_findTextObject(somethingId), painter);
@@ -1145,6 +1199,14 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
         m_fakeTransforms.pop_back();
     }
   }
+}
+
+void libfreehand::FHCollector::_outputPathText(const libfreehand::FHPathText *pathText, ::librevenge::RVNGDrawingInterface *painter)
+{
+  if (!painter || !pathText)
+    return;
+
+  _outputDisplayText(_findDisplayText(pathText->m_displayTextId), painter);
 }
 
 void libfreehand::FHCollector::_outputNewBlend(const libfreehand::FHNewBlend *newBlend, ::librevenge::RVNGDrawingInterface *painter)
@@ -1323,89 +1385,192 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
   if (!painter || !textObject)
     return;
 
-  double xa = textObject->m_startX;
-  double ya = textObject->m_startY;
-  double xb = textObject->m_startX + textObject->m_width;
-  double yb = textObject->m_startY + textObject->m_height;
-  double xc = xa;
-  double yc = yb;
-  unsigned xFormId = textObject->m_xFormId;
-  if (xFormId)
+  double width=textObject->m_width;
+  double height=textObject->m_height;
+  unsigned num[]= {textObject->m_colNum,textObject->m_rowNum};
+  double decalX[]= {width+textObject->m_colSep,0};
+  double decalY[]= {0, height+textObject->m_rowSep};
+  if (textObject->m_rowBreakFirst)
   {
-    const FHTransform *trafo = _findTransform(xFormId);
-    if (trafo)
+    std::swap(num[0],num[1]);
+    std::swap(decalX[0],decalX[1]);
+    std::swap(decalY[0],decalY[1]);
+  }
+  for (int i=0; i<2; ++i)
+  {
+    if (num[i]<=0 || num[i]>10)
     {
-      trafo->applyToPoint(xa, ya);
-      trafo->applyToPoint(xb, yb);
-      trafo->applyToPoint(xc, yc);
+      FH_DEBUG_MSG(("libfreehand::FHCollector::_outputTextObject: the number of row/col seems bad\n"));
+      num[i]=1;
     }
   }
-  std::stack<FHTransform> groupTransforms(m_currentTransforms);
-  while (!groupTransforms.empty())
+  ++m_textBoxNumberId;
+  for (unsigned dim0=0; dim0<num[0]; ++dim0)
   {
-    groupTransforms.top().applyToPoint(xa, ya);
-    groupTransforms.top().applyToPoint(xb, yb);
-    groupTransforms.top().applyToPoint(xc, yc);
-    groupTransforms.pop();
+    for (unsigned dim1=0; dim1<num[1]; ++dim1)
+    {
+      unsigned id = dim0*num[1]+dim1;
+      double rotation = 0, finalHeight = 0, finalWidth = 0, xmid=0, ymid=0;
+      bool useShapeBox=false;
+      if ((width<=0 || height<=0) && textObject->m_pathId)
+      {
+        /* the position are not set for TFOnPath, so we must look for the shape box
+
+           Note: the width and height seem better, the x,y position are still quite random :-~
+        */
+        FHBoundingBox bbox;
+        _getBBofSomething(textObject->m_pathId, bbox);
+        useShapeBox=true;
+        xmid=0.5*(bbox.m_xmin+bbox.m_xmax);
+        ymid=0.5*(bbox.m_ymin+bbox.m_ymax);
+        width=finalWidth=(bbox.m_xmax-bbox.m_xmin);
+        height=finalHeight=(bbox.m_ymax-bbox.m_ymin);
+      }
+      if (!useShapeBox)
+      {
+#ifdef HAVE_CHAINED_TEXTBOX
+        // useme when we can chain frames in Draw
+        double startX=textObject->m_startX+dim0*decalX[0]+dim1*decalX[1];
+        double startY=textObject->m_startY+dim0*decalY[0]+dim1*decalY[1];
+#else
+        /* if the number of row/column is greater than 1, we have a
+           big problem. Let increase the text-box size to contain all
+           the chained text-boxes...
+         */
+        double startX=textObject->m_startX;
+        double startY=textObject->m_startY;
+        width += (num[0]-1)*decalX[0]+(num[1]-1)*decalX[1];
+        height += (num[0]-1)*decalY[0]+(num[1]-1)*decalY[1];
+#endif
+        double xa = startX;
+        double ya = startY;
+        double xb = startX + width;
+        double yb = startY + height;
+        double xc = xa;
+        double yc = yb;
+        unsigned xFormId = textObject->m_xFormId;
+        if (xFormId)
+        {
+          const FHTransform *trafo = _findTransform(xFormId);
+          if (trafo)
+          {
+            trafo->applyToPoint(xa, ya);
+            trafo->applyToPoint(xb, yb);
+            trafo->applyToPoint(xc, yc);
+          }
+        }
+        std::stack<FHTransform> groupTransforms(m_currentTransforms);
+        while (!groupTransforms.empty())
+        {
+          groupTransforms.top().applyToPoint(xa, ya);
+          groupTransforms.top().applyToPoint(xb, yb);
+          groupTransforms.top().applyToPoint(xc, yc);
+          groupTransforms.pop();
+        }
+        _normalizePoint(xa, ya);
+        _normalizePoint(xb, yb);
+        _normalizePoint(xc, yc);
+
+        for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
+        {
+          iter->applyToPoint(xa, ya);
+          iter->applyToPoint(xb, yb);
+          iter->applyToPoint(xc, yc);
+        }
+
+        rotation = atan2(yb-yc, xb-xc);
+        finalHeight = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
+        finalWidth = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
+        xmid = (xa + xb) / 2.0;
+        ymid = (ya + yb) / 2.0;
+      }
+
+      ::librevenge::RVNGPropertyList textObjectProps;
+      textObjectProps.insert("svg:x", xmid - width / 2.0);
+      textObjectProps.insert("svg:y", ymid + height / 2.0);
+      textObjectProps.insert("svg:height", finalHeight);
+      textObjectProps.insert("svg:width", finalWidth);
+      if (!FH_ALMOST_ZERO(rotation))
+      {
+        textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
+        textObjectProps.insert("librevenge:rotate-cx",xmid);
+        textObjectProps.insert("librevenge:rotate-cy",ymid);
+      }
+#ifdef HAVE_CHAINED_TEXTBOX
+      if (id)
+      {
+        librevenge::RVNGString name;
+        name.sprintf("Textbox%d-%d",m_textBoxNumberId,id);
+        textObjectProps.insert("librevenge:frame-name",name);
+      }
+      if (id+1!=num[0]*num[1])
+      {
+        librevenge::RVNGString name;
+        name.sprintf("Textbox%d-%d",m_textBoxNumberId,id+1);
+        textObjectProps.insert("librevenge:next-frame-name",name);
+      }
+#endif
+      painter->startTextObject(textObjectProps);
+
+      if (id==0)
+      {
+        const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
+        unsigned actPos=0;
+        if (elements && !elements->empty())
+        {
+          for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
+            _outputParagraph(_findParagraph(*iter), painter, actPos, textObject->m_beginPos, textObject->m_endPos);
+        }
+      }
+      painter->endTextObject();
+
+#if !defined(HAVE_CHAINED_TEXTBOX)
+      break;
+#endif
+    }
+#if !defined(HAVE_CHAINED_TEXTBOX)
+    break;
+#endif
   }
-  _normalizePoint(xa, ya);
-  _normalizePoint(xb, yb);
-  _normalizePoint(xc, yc);
-
-  for (std::vector<FHTransform>::const_iterator iter = m_fakeTransforms.begin(); iter != m_fakeTransforms.end(); ++iter)
-  {
-    iter->applyToPoint(xa, ya);
-    iter->applyToPoint(xb, yb);
-    iter->applyToPoint(xc, yc);
-  }
-
-  double rotation = atan2(yb-yc, xb-xc);
-  double height = sqrt((xc-xa)*(xc-xa) + (yc-ya)*(yc-ya));
-  double width = sqrt((xc-xb)*(xc-xb) + (yc-yb)*(yc-yb));
-  double xmid = (xa + xb) / 2.0;
-  double ymid = (ya + yb) / 2.0;
-
-  ::librevenge::RVNGPropertyList textObjectProps;
-  textObjectProps.insert("svg:x", xmid - textObject->m_width / 2.0);
-  textObjectProps.insert("svg:y", ymid + textObject->m_height / 2.0);
-  textObjectProps.insert("svg:height", height);
-  textObjectProps.insert("svg:width", width);
-  if (!FH_ALMOST_ZERO(rotation))
-    textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
-  painter->startTextObject(textObjectProps);
-
-  const std::vector<unsigned> *elements = _findTStringElements(textObject->m_tStringId);
-  if (elements && !elements->empty())
-  {
-    for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
-      _outputParagraph(_findParagraph(*iter), painter);
-  }
-
-  painter->endTextObject();
 }
 
-void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter)
+void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter, unsigned &actPos, unsigned minPos, unsigned maxPos)
 {
   if (!painter || !paragraph)
     return;
-  librevenge::RVNGPropertyList propList;
-  _appendParagraphProperties(propList, paragraph->m_paraStyleId);
-  painter->openParagraph(propList);
-
+  bool paragraphOpened=false;
   std::map<unsigned, std::vector<unsigned short> >::const_iterator iter = m_textBloks.find(paragraph->m_textBlokId);
   if (iter != m_textBloks.end())
   {
 
     for (std::vector<std::pair<unsigned, unsigned> >::size_type i = 0; i < paragraph->m_charStyleIds.size(); ++i)
     {
-      _outputTextRun(&(iter->second), paragraph->m_charStyleIds[i].first,
-                     (i+1 < paragraph->m_charStyleIds.size() ? paragraph->m_charStyleIds[i+1].first : iter->second.size()) - paragraph->m_charStyleIds[i].first,
-                     paragraph->m_charStyleIds[i].second, painter);
+      if (actPos>=maxPos) break;
+      unsigned lastChar=i+1 < paragraph->m_charStyleIds.size() ? paragraph->m_charStyleIds[i+1].first : iter->second.size();
+      unsigned numChar=lastChar-paragraph->m_charStyleIds[i].first;
+      unsigned nextPos=actPos+numChar;
+      if (nextPos<minPos)
+      {
+        actPos=nextPos;
+        continue;
+      }
+      if (!paragraphOpened)
+      {
+        librevenge::RVNGPropertyList propList;
+        _appendParagraphProperties(propList, paragraph->m_paraStyleId);
+        painter->openParagraph(propList);
+        paragraphOpened=true;
+      }
+      unsigned fChar=paragraph->m_charStyleIds[i].first + (actPos<minPos ? minPos-actPos : 0);
+      numChar=lastChar-fChar;
+      if (actPos+numChar>maxPos) numChar=maxPos-actPos;
+      _outputTextRun(&(iter->second), fChar, numChar, paragraph->m_charStyleIds[i].second, painter);
+      actPos=nextPos;
     }
-
   }
-
-  painter->closeParagraph();
+  ++actPos; // EOL
+  if (paragraphOpened)
+    painter->closeParagraph();
 }
 
 void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId)
@@ -1433,7 +1598,61 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
         propList.insert("fo:color", color);
     }
   }
-  propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
+  FHTEffect const *eff=_findTEffect(charProps.m_tEffectId);
+  if (eff && eff->m_nameId)
+  {
+    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(eff->m_nameId);
+    if (iterString != m_strings.end())
+    {
+      librevenge::RVNGString const &type=iterString->second;
+      if (type=="InlineEffect")   // inside col1, outside col0
+      {
+        propList.insert("fo:font-weight", "bold");
+        librevenge::RVNGString color = getColorString(eff->m_colorId[1]);
+        if (!color.empty())
+          propList.insert("fo:color", color);
+      }
+      else if (type=="ShadowEffect")
+        propList.insert("fo:text-shadow", "1pt 1pt");
+      else if (type=="ZoomEffect")
+      {
+        propList.insert("style:font-relief", "embossed");
+        propList.insert("fo:text-shadow", "1pt -1pt");
+        librevenge::RVNGString color = getColorString(eff->m_colorId[0]);
+        if (!color.empty())
+          propList.insert("fo:color", color);
+      }
+      else
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendCharacterProperties: find unknown effect %s\n",type.cstr()));
+      }
+    }
+  }
+  for (std::map<unsigned,double>::const_iterator it=charProps.m_idToDoubleMap.begin(); it!=charProps.m_idToDoubleMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_BASELN_SHIFT:
+    {
+      if (it->second<=0 && it->second>=0) break;
+      librevenge::RVNGString value;
+      double fontSize=(charProps.m_fontSize>0) ? charProps.m_fontSize : 24.;
+      value.sprintf("%g%%",100.*it->second/fontSize);
+      propList.insert("style:text-position", value);
+      break;
+    }
+    case FH_HOR_SCALE:
+      if (it->second<=1 && it->second>=1) break;
+      propList.insert("style:text-scale", it->second, librevenge::RVNG_PERCENT);
+      break;
+    case FH_RNG_KERN:
+      if (it->second<=0 && it->second>=0) break;
+      propList.insert("fo:letter-spacing", it->second*charProps.m_fontSize, librevenge::RVNG_POINT);
+      break;
+    default:
+      break;
+    }
+  }
 }
 
 void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps)
@@ -1455,14 +1674,183 @@ void libfreehand::FHCollector::_appendCharacterProperties(::librevenge::RVNGProp
     propList.insert("fo:font-weight", "bold");
   if (charProps.m_fontStyle & 2)
     propList.insert("fo:font-style", "italic");
+  if (charProps.m_letterSpacing<0 || charProps.m_letterSpacing>0)
+    propList.insert("fo:letter-spacing", charProps.m_letterSpacing, librevenge::RVNG_POINT);
+  if (charProps.m_horizontalScale<1 || charProps.m_horizontalScale>1)
+    propList.insert("style:text-scale", charProps.m_horizontalScale, librevenge::RVNG_PERCENT);
+  if (charProps.m_baselineShift<0 || charProps.m_baselineShift>0)
+  {
+    librevenge::RVNGString value;
+    double fontSize=(charProps.m_fontSize>0) ? charProps.m_fontSize : 24.;
+    value.sprintf("%g%%",100.*charProps.m_baselineShift/fontSize);
+    propList.insert("style:text-position", value);
+  }
+  FHTEffect const *eff=_findTEffect(charProps.m_textEffsId);
+  if (eff && eff->m_shortNameId)
+  {
+    std::map<unsigned, ::librevenge::RVNGString>::const_iterator iterString = m_strings.find(eff->m_shortNameId);
+    if (iterString != m_strings.end())
+    {
+      librevenge::RVNGString const &type=iterString->second;
+      if (type=="inlin")   // inside col1, outside col0
+        propList.insert("fo:font-weight", "bold");
+      else if (type=="otw stol")
+        propList.insert("style:text-outline", "true");
+      else if (type=="stob")
+        propList.insert("fo:font-style", "italic");
+      else if (type=="stsh")
+        propList.insert("fo:text-shadow", "1pt 1pt");
+      else if (type=="sthv")
+        propList.insert("fo:font-weight", "bold");
+      else if (type=="extrude")
+      {
+        propList.insert("style:font-relief", "embossed");
+        propList.insert("fo:text-shadow", "1pt -1pt");
+        librevenge::RVNGString color = getColorString(eff->m_colorId[0]);
+        if (!color.empty())
+          propList.insert("fo:color", color);
+      }
+      else
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendCharacterProperties: find unknown effect %s\n",type.cstr()));
+      }
+    }
+  }
+}
+
+void libfreehand::FHCollector::_appendTabProperties(::librevenge::RVNGPropertyList &propList, const libfreehand::FHTab &tab)
+{
+  switch (tab.m_type)
+  {
+  case 0:
+  case 4: // unsure, look like a left tab
+  default:
+    break;
+  case 1:
+    propList.insert("style:type", "right");
+    break;
+  case 2:
+    propList.insert("style:type", "center");
+    break;
+  case 3:
+    propList.insert("style:type", "char");
+    propList.insert("style:char", "."); // checkme
+    break;
+  }
+  propList.insert("style:position", tab.m_position, librevenge::RVNG_POINT);
 }
 
 void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, const FH3ParaProperties & /* paraProps */)
 {
 }
 
-void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList & /* propList */, unsigned /* paraPropsId */)
+void libfreehand::FHCollector::_appendParagraphProperties(::librevenge::RVNGPropertyList &propList, unsigned paragraphPropsId)
 {
+  std::map<unsigned, FHParagraphProperties>::const_iterator iter = m_paragraphProperties.find(paragraphPropsId);
+  if (iter == m_paragraphProperties.end())
+    return;
+  FHParagraphProperties const &para=iter->second;
+  for (std::map<unsigned,unsigned>::const_iterator it=para.m_idToZoneIdMap.begin(); it!=para.m_idToZoneIdMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_PARA_TAB_TABLE_ID:
+      if (m_tabs.find(it->second)!=m_tabs.end())
+      {
+        std::vector<FHTab> const &tabs=m_tabs.find(it->second)->second;
+        if (tabs.empty())
+          break;
+        librevenge::RVNGPropertyListVector tabVect;
+        for (size_t i=0; i<tabs.size(); i++)
+        {
+          librevenge::RVNGPropertyList tabList;
+          _appendTabProperties(tabList, tabs[i]);
+          tabVect.append(tabList);
+        }
+        propList.insert("style:tab-stops", tabVect);
+      }
+      break;
+    default:
+      break;
+    }
+  }
+  for (std::map<unsigned,double>::const_iterator it=para.m_idToDoubleMap.begin(); it!=para.m_idToDoubleMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_PARA_LEFT_INDENT:
+      propList.insert("fo:margin-left", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_RIGHT_INDENT:
+      propList.insert("fo:margin-right", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_TEXT_INDENT:
+      propList.insert("fo:text-indent", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_SPC_ABOVE:
+      propList.insert("fo:margin-top", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_SPC_BELLOW:
+      propList.insert("fo:margin-bottom", it->second, librevenge::RVNG_POINT);
+      break;
+    case FH_PARA_LEADING:
+      if (it->second<=0 && it->second>=0) break;
+      if (para.m_idToIntMap.find(FH_PARA_LEADING_TYPE)==para.m_idToIntMap.end())
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendParagraphProperties: can not find the leading type\n"));
+        break;
+      }
+      switch (para.m_idToIntMap.find(FH_PARA_LEADING_TYPE)->second)
+      {
+      case 0: // delta in point
+        propList.insert("fo:line-height",1.+it->second/(it->second>0 ? 12 : 24), librevenge::RVNG_PERCENT);
+        break;
+      case 1:
+        propList.insert("fo:line-height",it->second, librevenge::RVNG_POINT);
+        break;
+      case 2:
+        propList.insert("fo:line-height",it->second, librevenge::RVNG_PERCENT);
+        break;
+      default:
+        break;
+      }
+      break;
+    default:
+      break;
+    }
+  }
+  for (std::map<unsigned,unsigned>::const_iterator it=para.m_idToIntMap.begin(); it!=para.m_idToIntMap.end(); ++it)
+  {
+    switch (it->first)
+    {
+    case FH_PARA_TEXT_ALIGN:
+      switch (it->second)
+      {
+      case 0:
+        propList.insert("fo:text-align", "left");
+        break;
+      case 1:
+        propList.insert("fo:text-align", "end");
+        break;
+      case 2:
+        propList.insert("fo:text-align", "center");
+        break;
+      case 3:
+        propList.insert("fo:text-align", "justify");
+        break;
+      default:
+        break;
+      }
+      break;
+    case FH_PARA_KEEP_SAME_LINE:
+      if (it->second==1)
+        propList.insert("fo:keep-together", "always");
+      break;
+    case FH_PARA_LEADING_TYPE: // done with FH_PARA_LEADING
+    default:
+      break;
+    }
+  }
 }
 
 void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter)
@@ -1517,9 +1905,19 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
   textObjectProps.insert("svg:y", ymid + displayText->m_height / 2.0);
   textObjectProps.insert("svg:height", height);
   textObjectProps.insert("svg:width", width);
+  for (int i=0; i<4; ++i) // osnola: let assume that there is no padding
+  {
+    char const *(padding[])= {"fo:padding-left","fo:padding-right","fo:padding-top","fo:padding-bottom"};
+    textObjectProps.insert(padding[i],0,librevenge::RVNG_POINT);
+  }
   if (!FH_ALMOST_ZERO(rotation))
+  {
     textObjectProps.insert("librevenge:rotate", rotation * 180.0 / M_PI);
-
+    textObjectProps.insert("librevenge:rotate-cx",xmid);
+    textObjectProps.insert("librevenge:rotate-cy",ymid);
+  }
+  if (displayText->m_justify==4)  // top-down: checkme do nothing
+    textObjectProps.insert("style:writing-mode", "tb-lr");
   painter->startTextObject(textObjectProps);
 
   std::vector<FH3ParaProperties>::const_iterator iterPara = displayText->m_paraProps.begin();
@@ -1532,6 +1930,27 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
 
   librevenge::RVNGPropertyList paraPropList;
   _appendParagraphProperties(paraPropList, paraProps);
+  switch (displayText->m_justify)
+  {
+  case 0: // left
+    break;
+  case 1:
+    paraPropList.insert("fo:text-align", "center");
+    break;
+  case 2:
+    paraPropList.insert("fo:text-align", "end");
+    break;
+  case 3:
+    paraPropList.insert("fo:text-align", "justify");
+    break;
+  case 4:
+  default:
+    break;
+  }
+  if (charProps.m_leading>0)
+    paraPropList.insert("fo:line-height",charProps.m_leading,librevenge::RVNG_POINT);
+  else
+    paraPropList.insert("fo:line-height",1.,librevenge::RVNG_PERCENT);
   painter->openParagraph(paraPropList);
   bool isParagraphOpened = true;
 
@@ -1582,8 +2001,14 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
       break;
     if (!isParagraphOpened)
     {
+#if 0
       paraPropList.clear();
       _appendParagraphProperties(paraPropList, paraProps);
+#endif
+      if (charProps.m_leading>0)
+        paraPropList.insert("fo:line-height",charProps.m_leading,librevenge::RVNG_POINT);
+      else
+        paraPropList.insert("fo:line-height",1.,librevenge::RVNG_PERCENT);
       painter->openParagraph(paraPropList);
       isParagraphOpened = true;
       if (!isSpanOpened)
@@ -1701,8 +2126,45 @@ void libfreehand::FHCollector::_outputTextRun(const std::vector<unsigned short> 
   _appendCharacterProperties(propList, charStyleId);
   painter->openSpan(propList);
   std::vector<unsigned short> tmpChars;
+  bool lastIsSpace=false;
   for (unsigned i = offset; i < length+offset && i < characters->size(); ++i)
-    tmpChars.push_back((*characters)[i]);
+  {
+    unsigned c=(*characters)[i];
+    if (c=='\t' || (c==' ' && lastIsSpace))
+    {
+      if (!tmpChars.empty())
+      {
+        librevenge::RVNGString text;
+        _appendUTF16(text, tmpChars);
+        painter->insertText(text);
+        tmpChars.clear();
+      }
+      if (c=='\t')
+        painter->insertTab();
+      else
+        painter->insertSpace();
+      continue;
+    }
+    else
+    {
+      if (c<=0x1f)
+      {
+        switch (c)
+        {
+        case 0xb: // end of column
+          break;
+        case 0x1f: // optional hyphen
+          break;
+        default:
+          FH_DEBUG_MSG(("libfreehand::FHCollector::_outputTextRun: find character %x\n", c));
+          break;
+        }
+      }
+      else
+        tmpChars.push_back(c);
+    }
+    lastIsSpace=c==' ';
+  }
   if (!tmpChars.empty())
   {
     librevenge::RVNGString text;
@@ -1761,6 +2223,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
         _appendRadialFill(propList, _findRadialFill(iter->second));
         _appendTileFill(propList, _findTileFill(iter->second));
         _appendPatternFill(propList, _findPatternFill(iter->second));
+        _appendCustomProcFill(propList, _findCustomProc(iter->second));
       }
     }
     else
@@ -1779,6 +2242,7 @@ void libfreehand::FHCollector::_appendFillProperties(::librevenge::RVNGPropertyL
           _appendRadialFill(propList, _findRadialFill(fillId));
           _appendTileFill(propList, _findTileFill(fillId));
           _appendPatternFill(propList, _findPatternFill(fillId));
+          _appendCustomProcFill(propList, _findCustomProc(fillId));
         }
         else
         {
@@ -1812,6 +2276,8 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
       if (iter != propertyList->m_elements.end())
       {
         _appendBasicLine(propList, _findBasicLine(iter->second));
+        _appendPatternLine(propList, _findPatternLine(iter->second));
+        _appendCustomProcLine(propList, _findCustomProc(iter->second));
       }
     }
     else
@@ -1823,7 +2289,11 @@ void libfreehand::FHCollector::_appendStrokeProperties(::librevenge::RVNGPropert
           _appendStrokeProperties(propList, graphicStyle->m_parentId);
         unsigned strokeId = _findStrokeId(*graphicStyle);
         if (strokeId)
+        {
           _appendBasicLine(propList, _findBasicLine(strokeId));
+          _appendPatternLine(propList, _findPatternLine(strokeId));
+          _appendCustomProcLine(propList, _findCustomProc(strokeId));
+        }
         else
         {
           const FHFilterAttributeHolder *filterAttributeHolder = _findFilterAttributeHolder(*graphicStyle);
@@ -1846,6 +2316,18 @@ void libfreehand::FHCollector::_appendBasicFill(::librevenge::RVNGPropertyList &
     return;
   propList.insert("draw:fill", "solid");
   librevenge::RVNGString color = getColorString(basicFill->m_colorId);
+  if (!color.empty())
+    propList.insert("draw:fill-color", color);
+  else
+    propList.insert("draw:fill-color", "#000000");
+}
+
+void libfreehand::FHCollector::_appendCustomProcFill(::librevenge::RVNGPropertyList &propList, const libfreehand::FHCustomProc *fill)
+{
+  if (!fill || fill->m_ids.empty())
+    return;
+  propList.insert("draw:fill", "solid");
+  librevenge::RVNGString color = getColorString(fill->m_ids[0]);
   if (!color.empty())
     propList.insert("draw:fill-color", color);
   else
@@ -2102,17 +2584,112 @@ void libfreehand::FHCollector::_appendPatternFill(::librevenge::RVNGPropertyList
   propList.insert("style:repeat", "repeat");
 }
 
+void libfreehand::FHCollector::_appendLinePattern(::librevenge::RVNGPropertyList &propList, const libfreehand::FHLinePattern *linePattern)
+{
+  if (!linePattern || linePattern->m_dashes.size()<=1)
+    return;
+  int nDots1=0, nDots2=0;
+  double size1=0, size2=0, totalGap=0.0;
+  for (size_t c=0; c+1 < linePattern->m_dashes.size();)
+  {
+    double sz=linePattern->m_dashes[c++];
+    if (nDots2 && (sz<size2||sz>size2))
+    {
+      static bool first=true;
+      if (first)
+      {
+        FH_DEBUG_MSG(("libfreehand::FHCollector::_appendLinePattern: can not set some dash\n"));
+        first = false;
+      }
+      break;
+    }
+    if (nDots2)
+      nDots2++;
+    else if (!nDots1 || (sz>=size1 && sz <= size1))
+    {
+      nDots1++;
+      size1=sz;
+    }
+    else
+    {
+      nDots2=1;
+      size2=sz;
+    }
+    totalGap += linePattern->m_dashes[c++];
+  }
+  propList.insert("draw:stroke", "dash");
+  propList.insert("draw:dots1", nDots1);
+  propList.insert("draw:dots1-length", double(size1), librevenge::RVNG_POINT);
+  if (nDots2)
+  {
+    propList.insert("draw:dots2", nDots2);
+    propList.insert("draw:dots2-length", double(size2), librevenge::RVNG_POINT);
+  }
+  const double distance = ((nDots1 + nDots2) > 0) ? double(totalGap)/double(nDots1+nDots2) : double(totalGap);
+  propList.insert("draw:distance", distance, librevenge::RVNG_POINT);;
+}
+
+void libfreehand::FHCollector::_appendArrowPath(::librevenge::RVNGPropertyList &propList, const FHPath *arrow, bool startArrow)
+{
+  if (!arrow)
+    return;
+
+  FHPath path=*arrow;
+  path.transform(FHTransform(0,-1,1,0,0,0));
+  std::string pString=path.getPathString();
+  if (pString.empty()) return;
+  std::string wh(startArrow ? "start" : "end");
+  propList.insert((std::string("draw:marker-")+wh+"-path").c_str(), pString.c_str());
+  FHBoundingBox box;
+  path.getBoundingBox(box.m_xmin, box.m_ymin, box.m_xmax, box.m_ymax);
+  librevenge::RVNGString boxString;
+  boxString.sprintf("%d %d %d %d", int(box.m_xmin*35), int(box.m_ymin*35), int(35*(box.m_xmax-box.m_xmin)), int(35*(box.m_ymax-box.m_ymin)));
+  propList.insert((std::string("draw:marker-")+wh+"-viewbox").c_str(), boxString);
+  propList.insert((std::string("draw:marker-")+wh+"-width").c_str(), 10, librevenge::RVNG_POINT); // change me
+}
+
 void libfreehand::FHCollector::_appendBasicLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHBasicLine *basicLine)
 {
   if (!basicLine)
     return;
+  // osnola: we do not want to change draw:stroke, if stroke is defined recursively
   propList.insert("draw:stroke", "solid");
   librevenge::RVNGString color = getColorString(basicLine->m_colorId);
   if (!color.empty())
     propList.insert("svg:stroke-color", color);
-  else
+  else if (!propList["svg:stroke-color"]) // set to default
     propList.insert("svg:stroke-color", "#000000");
   propList.insert("svg:stroke-width", basicLine->m_width);
+  _appendLinePattern(propList, _findLinePattern(basicLine->m_linePatternId));
+  _appendArrowPath(propList, _findArrowPath(basicLine->m_startArrowId), true);
+  _appendArrowPath(propList, _findArrowPath(basicLine->m_endArrowId), false);
+}
+
+void libfreehand::FHCollector::_appendCustomProcLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHCustomProc *customProc)
+{
+  if (!customProc)
+    return;
+  propList.insert("draw:stroke", "solid");
+  librevenge::RVNGString color;
+  if (!customProc->m_ids.empty())
+    color= getColorString(customProc->m_ids[0]);
+  if (!color.empty())
+    propList.insert("svg:stroke-color", color);
+  if (!customProc->m_widths.empty())
+    propList.insert("svg:stroke-width", customProc->m_widths[0], librevenge::RVNG_POINT);
+}
+
+void libfreehand::FHCollector::_appendPatternLine(::librevenge::RVNGPropertyList &propList, const libfreehand::FHPatternLine *patternLine)
+{
+  if (!patternLine)
+    return;
+  propList.insert("draw:stroke", "solid");
+  librevenge::RVNGString color = getColorString(patternLine->m_colorId, patternLine->m_percentPattern);
+  if (!color.empty())
+    propList.insert("svg:stroke-color", color);
+  else if (!propList["svg:stroke-color"]) // set to default
+    propList.insert("svg:stroke-color", "#000000");
+  propList.insert("svg:stroke-width", patternLine->m_width);
 }
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
@@ -2165,6 +2742,16 @@ const libfreehand::FHCompositePath *libfreehand::FHCollector::_findCompositePath
   return 0;
 }
 
+const libfreehand::FHPathText *libfreehand::FHCollector::_findPathText(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHPathText>::const_iterator iter = m_pathTexts.find(id);
+  if (iter != m_pathTexts.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHTextObject *libfreehand::FHCollector::_findTextObject(unsigned id)
 {
   if (!id)
@@ -2185,12 +2772,32 @@ const libfreehand::FHTransform *libfreehand::FHCollector::_findTransform(unsigne
   return 0;
 }
 
+const libfreehand::FHTEffect *libfreehand::FHCollector::_findTEffect(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHTEffect>::const_iterator iter = m_tEffects.find(id);
+  if (iter != m_tEffects.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHParagraph *libfreehand::FHCollector::_findParagraph(unsigned id)
 {
   if (!id)
     return 0;
   std::map<unsigned, FHParagraph>::const_iterator iter = m_paragraphs.find(id);
   if (iter != m_paragraphs.end())
+    return &(iter->second);
+  return 0;
+}
+
+const std::vector<libfreehand::FHTab> *libfreehand::FHCollector::_findTabTable(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, std::vector<libfreehand::FHTab> >::const_iterator iter = m_tabs.find(id);
+  if (iter != m_tabs.end())
     return &(iter->second);
   return 0;
 }
@@ -2285,12 +2892,52 @@ const libfreehand::FHPatternFill *libfreehand::FHCollector::_findPatternFill(uns
   return 0;
 }
 
+const libfreehand::FHLinePattern *libfreehand::FHCollector::_findLinePattern(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHLinePattern>::const_iterator iter = m_linePatterns.find(id);
+  if (iter != m_linePatterns.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHPath *libfreehand::FHCollector::_findArrowPath(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHPath>::const_iterator iter = m_arrowPaths.find(id);
+  if (iter != m_arrowPaths.end())
+    return &(iter->second);
+  return 0;
+}
+
 const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
 {
   if (!id)
     return 0;
   std::map<unsigned, FHBasicLine>::const_iterator iter = m_basicLines.find(id);
   if (iter != m_basicLines.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHCustomProc *libfreehand::FHCollector::_findCustomProc(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHCustomProc>::const_iterator iter = m_customProcs.find(id);
+  if (iter != m_customProcs.end())
+    return &(iter->second);
+  return 0;
+}
+
+const libfreehand::FHPatternLine *libfreehand::FHCollector::_findPatternLine(unsigned id)
+{
+  if (!id)
+    return 0;
+  std::map<unsigned, FHPatternLine>::const_iterator iter = m_patternLines.find(id);
+  if (iter != m_patternLines.end())
     return &(iter->second);
   return 0;
 }
@@ -2448,7 +3095,7 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
     // Add other fills if we support them
     if (_findBasicFill(valueId) || _findLinearFill(valueId)
         || _findLensFill(valueId) || _findRadialFill(valueId)
-        || _findTileFill(valueId) || _findPatternFill(valueId))
+        || _findTileFill(valueId) || _findPatternFill(valueId) || _findCustomProc(valueId))
       fillId = valueId;
   }
   return fillId;
@@ -2503,15 +3150,27 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
   return data;
 }
 
-::librevenge::RVNGString libfreehand::FHCollector::getColorString(unsigned id)
+::librevenge::RVNGString libfreehand::FHCollector::getColorString(unsigned id, double tintVal)
 {
+  FHRGBColor col;
   const FHRGBColor *color = _findRGBColor(id);
   if (color)
-    return _getColorString(*color);
-  const FHTintColor *tint = _findTintColor(id);
-  if (tint)
-    return _getColorString(getRGBFromTint(*tint));
-  return ::librevenge::RVNGString();
+    col=*color;
+  else
+  {
+    const FHTintColor *tint = _findTintColor(id);
+    if (!tint)
+      return ::librevenge::RVNGString();
+    col=getRGBFromTint(*tint);
+  }
+  if (tintVal<=0 || tintVal>=1)
+    return _getColorString(col);
+
+  FHRGBColor finalColor;
+  finalColor.m_red = col.m_red * tintVal + (1 - tintVal) * 65536;
+  finalColor.m_green = col.m_green * tintVal + (1 - tintVal) * 65536;
+  finalColor.m_blue = col.m_blue * tintVal + (1 - tintVal) * 65536;
+  return _getColorString(finalColor);
 }
 
 libfreehand::FHRGBColor libfreehand::FHCollector::getRGBFromTint(const FHTintColor &tint)
