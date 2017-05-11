@@ -611,7 +611,7 @@ void libfreehand::FHParser::readArrowPath(librevenge::RVNGInputStream *input, li
       {
         double x = _readCoordinate(input);
         double y = _readCoordinate(input);
-        std::pair<double, double> tmpPoint = std::make_pair(x, y);
+        std::pair<double, double> tmpPoint = std::make_pair(72.*x, 72.*y);
         segment.push_back(tmpPoint);
       }
       if (segment.size() == 3)
@@ -727,10 +727,8 @@ void libfreehand::FHParser::readBlock(librevenge::RVNGInputStream *input, libfre
     for (unsigned j = 3; j; --j)
       _readRecordId(input);
     input->seek(1, librevenge::RVNG_SEEK_CUR);
-    for (unsigned k = 4; k; --k)
+    for (unsigned k = m_version < 10 ? 1 : 4; k; --k)
       _readRecordId(input);
-    if (m_version < 10)
-      input->seek(-6, librevenge::RVNG_SEEK_CUR);
   }
   FH_DEBUG_MSG(("Parsing Block: layerListId 0x%x\n", layerListId));
   if (collector)
@@ -885,11 +883,40 @@ void libfreehand::FHParser::readContourFill(librevenge::RVNGInputStream *input, 
   }
 }
 
-void libfreehand::FHParser::readCustomProc(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readCustomProc(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
+  FHCustomProc line;
   unsigned short size = readU16(input);
-  _readRecordId(input);
-  input->seek(4+10*size, librevenge::RVNG_SEEK_CUR);
+  _readRecordId(input); // name
+  input->seek(4, librevenge::RVNG_SEEK_CUR); // ?, and N
+  for (int i=0; i<size; ++i)
+  {
+    int type=readU8(input);
+    switch (type)
+    {
+    case 0:
+      input->seek(7, librevenge::RVNG_SEEK_CUR);
+      line.m_ids.push_back(_readRecordId(input));
+      break;
+    case 2:
+    case 3:
+    case 4:
+      input->seek(3, librevenge::RVNG_SEEK_CUR);
+      if (type==2)
+        line.m_widths.push_back(_readCoordinate(input));
+      else if (type==3)
+        line.m_params.push_back(_readCoordinate(input));
+      else
+        line.m_angles.push_back(_readCoordinate(input));
+      input->seek(2, librevenge::RVNG_SEEK_CUR);
+      break;
+    default:
+      input->seek(9, librevenge::RVNG_SEEK_CUR);
+      break;
+    }
+  }
+  if (collector)
+    collector->collectCustomProc(m_currentRecord+1, line);
 }
 
 void libfreehand::FHParser::readDataList(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -1706,16 +1733,24 @@ void libfreehand::FHParser::readPatternFill(librevenge::RVNGInputStream *input, 
 
 void libfreehand::FHParser::readPatternLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  FHBasicLine line;
+  FHPatternLine line;
   line.m_colorId = _readRecordId(input);
-  /* Here are 8 bytes correspoding to 8 lines of 8x8 pattern.
-     One bit per pixel. We skip the for the time being. */
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  int numOnes=0;
+  for (size_t j=0; j < 8; ++j)
+  {
+    uint8_t val=static_cast<uint8_t>(readU8(input));
+    for (int b=0; b < 8; b++)
+    {
+      if (val&1) ++numOnes;
+      val = uint8_t(val>>1);
+    }
+  }
+  line.m_percentPattern=float(numOnes)/64.f;
   line.m_mitter = _readCoordinate(input) / 72.0;
   line.m_width = _readCoordinate(input) / 72.0;
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   if (collector)
-    collector->collectBasicLine(m_currentRecord+1, line);
+    collector->collectPatternLine(m_currentRecord+1, line);
 }
 
 void libfreehand::FHParser::readPerspectiveEnvelope(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
@@ -1813,14 +1848,23 @@ void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libf
     collector->collectPropList(m_currentRecord+1, propertyList);
 }
 
-void libfreehand::FHParser::readPSFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readPSFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(4, librevenge::RVNG_SEEK_CUR);
+  FHBasicFill fill;
+  fill.m_colorId = _readRecordId(input);
+  _readRecordId(input); // command string
+  if (collector)
+    collector->collectBasicFill(m_currentRecord+1, fill);
 }
 
-void libfreehand::FHParser::readPSLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readPSLine(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
-  input->seek(8, librevenge::RVNG_SEEK_CUR);
+  FHBasicLine line;
+  line.m_colorId = _readRecordId(input);
+  _readRecordId(input); // command string
+  line.m_width = _readCoordinate(input) / 72.0;
+  if (collector)
+    collector->collectBasicLine(m_currentRecord+1, line);
 }
 
 void libfreehand::FHParser::readRadialFill(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)

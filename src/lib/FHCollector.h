@@ -73,6 +73,8 @@ public:
   void collectLinearFill(unsigned recordId, const FHLinearFill &fill);
   void collectRadialFill(unsigned recordId, const FHRadialFill &fill);
   void collectBasicLine(unsigned recordId, const FHBasicLine &line);
+  void collectPatternLine(unsigned recordId, const FHPatternLine &line);
+  void collectCustomProc(unsigned recordId, const FHCustomProc &lineFill);
   void collectTileFill(unsigned recordId, const FHTileFill &fill);
   void collectPatternFill(unsigned recordId, const FHPatternFill &fill);
   void collectLinePattern(unsigned recordId, const FHLinePattern &line);
@@ -130,6 +132,9 @@ private:
   void _appendStrokeProperties(librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
   void _appendBasicFill(librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
   void _appendBasicLine(librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
+  void _appendPatternLine(librevenge::RVNGPropertyList &propList, const FHPatternLine *basicLine);
+  void _appendCustomProcFill(librevenge::RVNGPropertyList &propList, const FHCustomProc *customProc);
+  void _appendCustomProcLine(librevenge::RVNGPropertyList &propList, const FHCustomProc *customProc);
   void _appendLinearFill(librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
   void _appendLensFill(librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
   void _appendRadialFill(librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
@@ -164,6 +169,8 @@ private:
   const FHLinePattern *_findLinePattern(unsigned id);
   const FHPath *_findArrowPath(unsigned id);
   const FHBasicLine *_findBasicLine(unsigned id);
+  const FHCustomProc *_findCustomProc(unsigned id);
+  const FHPatternLine *_findPatternLine(unsigned id);
   const FHRGBColor *_findRGBColor(unsigned id);
   const FHTintColor *_findTintColor(unsigned id);
   const FHDisplayText *_findDisplayText(unsigned id);
@@ -174,7 +181,7 @@ private:
   const FWGlowFilter *_findFWGlowFilter(unsigned id);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(unsigned id);
   const librevenge::RVNGBinaryData *_findData(unsigned id);
-  librevenge::RVNGString getColorString(unsigned id);
+  librevenge::RVNGString getColorString(unsigned id, double tint=1);
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(const FHGraphicStyle &graphicStyle);
@@ -214,6 +221,8 @@ private:
   std::map<unsigned, FHBasicFill> m_basicFills;
   std::map<unsigned, FHPropList> m_propertyLists;
   std::map<unsigned, FHBasicLine> m_basicLines;
+  std::map<unsigned, FHCustomProc> m_customProcs;
+  std::map<unsigned, FHPatternLine> m_patternLines;
   std::map<unsigned, FHDisplayText> m_displayTexts;
   std::map<unsigned, FHGraphicStyle> m_graphicStyles;
   std::map<unsigned, FHAttributeHolder> m_attributeHolders;

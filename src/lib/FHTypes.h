@@ -198,6 +198,25 @@ struct FHBasicLine
       m_endArrowId(0), m_mitter(0.0), m_width(0.0) {}
 };
 
+struct FHPatternLine
+{
+  unsigned m_colorId;
+  double m_percentPattern; // percentage of 1 in the pattern
+  double m_mitter;
+  double m_width;
+  FHPatternLine()
+    : m_colorId(0), m_percentPattern(1), m_mitter(0.0), m_width(0.0) {}
+};
+
+struct FHCustomProc
+{
+  std::vector<unsigned> m_ids;
+  std::vector<double> m_widths;
+  std::vector<double> m_params;
+  std::vector<double> m_angles;
+  FHCustomProc() : m_ids(), m_widths(), m_params(), m_angles() {}
+};
+
 struct FHBasicFill
 {
   unsigned m_colorId;
