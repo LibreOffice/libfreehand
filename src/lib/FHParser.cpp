@@ -1718,6 +1718,7 @@ void libfreehand::FHParser::readPathText(librevenge::RVNGInputStream *input, lib
 
 void libfreehand::FHParser::readPathTextLineInfo(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
+  // osnola: only try for N0=5, N1=2, N2=5
   input->seek(46, librevenge::RVNG_SEEK_CUR);
 }
 
@@ -2153,20 +2154,39 @@ void libfreehand::FHParser::readTaperedFillX(librevenge::RVNGInputStream *input,
     collector->collectLinearFill(m_currentRecord+1, fill);
 }
 
-void libfreehand::FHParser::readTEffect(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTEffect(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
+  FHTEffect eff;
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short num = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
   for (unsigned i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
-    input->seek(2, librevenge::RVNG_SEEK_CUR);
+    unsigned short rec = readU16(input);
     if (key == 2)
-      _readRecordId(input);
+    {
+      unsigned id=_readRecordId(input);
+      switch (rec)
+      {
+      case 0x1a91:
+        eff.m_nameId=id;
+        break;
+      case 0x1ab9:
+        eff.m_colorId[0]=id;
+        break;
+      case 0x1ac1:
+        eff.m_colorId[1]=id;
+        break;
+      default:
+        break;
+      }
+    }
     else
       input->seek(4, librevenge::RVNG_SEEK_CUR);
   }
+  if (collector)
+    collector->collectTEffect(m_currentRecord+1, eff);
 }
 
 void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -2186,23 +2206,34 @@ void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, lib
 #endif
 }
 
-void libfreehand::FHParser::readTextEffs(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+void libfreehand::FHParser::readTextEffs(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
 {
   unsigned num = readU16(input);
-  input->seek(num==0 ? 20 : 22, librevenge::RVNG_SEEK_CUR);
+  FHTEffect eff;
+  eff.m_nameId=_readRecordId(input);
+  eff.m_shortNameId=_readRecordId(input);
+  input->seek(num==0 ? 16 : 18, librevenge::RVNG_SEEK_CUR);
+  int numId=0;
   for (unsigned i = 0; i < num; ++i)
   {
     readU16(input);
     unsigned rec = readU16(input);
     if (rec == 7)
     {
-      input->seek(8, librevenge::RVNG_SEEK_CUR);
+      input->seek(6, librevenge::RVNG_SEEK_CUR);
+      unsigned id=_readRecordId(input);
       if (readU32(input))
+      {
         input->seek(-4, librevenge::RVNG_SEEK_CUR);
+        if (numId<2)
+          eff.m_colorId[numId++]=id;
+      }
     }
     else
       input->seek(12, librevenge::RVNG_SEEK_CUR);
   }
+  if (collector)
+    collector->collectTEffect(m_currentRecord+1, eff);
 }
 
 void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, libfreehand::FHCollector *collector)
@@ -2223,7 +2254,7 @@ void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, l
     unsigned key = readU32(input);
     switch (key & 0xffff)
     {
-    case FH_DIMENTSION_HEIGHT:
+    case FH_DIMENSION_HEIGHT:
       textObject.m_height = _readCoordinate(input) / 72.0;
       break;
     case FH_DIMENSION_LEFT:
@@ -2234,6 +2265,30 @@ void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, l
       break;
     case FH_DIMENSION_WIDTH:
       textObject.m_width = _readCoordinate(input) / 72.0;
+      break;
+    case FH_ROWBREAK_FIRST:
+      textObject.m_rowBreakFirst = readU32(input);
+      break;
+    case FH_COL_SEPARATOR:
+      textObject.m_colSep = _readCoordinate(input) / 72.0;
+      break;
+    case FH_COL_NUM:
+      textObject.m_colNum = readU32(input);
+      break;
+    case FH_ROW_SEPARATOR:
+      textObject.m_rowSep = _readCoordinate(input) / 72.0;
+      break;
+    case FH_ROW_NUM:
+      textObject.m_rowNum = readU32(input);
+      break;
+    case FH_TEXT_PATH_ID:
+      textObject.m_pathId=_readRecordId(input);
+      break;
+    case FH_TEXT_BEGIN_POS:
+      textObject.m_beginPos=readU32(input);
+      break;
+    case FH_TEXT_END_POS:
+      textObject.m_endPos=readU32(input);
       break;
     default:
       if ((key >> 16) == 2)
@@ -2430,7 +2485,7 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
     {
       if (!charProps)
         charProps.reset(new libfreehand::FHCharProperties());
-      _readRecordId(input);
+      charProps->m_tEffectId = _readRecordId(input);
       break;
     }
     case FH_TXT_COLOR_ID:

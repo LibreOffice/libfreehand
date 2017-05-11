@@ -44,6 +44,7 @@ public:
   void collectCompositePath(unsigned recordId, const FHCompositePath &compositePath);
   void collectTString(unsigned recordId, const std::vector<unsigned> &elements);
   void collectAGDFont(unsigned recordId, const FHAGDFont &font);
+  void collectTEffect(unsigned recordId, const FHTEffect &tEffect);
   void collectParagraph(unsigned recordId, const FHParagraph &paragraph);
   void collectTabTable(unsigned recordId, const std::vector<FHTab> &tabs);
   void collectTextBlok(unsigned recordId, const std::vector<unsigned short> &characters);
@@ -99,7 +100,7 @@ private:
   void _outputCompositePath(const FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter);
   void _outputPathText(const FHPathText *pathText, ::librevenge::RVNGDrawingInterface *painter);
   void _outputTextObject(const FHTextObject *textObject, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter, unsigned &actPos, unsigned minPos, unsigned maxPos);
   void _outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
                       unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
   void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
@@ -155,6 +156,7 @@ private:
   const FHPathText *_findPathText(unsigned id);
   const FHTextObject *_findTextObject(unsigned id);
   const FHTransform *_findTransform(unsigned id);
+  const FHTEffect *_findTEffect(unsigned id);
   const FHParagraph *_findParagraph(unsigned id);
   const std::vector<FHTab> *_findTabTable(unsigned id);
   const FHPropList *_findPropList(unsigned id);
@@ -211,6 +213,7 @@ private:
   std::map<unsigned, FHPathText> m_pathTexts;
   std::map<unsigned, std::vector<unsigned> > m_tStrings;
   std::map<unsigned, FHAGDFont> m_fonts;
+  std::map<unsigned, FHTEffect> m_tEffects;
   std::map<unsigned, FHParagraph> m_paragraphs;
   std::map<unsigned, std::vector<FHTab> > m_tabs;
   std::map<unsigned, std::vector<unsigned short> > m_textBloks;
@@ -249,7 +252,7 @@ private:
   unsigned m_strokeId;
   unsigned m_fillId;
   unsigned m_contentId;
-
+  unsigned m_textBoxNumberId;
   std::deque<unsigned> m_visitedObjects;
 };
 

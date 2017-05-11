@@ -113,14 +113,23 @@ struct FHTextObject
   unsigned m_xFormId;
   unsigned m_tStringId;
   unsigned m_vmpObjId;
+  unsigned m_pathId;
   double m_startX;
   double m_startY;
   double m_width;
   double m_height;
+  unsigned m_beginPos;
+  unsigned m_endPos;
+  unsigned m_colNum;
+  unsigned m_rowNum;
+  double m_colSep;
+  double m_rowSep;
+  unsigned m_rowBreakFirst;
 
   FHTextObject()
-    : m_graphicStyleId(0), m_xFormId(0), m_tStringId(0), m_vmpObjId(0),
-      m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0) {}
+    : m_graphicStyleId(0), m_xFormId(0), m_tStringId(0), m_vmpObjId(0), m_pathId(0),
+      m_startX(0.0), m_startY(0.0), m_width(0.0), m_height(0.0), m_beginPos(0), m_endPos(0xffff),
+      m_colNum(1), m_rowNum(1), m_colSep(0.0), m_rowSep(0.0), m_rowBreakFirst(0) {}
 };
 
 struct FHParagraphProperties
@@ -142,9 +151,10 @@ struct FHCharProperties
   double m_fontSize;
   unsigned m_fontNameId;
   unsigned m_fontId;
+  unsigned m_tEffectId;
   std::map<unsigned,double> m_idToDoubleMap;
   FHCharProperties()
-    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0), m_idToDoubleMap() {}
+    : m_textColorId(0), m_fontSize(12.0), m_fontNameId(0), m_fontId(0), m_tEffectId(0), m_idToDoubleMap() {}
 };
 
 struct FHRGBColor
@@ -274,6 +284,16 @@ struct FH3ParaProperties
   FH3ParaProperties() : m_offset(0) {}
 };
 
+struct FHTEffect
+{
+  unsigned m_nameId;
+  unsigned m_shortNameId;
+  unsigned m_colorId[2];
+  FHTEffect() : m_nameId(0), m_shortNameId(0)
+  {
+    for (int i=0; i<2; ++i) m_colorId[i]=0;
+  }
+};
 struct FHDisplayText
 {
   unsigned m_graphicStyleId;
