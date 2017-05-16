@@ -76,7 +76,7 @@ public:
   void collectSymbolClass(unsigned recordId, const FHSymbolClass &symbolClass);
   void collectSymbolInstance(unsigned recordId, const FHSymbolInstance &symbolInstance);
 
-  void outputDrawing(::librevenge::RVNGDrawingInterface *painter);
+  void outputDrawing(librevenge::RVNGDrawingInterface *painter);
 
 private:
   FHCollector(const FHCollector &);
@@ -85,20 +85,20 @@ private:
   void _normalizePath(FHPath &path);
   void _normalizePoint(double &x, double &y);
 
-  void _outputPath(const FHPath *path, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputLayer(unsigned layerId, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputClipGroup(const FHGroup *group, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputCompositePath(const FHCompositePath *compositePath, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputTextObject(const FHTextObject *textObject, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputParagraph(const FHParagraph *paragraph, ::librevenge::RVNGDrawingInterface *painter);
+  void _outputPath(const FHPath *path, librevenge::RVNGDrawingInterface *painter);
+  void _outputLayer(unsigned layerId, librevenge::RVNGDrawingInterface *painter);
+  void _outputGroup(const FHGroup *group, librevenge::RVNGDrawingInterface *painter);
+  void _outputClipGroup(const FHGroup *group, librevenge::RVNGDrawingInterface *painter);
+  void _outputCompositePath(const FHCompositePath *compositePath, librevenge::RVNGDrawingInterface *painter);
+  void _outputTextObject(const FHTextObject *textObject, librevenge::RVNGDrawingInterface *painter);
+  void _outputParagraph(const FHParagraph *paragraph, librevenge::RVNGDrawingInterface *painter);
   void _outputTextRun(const std::vector<unsigned short> *characters, unsigned offset, unsigned length,
-                      unsigned charStyleId, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputDisplayText(const FHDisplayText *displayText, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputImageImport(const FHImageImport *image, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputNewBlend(const FHNewBlend *newBlend, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputSymbolInstance(const FHSymbolInstance *symbolInstance, ::librevenge::RVNGDrawingInterface *painter);
-  void _outputSomething(unsigned somethingId, ::librevenge::RVNGDrawingInterface *painter);
+                      unsigned charStyleId, librevenge::RVNGDrawingInterface *painter);
+  void _outputDisplayText(const FHDisplayText *displayText, librevenge::RVNGDrawingInterface *painter);
+  void _outputImageImport(const FHImageImport *image, librevenge::RVNGDrawingInterface *painter);
+  void _outputNewBlend(const FHNewBlend *newBlend, librevenge::RVNGDrawingInterface *painter);
+  void _outputSymbolInstance(const FHSymbolInstance *symbolInstance, librevenge::RVNGDrawingInterface *painter);
+  void _outputSomething(unsigned somethingId, librevenge::RVNGDrawingInterface *painter);
 
   void _getBBofPath(const FHPath *path,FHBoundingBox &bBox);
   void _getBBofLayer(unsigned layerId,FHBoundingBox &bBox);
@@ -113,24 +113,24 @@ private:
   void _getBBofSomething(unsigned somethingId,FHBoundingBox &bBox);
 
   const std::vector<unsigned> *_findListElements(unsigned id);
-  void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, unsigned paraPropsId);
-  void _appendParagraphProperties(::librevenge::RVNGPropertyList &propList, const FH3ParaProperties &paraProps);
-  void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, unsigned charPropsId);
-  void _appendCharacterProperties(::librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps);
-  void _appendFontProperties(::librevenge::RVNGPropertyList &propList, unsigned agdFontId);
-  void _appendFillProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
-  void _appendStrokeProperties(::librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
-  void _appendBasicFill(::librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
-  void _appendBasicLine(::librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
-  void _appendLinearFill(::librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
-  void _appendLensFill(::librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
-  void _appendRadialFill(::librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
-  void _appendTileFill(::librevenge::RVNGPropertyList &propList, const FHTileFill *tileFill);
-  void _appendPatternFill(::librevenge::RVNGPropertyList &propList, const FHPatternFill *patternFill);
-  void _appendOpacity(::librevenge::RVNGPropertyList &propList, const double *opacity);
-  void _appendShadow(::librevenge::RVNGPropertyList &propList, const FWShadowFilter *filter);
-  void _appendGlow(::librevenge::RVNGPropertyList &propList, const FWGlowFilter *filter);
-  void _applyFilter(::librevenge::RVNGPropertyList &propList, unsigned filterId);
+  void _appendParagraphProperties(librevenge::RVNGPropertyList &propList, unsigned paraPropsId);
+  void _appendParagraphProperties(librevenge::RVNGPropertyList &propList, const FH3ParaProperties &paraProps);
+  void _appendCharacterProperties(librevenge::RVNGPropertyList &propList, unsigned charPropsId);
+  void _appendCharacterProperties(librevenge::RVNGPropertyList &propList, const FH3CharProperties &charProps);
+  void _appendFontProperties(librevenge::RVNGPropertyList &propList, unsigned agdFontId);
+  void _appendFillProperties(librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
+  void _appendStrokeProperties(librevenge::RVNGPropertyList &propList, unsigned graphicStyleId);
+  void _appendBasicFill(librevenge::RVNGPropertyList &propList, const FHBasicFill *basicFill);
+  void _appendBasicLine(librevenge::RVNGPropertyList &propList, const FHBasicLine *basicLine);
+  void _appendLinearFill(librevenge::RVNGPropertyList &propList, const FHLinearFill *linearFill);
+  void _appendLensFill(librevenge::RVNGPropertyList &propList, const FHLensFill *lensFill);
+  void _appendRadialFill(librevenge::RVNGPropertyList &propList, const FHRadialFill *radialFill);
+  void _appendTileFill(librevenge::RVNGPropertyList &propList, const FHTileFill *tileFill);
+  void _appendPatternFill(librevenge::RVNGPropertyList &propList, const FHPatternFill *patternFill);
+  void _appendOpacity(librevenge::RVNGPropertyList &propList, const double *opacity);
+  void _appendShadow(librevenge::RVNGPropertyList &propList, const FWShadowFilter *filter);
+  void _appendGlow(librevenge::RVNGPropertyList &propList, const FWGlowFilter *filter);
+  void _applyFilter(librevenge::RVNGPropertyList &propList, unsigned filterId);
   const std::vector<unsigned> *_findTStringElements(unsigned id);
 
   const FHPath *_findPath(unsigned id);
@@ -159,8 +159,8 @@ private:
   const FWShadowFilter *_findFWShadowFilter(unsigned id);
   const FWGlowFilter *_findFWGlowFilter(unsigned id);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(unsigned id);
-  const ::librevenge::RVNGBinaryData *_findData(unsigned id);
-  ::librevenge::RVNGString getColorString(unsigned id);
+  const librevenge::RVNGBinaryData *_findData(unsigned id);
+  librevenge::RVNGString getColorString(unsigned id);
   unsigned _findFillId(const FHGraphicStyle &graphicStyle);
   unsigned _findStrokeId(const FHGraphicStyle &graphicStyle);
   const FHFilterAttributeHolder *_findFilterAttributeHolder(const FHGraphicStyle &graphicStyle);
@@ -169,7 +169,7 @@ private:
   const FHSymbolInstance *_findSymbolInstance(unsigned id);
   unsigned _findContentId(unsigned graphicStyleId);
   const std::vector<FHColorStop> *_findMultiColorList(unsigned id);
-  ::librevenge::RVNGBinaryData getImageData(unsigned id);
+  librevenge::RVNGBinaryData getImageData(unsigned id);
   FHRGBColor getRGBFromTint(const FHTintColor &tint);
   void _generateBitmapFromPattern(librevenge::RVNGBinaryData &bitmap, unsigned colorId, const std::vector<unsigned char> &pattern);
 
