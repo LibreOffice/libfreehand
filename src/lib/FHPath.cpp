@@ -9,6 +9,8 @@
 
 #include <math.h>
 #include <map>
+#include <sstream>
+
 #include "FHPath.h"
 #include "FHTypes.h"
 #include "FHTransform.h"
@@ -231,6 +233,7 @@ public:
       m_y(y) {}
   ~FHMoveToElement() {}
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
+  void writeOut(std::ostream &o) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
   void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
@@ -255,6 +258,7 @@ public:
       m_y(y) {}
   ~FHLineToElement() {}
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
+  void writeOut(std::ostream &o) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
   void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
@@ -283,6 +287,7 @@ public:
       m_y(y) {}
   ~FHCubicBezierToElement() {}
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
+  void writeOut(std::ostream &o) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
   void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
@@ -313,6 +318,7 @@ public:
       m_y(y) {}
   ~FHQuadraticBezierToElement() {}
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
+  void writeOut(std::ostream &o) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
   void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
@@ -344,6 +350,7 @@ public:
       m_y(y) {}
   ~FHArcToElement() {}
   void writeOut(librevenge::RVNGPropertyListVector &vec) const;
+  void writeOut(std::ostream &o) const;
   void transform(const FHTransform &trafo);
   FHPathElement *clone();
   void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
@@ -375,6 +382,11 @@ void libfreehand::FHMoveToElement::writeOut(librevenge::RVNGPropertyListVector &
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
+}
+
+void libfreehand::FHMoveToElement::writeOut(std::ostream &o) const
+{
+  o << "M " << int(35*m_x) << " " << int(35*m_y);
 }
 
 void libfreehand::FHMoveToElement::transform(const FHTransform &trafo)
@@ -409,6 +421,11 @@ void libfreehand::FHLineToElement::writeOut(librevenge::RVNGPropertyListVector &
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
+}
+
+void libfreehand::FHLineToElement::writeOut(std::ostream &o) const
+{
+  o << "L " << int(35*m_x) << " " << int(35*m_y);
 }
 
 void libfreehand::FHLineToElement::transform(const FHTransform &trafo)
@@ -447,6 +464,12 @@ void libfreehand::FHCubicBezierToElement::writeOut(librevenge::RVNGPropertyListV
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
+}
+
+void libfreehand::FHCubicBezierToElement::writeOut(std::ostream &o) const
+{
+  o << "C " << int(35*m_x1) << " " << int(35*m_y1) << " "
+    << int(35*m_x2) << " " << int(35*m_y2) << " " << int(35*m_x) << " " << int(35*m_y);
 }
 
 void libfreehand::FHCubicBezierToElement::transform(const FHTransform &trafo)
@@ -496,6 +519,11 @@ void libfreehand::FHQuadraticBezierToElement::writeOut(librevenge::RVNGPropertyL
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
+}
+
+void libfreehand::FHQuadraticBezierToElement::writeOut(std::ostream &o) const
+{
+  o << "Q " << int(35*m_x1) << " " << int(35*m_y1) << " " << int(35*m_x) << " " << int(35*m_y);
 }
 
 void libfreehand::FHQuadraticBezierToElement::transform(const FHTransform &trafo)
@@ -552,6 +580,13 @@ void libfreehand::FHArcToElement::writeOut(librevenge::RVNGPropertyListVector &v
   node.insert("svg:x", m_x);
   node.insert("svg:y", m_y);
   vec.append(node);
+}
+
+void libfreehand::FHArcToElement::writeOut(std::ostream &o) const
+{
+  o << "A " << int(35*m_rx) << " " << int(35*m_ry) << " "
+    << int(m_rotation * 180 / M_PI) << " " << m_largeArc << " " << m_sweep << " "
+    << int(35*m_x) << " " << int(35*m_y);
 }
 
 void libfreehand::FHArcToElement::transform(const FHTransform &trafo)
@@ -662,15 +697,18 @@ void libfreehand::FHPath::writeOut(librevenge::RVNGPropertyListVector &vec) cons
     element->writeOut(vec);
 }
 
+std::string libfreehand::FHPath::getPathString() const
+{
+  std::stringstream s;
+  for (const auto &element : m_elements)
+    element->writeOut(s);
+  return s.str();
+}
+
 void libfreehand::FHPath::transform(const FHTransform &trafo)
 {
   for (const auto &element : m_elements)
     element->transform(trafo);
-}
-
-libfreehand::FHPathElement *libfreehand::FHPath::clone()
-{
-  return new FHPath(*this);
 }
 
 void libfreehand::FHPath::clear()
