@@ -3180,9 +3180,9 @@ libfreehand::FHRGBColor libfreehand::FHCollector::getRGBFromTint(const FHTintCol
   const FHRGBColor *rgbColor = _findRGBColor(tint.m_baseColorId);
   if (!rgbColor)
     return FHRGBColor();
-  unsigned red = rgbColor->m_red * tint.m_tint + (65536 - tint.m_tint) * 65536;
-  unsigned green = rgbColor->m_green * tint.m_tint + (65536 - tint.m_tint) * 65536;
-  unsigned blue = rgbColor->m_blue * tint.m_tint + (65536 - tint.m_tint) * 65536;
+  unsigned red = rgbColor->m_red * tint.m_tint + ((65536 - tint.m_tint) << 16);
+  unsigned green = rgbColor->m_green * tint.m_tint + ((65536 - tint.m_tint) << 16);
+  unsigned blue = rgbColor->m_blue * tint.m_tint + ((65536 - tint.m_tint) << 16);
   FHRGBColor color;
   color.m_red = (red >> 16);
   color.m_green = (green >> 16);
