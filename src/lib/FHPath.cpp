@@ -231,17 +231,17 @@ public:
   FHMoveToElement(double x, double y)
     : m_x(x),
       m_y(y) {}
-  ~FHMoveToElement() {}
-  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
-  void writeOut(std::ostream &o) const;
-  void transform(const FHTransform &trafo);
-  FHPathElement *clone();
-  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
-  double getX() const
+  ~FHMoveToElement() override {}
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const override;
+  void writeOut(std::ostream &o) const override;
+  void transform(const FHTransform &trafo) override;
+  FHPathElement *clone() override;
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const override;
+  double getX() const override
   {
     return m_x;
   }
-  double getY() const
+  double getY() const override
   {
     return m_y;
   }
@@ -256,17 +256,17 @@ public:
   FHLineToElement(double x, double y)
     : m_x(x),
       m_y(y) {}
-  ~FHLineToElement() {}
-  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
-  void writeOut(std::ostream &o) const;
-  void transform(const FHTransform &trafo);
-  FHPathElement *clone();
-  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
-  double getX() const
+  ~FHLineToElement() override {}
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const override;
+  void writeOut(std::ostream &o) const override;
+  void transform(const FHTransform &trafo) override;
+  FHPathElement *clone() override;
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const override;
+  double getX() const override
   {
     return m_x;
   }
-  double getY() const
+  double getY() const override
   {
     return m_y;
   }
@@ -285,17 +285,17 @@ public:
       m_y2(y2),
       m_x(x),
       m_y(y) {}
-  ~FHCubicBezierToElement() {}
-  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
-  void writeOut(std::ostream &o) const;
-  void transform(const FHTransform &trafo);
-  FHPathElement *clone();
-  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
-  double getX() const
+  ~FHCubicBezierToElement() override {}
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const override;
+  void writeOut(std::ostream &o) const override;
+  void transform(const FHTransform &trafo) override;
+  FHPathElement *clone() override;
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const override;
+  double getX() const override
   {
     return m_x;
   }
-  double getY() const
+  double getY() const override
   {
     return m_y;
   }
@@ -316,17 +316,17 @@ public:
       m_y1(y1),
       m_x(x),
       m_y(y) {}
-  ~FHQuadraticBezierToElement() {}
-  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
-  void writeOut(std::ostream &o) const;
-  void transform(const FHTransform &trafo);
-  FHPathElement *clone();
-  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
-  double getX() const
+  ~FHQuadraticBezierToElement() override {}
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const override;
+  void writeOut(std::ostream &o) const override;
+  void transform(const FHTransform &trafo) override;
+  FHPathElement *clone() override;
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const override;
+  double getX() const override
   {
     return m_x;
   }
-  double getY() const
+  double getY() const override
   {
     return m_y;
   }
@@ -348,17 +348,17 @@ public:
       m_sweep(sweep),
       m_x(x),
       m_y(y) {}
-  ~FHArcToElement() {}
-  void writeOut(librevenge::RVNGPropertyListVector &vec) const;
-  void writeOut(std::ostream &o) const;
-  void transform(const FHTransform &trafo);
-  FHPathElement *clone();
-  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const;
-  double getX() const
+  ~FHArcToElement() override {}
+  void writeOut(librevenge::RVNGPropertyListVector &vec) const override;
+  void writeOut(std::ostream &o) const override;
+  void transform(const FHTransform &trafo) override;
+  FHPathElement *clone() override;
+  void getBoundingBox(double x0, double y0, double &xmin, double &ymin, double &xmax, double &ymax) const override;
+  double getX() const override
   {
     return m_x;
   }
-  double getY() const
+  double getY() const override
   {
     return m_y;
   }

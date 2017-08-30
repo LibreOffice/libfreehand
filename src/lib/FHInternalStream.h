@@ -22,35 +22,35 @@ class FHInternalStream : public librevenge::RVNGInputStream
 {
 public:
   FHInternalStream(librevenge::RVNGInputStream *input, unsigned long size, bool compressed=false);
-  ~FHInternalStream() {}
-  virtual bool isStructured()
+  ~FHInternalStream() override {}
+  bool isStructured() override
   {
     return false;
   }
-  virtual unsigned subStreamCount()
+  unsigned subStreamCount() override
   {
     return 0;
   }
-  virtual const char *subStreamName(unsigned)
+  const char *subStreamName(unsigned) override
   {
     return 0;
   }
-  virtual bool existsSubStream(const char *)
+  bool existsSubStream(const char *) override
   {
     return false;
   }
-  virtual librevenge::RVNGInputStream *getSubStreamByName(const char *)
+  librevenge::RVNGInputStream *getSubStreamByName(const char *) override
   {
     return 0;
   }
-  virtual librevenge::RVNGInputStream *getSubStreamById(unsigned)
+  librevenge::RVNGInputStream *getSubStreamById(unsigned) override
   {
     return 0;
   }
-  const unsigned char *read(unsigned long numBytes, unsigned long &numBytesRead);
-  int seek(long offset, librevenge::RVNG_SEEK_TYPE seekType);
-  long tell();
-  bool isEnd();
+  const unsigned char *read(unsigned long numBytes, unsigned long &numBytesRead) override;
+  int seek(long offset, librevenge::RVNG_SEEK_TYPE seekType) override;
+  long tell() override;
+  bool isEnd() override;
   unsigned long getSize() const
   {
     return m_buffer.size();
