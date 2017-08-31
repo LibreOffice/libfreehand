@@ -43,7 +43,7 @@ static int getTokenId(const char *name)
 const char *getTokenName(int tokenId)
 {
   if (tokenId >= FH_TOKEN_COUNT)
-    return 0;
+    return nullptr;
   const fhtoken *currentToken = wordlist;
   while (currentToken != wordlist+sizeof(wordlist)/sizeof(*wordlist))
   {
@@ -51,7 +51,7 @@ const char *getTokenName(int tokenId)
       return currentToken->name;
     ++currentToken;
   }
-  return 0;
+  return nullptr;
 }
 
 #endif
@@ -59,8 +59,8 @@ const char *getTokenName(int tokenId)
 } // anonymous namespace
 
 libfreehand::FHParser::FHParser()
-  : m_input(0), m_collector(0), m_version(-1), m_dictionary(),
-    m_records(), m_currentRecord(0), m_pageInfo(), m_colorTransform(0)
+  : m_input(nullptr), m_collector(nullptr), m_version(-1), m_dictionary(),
+    m_records(), m_currentRecord(0), m_pageInfo(), m_colorTransform(nullptr)
 {
   cmsHPROFILE inProfile  = cmsOpenProfileFromMem(CMYK_icc, sizeof(CMYK_icc)/sizeof(CMYK_icc[0]));
   cmsHPROFILE outProfile = cmsCreate_sRGBProfile();

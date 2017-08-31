@@ -95,7 +95,7 @@ const unsigned char *libfreehand::FHInternalStream::read(unsigned long numBytes,
   numBytesRead = 0;
 
   if (numBytes == 0)
-    return 0;
+    return nullptr;
 
   unsigned numBytesToRead;
 
@@ -107,7 +107,7 @@ const unsigned char *libfreehand::FHInternalStream::read(unsigned long numBytes,
   numBytesRead = numBytesToRead; // about as paranoid as we can be..
 
   if (numBytesToRead == 0)
-    return 0;
+    return nullptr;
 
   long oldOffset = m_offset;
   m_offset += numBytesToRead;

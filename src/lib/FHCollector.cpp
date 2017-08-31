@@ -2179,7 +2179,7 @@ const std::vector<unsigned> *libfreehand::FHCollector::_findListElements(unsigne
   std::map<unsigned, FHList>::const_iterator iter = m_lists.find(id);
   if (iter != m_lists.end())
     return &(iter->second.m_elements);
-  return 0;
+  return nullptr;
 }
 
 
@@ -2695,371 +2695,371 @@ void libfreehand::FHCollector::_appendPatternLine(librevenge::RVNGPropertyList &
 const libfreehand::FHPath *libfreehand::FHCollector::_findPath(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHPath>::const_iterator iter = m_paths.find(id);
   if (iter != m_paths.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHNewBlend *libfreehand::FHCollector::_findNewBlend(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHNewBlend>::const_iterator iter = m_newBlends.find(id);
   if (iter != m_newBlends.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHGroup *libfreehand::FHCollector::_findGroup(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHGroup>::const_iterator iter = m_groups.find(id);
   if (iter != m_groups.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHGroup *libfreehand::FHCollector::_findClipGroup(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHGroup>::const_iterator iter = m_clipGroups.find(id);
   if (iter != m_clipGroups.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHCompositePath *libfreehand::FHCollector::_findCompositePath(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHCompositePath>::const_iterator iter = m_compositePaths.find(id);
   if (iter != m_compositePaths.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHPathText *libfreehand::FHCollector::_findPathText(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHPathText>::const_iterator iter = m_pathTexts.find(id);
   if (iter != m_pathTexts.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHTextObject *libfreehand::FHCollector::_findTextObject(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHTextObject>::const_iterator iter = m_textObjects.find(id);
   if (iter != m_textObjects.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHTransform *libfreehand::FHCollector::_findTransform(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHTransform>::const_iterator iter = m_transforms.find(id);
   if (iter != m_transforms.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHTEffect *libfreehand::FHCollector::_findTEffect(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHTEffect>::const_iterator iter = m_tEffects.find(id);
   if (iter != m_tEffects.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHParagraph *libfreehand::FHCollector::_findParagraph(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHParagraph>::const_iterator iter = m_paragraphs.find(id);
   if (iter != m_paragraphs.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const std::vector<libfreehand::FHTab> *libfreehand::FHCollector::_findTabTable(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, std::vector<libfreehand::FHTab> >::const_iterator iter = m_tabs.find(id);
   if (iter != m_tabs.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const std::vector<unsigned> *libfreehand::FHCollector::_findTStringElements(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, std::vector<unsigned> >::const_iterator iter = m_tStrings.find(id);
   if (iter != m_tStrings.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHPropList *libfreehand::FHCollector::_findPropList(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHPropList>::const_iterator iter = m_propertyLists.find(id);
   if (iter != m_propertyLists.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHGraphicStyle *libfreehand::FHCollector::_findGraphicStyle(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHGraphicStyle>::const_iterator iter = m_graphicStyles.find(id);
   if (iter != m_graphicStyles.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHBasicFill *libfreehand::FHCollector::_findBasicFill(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHBasicFill>::const_iterator iter = m_basicFills.find(id);
   if (iter != m_basicFills.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHLinearFill *libfreehand::FHCollector::_findLinearFill(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHLinearFill>::const_iterator iter = m_linearFills.find(id);
   if (iter != m_linearFills.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHLensFill *libfreehand::FHCollector::_findLensFill(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHLensFill>::const_iterator iter = m_lensFills.find(id);
   if (iter != m_lensFills.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHRadialFill *libfreehand::FHCollector::_findRadialFill(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHRadialFill>::const_iterator iter = m_radialFills.find(id);
   if (iter != m_radialFills.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHTileFill *libfreehand::FHCollector::_findTileFill(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHTileFill>::const_iterator iter = m_tileFills.find(id);
   if (iter != m_tileFills.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHPatternFill *libfreehand::FHCollector::_findPatternFill(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHPatternFill>::const_iterator iter = m_patternFills.find(id);
   if (iter != m_patternFills.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHLinePattern *libfreehand::FHCollector::_findLinePattern(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHLinePattern>::const_iterator iter = m_linePatterns.find(id);
   if (iter != m_linePatterns.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHPath *libfreehand::FHCollector::_findArrowPath(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHPath>::const_iterator iter = m_arrowPaths.find(id);
   if (iter != m_arrowPaths.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHBasicLine *libfreehand::FHCollector::_findBasicLine(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHBasicLine>::const_iterator iter = m_basicLines.find(id);
   if (iter != m_basicLines.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHCustomProc *libfreehand::FHCollector::_findCustomProc(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHCustomProc>::const_iterator iter = m_customProcs.find(id);
   if (iter != m_customProcs.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHPatternLine *libfreehand::FHCollector::_findPatternLine(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHPatternLine>::const_iterator iter = m_patternLines.find(id);
   if (iter != m_patternLines.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHRGBColor *libfreehand::FHCollector::_findRGBColor(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHRGBColor>::const_iterator iter = m_rgbColors.find(id);
   if (iter != m_rgbColors.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHTintColor *libfreehand::FHCollector::_findTintColor(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHTintColor>::const_iterator iter = m_tints.find(id);
   if (iter != m_tints.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHDisplayText *libfreehand::FHCollector::_findDisplayText(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHDisplayText>::const_iterator iter = m_displayTexts.find(id);
   if (iter != m_displayTexts.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHImageImport *libfreehand::FHCollector::_findImageImport(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHImageImport>::const_iterator iter = m_images.find(id);
   if (iter != m_images.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const librevenge::RVNGBinaryData *libfreehand::FHCollector::_findData(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, librevenge::RVNGBinaryData>::const_iterator iter = m_data.find(id);
   if (iter != m_data.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHSymbolClass *libfreehand::FHCollector::_findSymbolClass(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHSymbolClass>::const_iterator iter = m_symbolClasses.find(id);
   if (iter != m_symbolClasses.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHSymbolInstance *libfreehand::FHCollector::_findSymbolInstance(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHSymbolInstance>::const_iterator iter = m_symbolInstances.find(id);
   if (iter != m_symbolInstances.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FHFilterAttributeHolder *libfreehand::FHCollector::_findFilterAttributeHolder(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHFilterAttributeHolder>::const_iterator iter = m_filterAttributeHolders.find(id);
   if (iter != m_filterAttributeHolders.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const std::vector<libfreehand::FHColorStop> *libfreehand::FHCollector::_findMultiColorList(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, std::vector<libfreehand::FHColorStop> >::const_iterator iter = m_multiColorLists.find(id);
   if (iter != m_multiColorLists.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const double *libfreehand::FHCollector::_findOpacityFilter(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, double>::const_iterator iter = m_opacityFilters.find(id);
   if (iter != m_opacityFilters.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FWShadowFilter *libfreehand::FHCollector::_findFWShadowFilter(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FWShadowFilter>::const_iterator iter = m_shadowFilters.find(id);
   if (iter != m_shadowFilters.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 const libfreehand::FWGlowFilter *libfreehand::FHCollector::_findFWGlowFilter(unsigned id)
 {
   if (!id)
-    return 0;
+    return nullptr;
   std::map<unsigned, FWGlowFilter>::const_iterator iter = m_glowFilters.find(id);
   if (iter != m_glowFilters.end())
     return &(iter->second);
-  return 0;
+  return nullptr;
 }
 
 unsigned libfreehand::FHCollector::_findStrokeId(const libfreehand::FHGraphicStyle &graphicStyle)
@@ -3105,10 +3105,10 @@ const libfreehand::FHFilterAttributeHolder *libfreehand::FHCollector::_findFilte
 {
   unsigned listId = graphicStyle.m_attrId;
   if (!listId)
-    return 0;
+    return nullptr;
   std::map<unsigned, FHList>::const_iterator iter = m_lists.find(listId);
   if (iter == m_lists.end())
-    return 0;
+    return nullptr;
   for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
   {
     const FHFilterAttributeHolder *attributeHolder = _findFilterAttributeHolder(iter->second.m_elements[i]);
@@ -3116,7 +3116,7 @@ const libfreehand::FHFilterAttributeHolder *libfreehand::FHCollector::_findFilte
     if (attributeHolder)
       return attributeHolder;
   }
-  return 0;
+  return nullptr;
 }
 
 
