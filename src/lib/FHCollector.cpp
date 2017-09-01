@@ -582,10 +582,10 @@ void libfreehand::FHCollector::_getBBofGroup(const FHGroup *group, libfreehand::
     return;
   }
 
-  for (std::vector<unsigned>::const_iterator iterVec = elements->begin(); iterVec != elements->end(); ++iterVec)
+  for (unsigned int element : *elements)
   {
     FHBoundingBox tmpBBox;
-    _getBBofSomething(*iterVec, tmpBBox);
+    _getBBofSomething(element, tmpBBox);
     bBox.merge(tmpBBox);
   }
 
@@ -1078,8 +1078,8 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, l
   if (!elements->empty())
   {
     painter->openGroup(librevenge::RVNGPropertyList());
-    for (std::vector<unsigned>::const_iterator iterVec = elements->begin(); iterVec != elements->end(); ++iterVec)
-      _outputSomething(*iterVec, painter);
+    for (unsigned int element : *elements)
+      _outputSomething(element, painter);
     painter->closeGroup();
   }
 
@@ -1220,20 +1220,20 @@ void libfreehand::FHCollector::_outputNewBlend(const libfreehand::FHNewBlend *ne
   const std::vector<unsigned> *elements1 = _findListElements(newBlend->m_list1Id);
   if (elements1 && !elements1->empty())
   {
-    for (std::vector<unsigned>::const_iterator iterVec = elements1->begin(); iterVec != elements1->end(); ++iterVec)
-      _outputSomething(*iterVec, painter);
+    for (unsigned int iterVec : *elements1)
+      _outputSomething(iterVec, painter);
   }
   const std::vector<unsigned> *elements2 = _findListElements(newBlend->m_list2Id);
   if (elements2 && !elements2->empty())
   {
-    for (std::vector<unsigned>::const_iterator iterVec = elements2->begin(); iterVec != elements2->end(); ++iterVec)
-      _outputSomething(*iterVec, painter);
+    for (unsigned int iterVec : *elements2)
+      _outputSomething(iterVec, painter);
   }
   const std::vector<unsigned> *elements3 = _findListElements(newBlend->m_list3Id);
   if (elements3 && !elements3->empty())
   {
-    for (std::vector<unsigned>::const_iterator iterVec = elements3->begin(); iterVec != elements3->end(); ++iterVec)
-      _outputSomething(*iterVec, painter);
+    for (unsigned int iterVec : *elements3)
+      _outputSomething(iterVec, painter);
   }
   painter->closeGroup();
 
@@ -1306,9 +1306,9 @@ void libfreehand::FHCollector::outputDrawing(librevenge::RVNGDrawingInterface *p
   const std::vector<unsigned> *elements = _findListElements(layerListId);
   if (elements)
   {
-    for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
+    for (unsigned int element : *elements)
     {
-      _outputLayer(*iter, painter);
+      _outputLayer(element, painter);
     }
   }
   painter->endPage();
@@ -1344,8 +1344,8 @@ void libfreehand::FHCollector::_outputLayer(unsigned layerId, librevenge::RVNGDr
     return;
   }
 
-  for (std::vector<unsigned>::const_iterator iterVec = elements->begin(); iterVec != elements->end(); ++iterVec)
-    _outputSomething(*iterVec, painter);
+  for (unsigned int element : *elements)
+    _outputSomething(element, painter);
 }
 
 void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHCompositePath *compositePath, librevenge::RVNGDrawingInterface *painter)
@@ -1396,12 +1396,12 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
     std::swap(decalX[0],decalX[1]);
     std::swap(decalY[0],decalY[1]);
   }
-  for (int i=0; i<2; ++i)
+  for (unsigned int &i : num)
   {
-    if (num[i]<=0 || num[i]>10)
+    if (i<=0 || i>10)
     {
       FH_DEBUG_MSG(("libfreehand::FHCollector::_outputTextObject: the number of row/col seems bad\n"));
-      num[i]=1;
+      i=1;
     }
   }
   ++m_textBoxNumberId;
@@ -1518,8 +1518,8 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
         unsigned actPos=0;
         if (elements && !elements->empty())
         {
-          for (std::vector<unsigned>::const_iterator iter = elements->begin(); iter != elements->end(); ++iter)
-            _outputParagraph(_findParagraph(*iter), painter, actPos, textObject->m_beginPos, textObject->m_endPos);
+          for (unsigned int element : *elements)
+            _outputParagraph(_findParagraph(element), painter, actPos, textObject->m_beginPos, textObject->m_endPos);
         }
       }
       painter->endTextObject();
@@ -1750,21 +1750,21 @@ void libfreehand::FHCollector::_appendParagraphProperties(librevenge::RVNGProper
   if (iter == m_paragraphProperties.end())
     return;
   FHParagraphProperties const &para=iter->second;
-  for (std::map<unsigned,unsigned>::const_iterator it=para.m_idToZoneIdMap.begin(); it!=para.m_idToZoneIdMap.end(); ++it)
+  for (const auto &it : para.m_idToZoneIdMap)
   {
-    switch (it->first)
+    switch (it.first)
     {
     case FH_PARA_TAB_TABLE_ID:
-      if (m_tabs.find(it->second)!=m_tabs.end())
+      if (m_tabs.find(it.second)!=m_tabs.end())
       {
-        std::vector<FHTab> const &tabs=m_tabs.find(it->second)->second;
+        std::vector<FHTab> const &tabs=m_tabs.find(it.second)->second;
         if (tabs.empty())
           break;
         librevenge::RVNGPropertyListVector tabVect;
-        for (size_t i=0; i<tabs.size(); i++)
+        for (auto tab : tabs)
         {
           librevenge::RVNGPropertyList tabList;
-          _appendTabProperties(tabList, tabs[i]);
+          _appendTabProperties(tabList, tab);
           tabVect.append(tabList);
         }
         propList.insert("style:tab-stops", tabVect);
@@ -1819,12 +1819,12 @@ void libfreehand::FHCollector::_appendParagraphProperties(librevenge::RVNGProper
       break;
     }
   }
-  for (std::map<unsigned,unsigned>::const_iterator it=para.m_idToIntMap.begin(); it!=para.m_idToIntMap.end(); ++it)
+  for (const auto &it : para.m_idToIntMap)
   {
-    switch (it->first)
+    switch (it.first)
     {
     case FH_PARA_TEXT_ALIGN:
-      switch (it->second)
+      switch (it.second)
       {
       case 0:
         propList.insert("fo:text-align", "left");
@@ -1843,7 +1843,7 @@ void libfreehand::FHCollector::_appendParagraphProperties(librevenge::RVNGProper
       }
       break;
     case FH_PARA_KEEP_SAME_LINE:
-      if (it->second==1)
+      if (it.second==1)
         propList.insert("fo:keep-together", "always");
       break;
     case FH_PARA_LEADING_TYPE: // done with FH_PARA_LEADING
@@ -3071,9 +3071,9 @@ unsigned libfreehand::FHCollector::_findStrokeId(const libfreehand::FHGraphicSty
   if (iter == m_lists.end())
     return 0;
   unsigned strokeId = 0;
-  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  for (unsigned int element : iter->second.m_elements)
   {
-    unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
+    unsigned valueId = _findValueFromAttribute(element);
     if (_findBasicLine(valueId))
       strokeId = valueId;
   }
@@ -3089,9 +3089,9 @@ unsigned libfreehand::FHCollector::_findFillId(const libfreehand::FHGraphicStyle
   if (iter == m_lists.end())
     return 0;
   unsigned fillId = 0;
-  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  for (unsigned int element : iter->second.m_elements)
   {
-    unsigned valueId = _findValueFromAttribute(iter->second.m_elements[i]);
+    unsigned valueId = _findValueFromAttribute(element);
     // Add other fills if we support them
     if (_findBasicFill(valueId) || _findLinearFill(valueId)
         || _findLensFill(valueId) || _findRadialFill(valueId)
@@ -3109,9 +3109,9 @@ const libfreehand::FHFilterAttributeHolder *libfreehand::FHCollector::_findFilte
   std::map<unsigned, FHList>::const_iterator iter = m_lists.find(listId);
   if (iter == m_lists.end())
     return nullptr;
-  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  for (unsigned int element : iter->second.m_elements)
   {
-    const FHFilterAttributeHolder *attributeHolder = _findFilterAttributeHolder(iter->second.m_elements[i]);
+    const FHFilterAttributeHolder *attributeHolder = _findFilterAttributeHolder(element);
 
     if (attributeHolder)
       return attributeHolder;
@@ -3141,9 +3141,9 @@ librevenge::RVNGBinaryData libfreehand::FHCollector::getImageData(unsigned id)
   librevenge::RVNGBinaryData data;
   if (iter == m_dataLists.end())
     return data;
-  for (unsigned i = 0; i < iter->second.m_elements.size(); ++i)
+  for (unsigned int element : iter->second.m_elements)
   {
-    const librevenge::RVNGBinaryData *pData = _findData(iter->second.m_elements[i]);
+    const librevenge::RVNGBinaryData *pData = _findData(element);
     if (pData)
       data.append(*pData);
   }

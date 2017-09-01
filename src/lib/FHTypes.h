@@ -291,7 +291,7 @@ struct FHTEffect
   unsigned m_colorId[2];
   FHTEffect() : m_nameId(0), m_shortNameId(0)
   {
-    for (int i=0; i<2; ++i) m_colorId[i]=0;
+    for (unsigned int &i : m_colorId) i=0;
   }
 };
 struct FHDisplayText
