@@ -1,3 +1,22 @@
+libfreehand 0.1.2
+
+- Fix several hangs and leaks when reading damaged files found with the
+  help of american-fuzzy-lop.
+- Fix build with recent clang.
+- Make --help output of all command-line tools more help2man-friendly.
+- Require C++11 for build.
+- Parse more features:
+  * text on path
+  * more text attributes
+  * stroke patterns
+  * arrows
+  * paragraph attributes
+  * custom line and fill styles
+  * text effects
+- Write correct rotation center of a textbox.
+- Fix an issue found by oss-fuzz.
+- Various code cleanups and other small improvements.
+
 libfreehand 0.1.1
 
 - drastical improvement of all features
