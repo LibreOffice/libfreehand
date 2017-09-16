@@ -1390,6 +1390,7 @@ void libfreehand::FHParser::readList(librevenge::RVNGInputStream *input, libfree
   lst.m_listType = readU16(input);
   if (size > getRemainingLength(input) / 2)
     size = getRemainingLength(input) / 2;
+  lst.m_elements.reserve(size);
   for (unsigned short i = 0; i < size; ++i)
     lst.m_elements.push_back(_readRecordId(input));
   if (m_version < 9)
