@@ -1311,6 +1311,8 @@ void libfreehand::FHParser::readLinePat(librevenge::RVNGInputStream *input, libf
   }
   input->seek(8, librevenge::RVNG_SEEK_CUR);
   FHLinePattern pattern;
+  if (numStrokes > getRemainingLength(input) / 4)
+    numStrokes = getRemainingLength(input) / 4;
   pattern.m_dashes.resize(size_t(numStrokes));
   for (unsigned short i=0; i<numStrokes; ++i)
     pattern.m_dashes[size_t(i)]=_readCoordinate(input);
