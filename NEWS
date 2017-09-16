@@ -15,6 +15,7 @@ libfreehand 0.1.2
   * text effects
 - Write correct rotation center of a textbox.
 - Fix an issue found by oss-fuzz.
+- Fix several issues found by Coverity.
 - Various code cleanups and other small improvements.
 
 libfreehand 0.1.1
