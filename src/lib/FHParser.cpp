@@ -927,6 +927,8 @@ void libfreehand::FHParser::readDataList(librevenge::RVNGInputStream *input, lib
   FHDataList list;
   list.m_dataSize = readU32(input);
   input->seek(4, librevenge::RVNG_SEEK_CUR);
+  if (size > getRemainingLength(input) / 2)
+    size = getRemainingLength(input) / 2;
   for (unsigned short i = 0; i < size; ++i)
     list.m_elements.push_back(_readRecordId(input));
   if (collector)
