@@ -121,6 +121,8 @@ int libfreehand::FHInternalStream::seek(long offset, librevenge::RVNG_SEEK_TYPE 
     m_offset += offset;
   else if (seekType == librevenge::RVNG_SEEK_SET)
     m_offset = offset;
+  else if (seekType == librevenge::RVNG_SEEK_END)
+    m_offset = long(static_cast<unsigned long>(m_buffer.size())) + offset;
 
   if (m_offset < 0)
   {
