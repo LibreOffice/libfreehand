@@ -1459,6 +1459,8 @@ void libfreehand::FHParser::readMultiColorList(librevenge::RVNGInputStream *inpu
   std::vector<FHColorStop> colorStops;
   unsigned short num = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  if (num > getRemainingLength(input) / 10)
+    num = getRemainingLength(input) / 10;
   for (unsigned short i = 0; i < num; ++i)
   {
     FHColorStop colorStop;
