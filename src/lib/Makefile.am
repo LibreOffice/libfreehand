@@ -4,6 +4,7 @@ else
 version_info = -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 endif
 
+noinst_LTLIBRARIES = libfreehand-internal.la
 lib_LTLIBRARIES = libfreehand-@FH_MAJOR_VERSION@.@FH_MINOR_VERSION@.la
 
 AM_CXXFLAGS = \
@@ -18,15 +19,18 @@ AM_CXXFLAGS = \
 BUILT_SOURCES = tokens.h tokenhash.h
 
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LIBADD = \
+	libfreehand-internal.la \
 	$(REVENGE_LIBS) \
 	$(ZLIB_LIBS) \
 	$(LCMS2_LIBS) \
 	@LIBFREEHAND_WIN32_RESOURCE@
 
-libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_DEPENDENCIES = @LIBFREEHAND_WIN32_RESOURCE@
+libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_DEPENDENCIES = libfreehand-internal.la @LIBFREEHAND_WIN32_RESOURCE@
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_LDFLAGS = $(version_info) -export-dynamic -no-undefined
 libfreehand_@FH_MAJOR_VERSION@_@FH_MINOR_VERSION@_la_SOURCES = \
-	FreeHandDocument.cpp \
+	FreeHandDocument.cpp
+
+libfreehand_internal_la_SOURCES = \
 	FHCollector.cpp \
 	FHInternalStream.cpp \
 	FHParser.cpp \
