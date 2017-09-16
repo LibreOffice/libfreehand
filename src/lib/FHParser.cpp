@@ -2382,6 +2382,8 @@ void libfreehand::FHParser::readUString(librevenge::RVNGInputStream *input, libf
   long startPosition = input->tell();
   unsigned short size = readU16(input);
   unsigned short length = readU16(input);
+  if (length > getRemainingLength(input) / 2)
+    length = getRemainingLength(input) / 2;
   std::vector<unsigned short> ustr;
   unsigned short character = 0;
   if (length)
