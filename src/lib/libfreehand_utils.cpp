@@ -127,6 +127,29 @@ int32_t libfreehand::readS32(librevenge::RVNGInputStream *input)
   return (int32_t)readU32(input);
 }
 
+unsigned long libfreehand::getRemainingLength(librevenge::RVNGInputStream *const input)
+{
+  if (!input || input->tell() < 0)
+    throw EndOfStreamException();
+
+  const long begin = input->tell();
+
+  if (input->seek(0, librevenge::RVNG_SEEK_END) != 0)
+  {
+    // librevenge::RVNG_SEEK_END does not work. Use the harder way.
+    while (!input->isEnd())
+      readU8(input);
+  }
+  const long end = input->tell();
+
+  if (input->seek(begin, librevenge::RVNG_SEEK_SET) != 0)
+    throw EndOfStreamException();
+
+  if (end < begin)
+    throw EndOfStreamException();
+  return static_cast<unsigned long>(end - begin);
+}
+
 void libfreehand::_appendUTF16(librevenge::RVNGString &text, std::vector<unsigned short> &characters)
 {
   if (characters.empty())

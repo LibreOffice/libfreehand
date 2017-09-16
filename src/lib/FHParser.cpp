@@ -139,6 +139,8 @@ void libfreehand::FHParser::parseDictionary(librevenge::RVNGInputStream *input)
 void libfreehand::FHParser::parseRecordList(librevenge::RVNGInputStream *input)
 {
   unsigned count = readU32(input);
+  if (count > getRemainingLength(input) / 2)
+    count = getRemainingLength(input) / 2;
   for (unsigned i = 0; i < count; ++i)
   {
     unsigned id = readU16(input);
