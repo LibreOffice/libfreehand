@@ -2198,6 +2198,7 @@ void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, lib
   if (length > getRemainingLength(input) / 2)
     length = getRemainingLength(input) / 2;
   std::vector<unsigned short> characters;
+  characters.reserve(length);
   for (unsigned i = 0; i < length; ++i)
     characters.push_back(readU16(input));
   input->seek(size*4 - length*2, librevenge::RVNG_SEEK_CUR);
