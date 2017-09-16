@@ -1629,6 +1629,8 @@ void libfreehand::FHParser::readParagraph(librevenge::RVNGInputStream *input, li
   FHParagraph paragraph;
   paragraph.m_paraStyleId = _readRecordId(input);
   paragraph.m_textBlokId = _readRecordId(input);
+  if (size > getRemainingLength(input) / 24)
+    size = getRemainingLength(input) / 24;
   for (unsigned short i = 0; i < size; ++i)
   {
     std::pair<unsigned, unsigned> charStyleId;
