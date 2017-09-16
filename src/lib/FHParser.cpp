@@ -2370,6 +2370,8 @@ void libfreehand::FHParser::readTString(librevenge::RVNGInputStream *input, libf
   unsigned short size2 = readU16(input);
   unsigned short size = readU16(input);
   input->seek(16, librevenge::RVNG_SEEK_CUR);
+  if (size > getRemainingLength(input) / 2)
+    size = getRemainingLength(input) / 2;
   std::vector<unsigned> elements;
   for (unsigned short i = 0; i < size; ++i)
     elements.push_back(_readRecordId(input));
