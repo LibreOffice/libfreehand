@@ -1653,8 +1653,8 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
     input->seek(4, librevenge::RVNG_SEEK_CUR);
   input->seek(9, librevenge::RVNG_SEEK_CUR);
   unsigned char flag = readU8(input);
-  bool evenOdd = bool(flag&2);
-  bool closed = bool(flag&1);
+  auto evenOdd = bool(flag&2);
+  auto closed = bool(flag&1);
   unsigned short numPoints = readU16(input);
   if (m_version > 8)
     size = numPoints;
@@ -1755,7 +1755,7 @@ void libfreehand::FHParser::readPatternLine(librevenge::RVNGInputStream *input, 
   int numOnes=0;
   for (size_t j=0; j < 8; ++j)
   {
-    uint8_t val=static_cast<uint8_t>(readU8(input));
+    auto val=static_cast<uint8_t>(readU8(input));
     for (int b=0; b < 8; b++)
     {
       if (val&1) ++numOnes;
@@ -1790,7 +1790,7 @@ void libfreehand::FHParser::readPolygonFigure(librevenge::RVNGInputStream *input
   input->seek(12, librevenge::RVNG_SEEK_CUR);
   unsigned short xform = _readRecordId(input);
   unsigned short numSegments = readU16(input);
-  bool evenodd = bool(readU8(input));
+  auto evenodd = bool(readU8(input));
   double cx = _readCoordinate(input) / 72.0;
   double cy = _readCoordinate(input) / 72.0;
 

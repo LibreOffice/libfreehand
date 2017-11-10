@@ -616,7 +616,7 @@ void libfreehand::FHCollector::_getBBofClipGroup(const FHGroup *group, libfreeha
     return;
   }
 
-  std::vector<unsigned>::const_iterator iterVec = elements->begin();
+  auto iterVec = elements->begin();
   FHBoundingBox tmpBBox;
   _getBBofSomething(*iterVec, tmpBBox);
   bBox.merge(tmpBBox);
@@ -634,7 +634,7 @@ void libfreehand::FHCollector::_getBBofCompositePath(const FHCompositePath *comp
   if (elements && !elements->empty())
   {
     libfreehand::FHPath fhPath;
-    std::vector<unsigned>::const_iterator iter = elements->begin();
+    auto iter = elements->begin();
     const libfreehand::FHPath *path = _findPath(*(iter++));
     if (path)
     {
@@ -1101,7 +1101,7 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
 
   if (!elements->empty())
   {
-    std::vector<unsigned>::const_iterator iter = elements->begin();
+    auto iter = elements->begin();
     const FHPath *path = _findPath(*iter);
     if (!path)
       _outputGroup(group, painter);
@@ -1357,7 +1357,7 @@ void libfreehand::FHCollector::_outputCompositePath(const libfreehand::FHComposi
   if (elements && !elements->empty())
   {
     libfreehand::FHPath fhPath;
-    std::vector<unsigned>::const_iterator iter = elements->begin();
+    auto iter = elements->begin();
     const libfreehand::FHPath *path = _findPath(*(iter++));
     if (path)
     {
@@ -1628,7 +1628,7 @@ void libfreehand::FHCollector::_appendCharacterProperties(librevenge::RVNGProper
       }
     }
   }
-  for (std::map<unsigned,double>::const_iterator it=charProps.m_idToDoubleMap.begin(); it!=charProps.m_idToDoubleMap.end(); ++it)
+  for (auto it=charProps.m_idToDoubleMap.begin(); it!=charProps.m_idToDoubleMap.end(); ++it)
   {
     switch (it->first)
     {
@@ -1774,7 +1774,7 @@ void libfreehand::FHCollector::_appendParagraphProperties(librevenge::RVNGProper
       break;
     }
   }
-  for (std::map<unsigned,double>::const_iterator it=para.m_idToDoubleMap.begin(); it!=para.m_idToDoubleMap.end(); ++it)
+  for (auto it=para.m_idToDoubleMap.begin(); it!=para.m_idToDoubleMap.end(); ++it)
   {
     switch (it->first)
     {
@@ -1920,8 +1920,8 @@ void libfreehand::FHCollector::_outputDisplayText(const libfreehand::FHDisplayTe
     textObjectProps.insert("style:writing-mode", "tb-lr");
   painter->startTextObject(textObjectProps);
 
-  std::vector<FH3ParaProperties>::const_iterator iterPara = displayText->m_paraProps.begin();
-  std::vector<FH3CharProperties>::const_iterator iterChar = displayText->m_charProps.begin();
+  auto iterPara = displayText->m_paraProps.begin();
+  auto iterChar = displayText->m_charProps.begin();
 
   FH3ParaProperties paraProps = *iterPara++;
   FH3CharProperties charProps = *iterChar++;
@@ -2214,7 +2214,7 @@ void libfreehand::FHCollector::_appendFillProperties(librevenge::RVNGPropertyLis
     {
       if (propertyList->m_parentId)
         _appendFillProperties(propList, propertyList->m_parentId);
-      std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_fillId);
+      auto iter = propertyList->m_elements.find(m_fillId);
       if (iter != propertyList->m_elements.end())
       {
         _appendBasicFill(propList, _findBasicFill(iter->second));
@@ -2272,7 +2272,7 @@ void libfreehand::FHCollector::_appendStrokeProperties(librevenge::RVNGPropertyL
     {
       if (propertyList->m_parentId)
         _appendStrokeProperties(propList, propertyList->m_parentId);
-      std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_strokeId);
+      auto iter = propertyList->m_elements.find(m_strokeId);
       if (iter != propertyList->m_elements.end())
       {
         _appendBasicLine(propList, _findBasicLine(iter->second));
@@ -2341,7 +2341,7 @@ unsigned libfreehand::FHCollector::_findContentId(unsigned graphicStyleId)
     const FHPropList *propertyList = _findPropList(graphicStyleId);
     if (propertyList)
     {
-      std::map<unsigned, unsigned>::const_iterator iter = propertyList->m_elements.find(m_contentId);
+      auto iter = propertyList->m_elements.find(m_contentId);
       if (iter != propertyList->m_elements.end())
         return iter->second;
     }
@@ -2350,7 +2350,7 @@ unsigned libfreehand::FHCollector::_findContentId(unsigned graphicStyleId)
       const FHGraphicStyle *graphicStyle = _findGraphicStyle(graphicStyleId);
       if (graphicStyle)
       {
-        std::map<unsigned, unsigned>::const_iterator iter = graphicStyle->m_elements.find(m_contentId);
+        auto iter = graphicStyle->m_elements.find(m_contentId);
         if (iter != graphicStyle->m_elements.end())
           return iter->second;
       }
@@ -3194,7 +3194,7 @@ void libfreehand::FHCollector::_generateBitmapFromPattern(librevenge::RVNGBinary
 {
   unsigned height = 8;
   unsigned width = 8;
-  unsigned tmpPixelSize = (unsigned)(height * width);
+  auto tmpPixelSize = (unsigned)(height * width);
 
   unsigned tmpDIBImageSize = tmpPixelSize * 4;
 
