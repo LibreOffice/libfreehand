@@ -1814,15 +1814,18 @@ void libfreehand::FHParser::readPolygonFigure(librevenge::RVNGInputStream *input
   }
 
   FHPath path;
-  path.appendMoveTo(r1 * cos(arc1) + cx, r1 * sin(arc1) + cy);
-  double deltaArc = arc2 - arc1;
-  for (double arc = arc1; arc < arc1 + 2.0 * M_PI; arc += 2.0 * M_PI / numSegments)
+  if (numSegments > 0)
   {
-    path.appendLineTo(r1 * cos(arc) + cx, r1 * sin(arc) + cy);
-    path.appendLineTo(r2 * cos(arc + deltaArc) + cx, r2 * sin(arc + deltaArc) + cy);
+    path.appendMoveTo(r1 * cos(arc1) + cx, r1 * sin(arc1) + cy);
+    double deltaArc = arc2 - arc1;
+    for (double arc = arc1; arc < arc1 + 2.0 * M_PI; arc += 2.0 * M_PI / numSegments)
+    {
+      path.appendLineTo(r1 * cos(arc) + cx, r1 * sin(arc) + cy);
+      path.appendLineTo(r2 * cos(arc + deltaArc) + cx, r2 * sin(arc + deltaArc) + cy);
+    }
+    path.appendLineTo(r1 * cos(arc1) + cx, r1 * sin(arc1) + cy);
+    path.appendClosePath();
   }
-  path.appendLineTo(r1 * cos(arc1) + cx, r1 * sin(arc1) + cy);
-  path.appendClosePath();
   input->seek(8, librevenge::RVNG_SEEK_CUR);
   path.setXFormId(xform);
   path.setGraphicStyleId(graphicStyle);
