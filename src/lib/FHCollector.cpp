@@ -1583,7 +1583,7 @@ void libfreehand::FHCollector::_appendCharacterProperties(librevenge::RVNGProper
   {
     std::map<unsigned, librevenge::RVNGString>::const_iterator iterString = m_strings.find(charProps.m_fontNameId);
     if (iterString != m_strings.end())
-      propList.insert("fo:font-name", iterString->second);
+      propList.insert("style:font-name", iterString->second);
   }
   propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
   if (charProps.m_fontId)
@@ -1661,7 +1661,7 @@ void libfreehand::FHCollector::_appendCharacterProperties(librevenge::RVNGProper
   {
     std::map<unsigned, librevenge::RVNGString>::const_iterator iterString = m_strings.find(charProps.m_fontNameId);
     if (iterString != m_strings.end())
-      propList.insert("fo:font-name", iterString->second);
+      propList.insert("style:font-name", iterString->second);
   }
   propList.insert("fo:font-size", charProps.m_fontSize, librevenge::RVNG_POINT);
   if (charProps.m_fontColorId)
@@ -2193,7 +2193,7 @@ void libfreehand::FHCollector::_appendFontProperties(librevenge::RVNGPropertyLis
   {
     std::map<unsigned, librevenge::RVNGString>::const_iterator iterString = m_strings.find(font.m_fontNameId);
     if (iterString != m_strings.end())
-      propList.insert("fo:font-name", iterString->second);
+      propList.insert("style:font-name", iterString->second);
   }
   propList.insert("fo:font-size", font.m_fontSize, librevenge::RVNG_POINT);
   if (font.m_fontStyle & 1)
