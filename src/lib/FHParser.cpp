@@ -635,7 +635,7 @@ void libfreehand::FHParser::readArrowPath(librevenge::RVNGInputStream *input, li
 
   FHPath fhPath;
   fhPath.appendMoveTo(path[0][0].first / 72.0, path[0][0].second / 72.0);
-  unsigned i = 0;
+  size_t i = 0;
   for (i = 0; i<path.size()-1; ++i)
     fhPath.appendCubicBezierTo(path[i][2].first / 72.0, path[i][2].second / 72.0,
                                path[i+1][1].first / 72.0, path[i+1][1].second / 72.0,
@@ -1697,7 +1697,7 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
   FHPath fhPath;
   fhPath.appendMoveTo(path[0][0].first / 72.0, path[0][0].second / 72.0);
 
-  unsigned i = 0;
+  size_t i = 0;
   for (i = 0; i<path.size()-1; ++i)
     fhPath.appendCubicBezierTo(path[i][2].first / 72.0, path[i][2].second / 72.0,
                                path[i+1][1].first / 72.0, path[i+1][1].second / 72.0,
