@@ -22,10 +22,8 @@ libfreehand::FHTransform::FHTransform(double m11, double m21, double m12, double
 {
 }
 
-libfreehand::FHTransform::FHTransform(const FHTransform &trafo)
-  : m_m11(trafo.m_m11), m_m21(trafo.m_m21), m_m12(trafo.m_m12),
-    m_m22(trafo.m_m22), m_m13(trafo.m_m13), m_m23(trafo.m_m23) {}
-
+libfreehand::FHTransform::FHTransform(const FHTransform &trafo) = default;
+libfreehand::FHTransform &libfreehand::FHTransform::operator=(const FHTransform &trafo) = default;
 
 void libfreehand::FHTransform::applyToPoint(double &x, double &y) const
 {
