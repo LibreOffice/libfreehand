@@ -10,8 +10,6 @@
 #ifndef __FHTRANSFORM_H__
 #define __FHTRANSFORM_H__
 
-#include <math.h>
-
 namespace libfreehand
 {
 
