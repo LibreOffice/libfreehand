@@ -1761,7 +1761,7 @@ void libfreehand::FHCollector::_appendParagraphProperties(librevenge::RVNGProper
         if (tabs.empty())
           break;
         librevenge::RVNGPropertyListVector tabVect;
-        for (auto tab : tabs)
+        for (const auto &tab : tabs)
         {
           librevenge::RVNGPropertyList tabList;
           _appendTabProperties(tabList, tab);
