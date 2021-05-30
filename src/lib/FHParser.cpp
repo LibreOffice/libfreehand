@@ -258,6 +258,9 @@ void libfreehand::FHParser::parseRecord(librevenge::RVNGInputStream *input, libf
   case FH_ENVELOPE:
     readEnvelope(input, collector);
     break;
+  case FH_EPSIMPORT:
+    readEPSImport(input, collector);
+    break;
   case FH_EXPANDFILTER:
     readExpandFilter(input, collector);
     break;
@@ -1057,6 +1060,13 @@ void libfreehand::FHParser::readEnvelope(librevenge::RVNGInputStream *input, lib
   input->seek(19, librevenge::RVNG_SEEK_CUR);
   unsigned short num2 = readU16(input);
   input->seek(4*num2+27*num, librevenge::RVNG_SEEK_CUR);
+}
+
+void libfreehand::FHParser::readEPSImport(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
+{
+  // TODO: Needs to be verified. The size has been determined
+  // experimentally from a single v.7 (Mac) document.
+  input->seek(38, librevenge::RVNG_SEEK_CUR);
 }
 
 void libfreehand::FHParser::readExpandFilter(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)

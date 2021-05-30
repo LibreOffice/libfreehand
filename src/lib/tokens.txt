@@ -31,6 +31,7 @@ Element
 ElemList
 ElemPropLst
 Envelope
+EPSImport
 ExpandFilter
 Extrusion
 FHDocHeader

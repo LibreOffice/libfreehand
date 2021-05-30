@@ -69,6 +69,7 @@ private:
   void readElemList(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readElemPropLst(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readEnvelope(librevenge::RVNGInputStream *input, FHCollector *collector);
+  void readEPSImport(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readExpandFilter(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readExtrusion(librevenge::RVNGInputStream *input, FHCollector *collector);
   void readFHDocHeader(librevenge::RVNGInputStream *input, FHCollector *collector);
