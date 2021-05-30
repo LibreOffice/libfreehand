@@ -123,7 +123,11 @@ void libfreehand::FHParser::parseDictionary(librevenge::RVNGInputStream *input)
     unsigned char tmpChar = 0;
     while (0 != (tmpChar = readU8(input)))
       name.append((char)tmpChar);
-    FH_DEBUG_MSG(("FHParser::parseDictionary - ID: 0x%x, name: %s\n", id, name.cstr()));
+
+    auto nameToken = getTokenId(name.cstr());
+    FH_DEBUG_MSG(("FHParser::parseDictionary - ID: 0x%x, name: %s%s\n",
+                  id, name.cstr(), nameToken == FH_TOKEN_INVALID ? " (unknown)" : ""));
+
     if (m_version <= 8)
     {
       for (unsigned f = 0; f < 2;)
@@ -132,7 +136,8 @@ void libfreehand::FHParser::parseDictionary(librevenge::RVNGInputStream *input)
           f++;
       }
     }
-    m_dictionary[id] = getTokenId(name.cstr());
+
+    m_dictionary[id] = nameToken;
   }
 }
 
