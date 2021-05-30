@@ -538,6 +538,11 @@ void libfreehand::FHParser::parseRecords(librevenge::RVNGInputStream *input, lib
     std::map<unsigned short, int>::const_iterator iterDict = m_dictionary.find(m_records[m_currentRecord]);
     if (iterDict != m_dictionary.end())
     {
+      if (iterDict->second == FH_TOKEN_INVALID)
+      {
+        FH_DEBUG_MSG(("FHParser::parseRecords UNKNOWN TOKEN\n"));
+        return;
+      }
       parseRecord(input, collector, iterDict->second);
     }
     else
