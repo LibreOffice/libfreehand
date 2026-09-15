@@ -3137,6 +3137,13 @@ unsigned libfreehand::FHCollector::_findValueFromAttribute(unsigned id)
 {
   if (!id)
     return 0;
+  if (find(m_visitedObjects.begin(), m_visitedObjects.end(), id) != m_visitedObjects.end())
+    return 0;
+  if (m_visitedObjects.size() >= MAX_NESTING_DEPTH)
+    return 0;
+
+  const ObjectRecursionGuard guard(m_visitedObjects, id);
+
   std::map<unsigned, FHAttributeHolder>::const_iterator iter = m_attributeHolders.find(id);
   if (iter == m_attributeHolders.end())
     return 0;
