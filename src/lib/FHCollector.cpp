@@ -567,6 +567,13 @@ void libfreehand::FHCollector::_getBBofGroup(const FHGroup *group, libfreehand::
   if (!group)
     return;
 
+  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
+  if (!elements)
+  {
+    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
+    return;
+  }
+
   if (group->m_xFormId)
   {
     const FHTransform *trafo = _findTransform(group->m_xFormId);
@@ -577,13 +584,6 @@ void libfreehand::FHCollector::_getBBofGroup(const FHGroup *group, libfreehand::
   }
   else
     m_currentTransforms.push(libfreehand::FHTransform());
-
-  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
-  if (!elements)
-  {
-    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
-    return;
-  }
 
   for (unsigned int element : *elements)
   {
@@ -601,6 +601,13 @@ void libfreehand::FHCollector::_getBBofClipGroup(const FHGroup *group, libfreeha
   if (!group)
     return;
 
+  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
+  if (!elements)
+  {
+    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
+    return;
+  }
+
   if (group->m_xFormId)
   {
     const FHTransform *trafo = _findTransform(group->m_xFormId);
@@ -611,13 +618,6 @@ void libfreehand::FHCollector::_getBBofClipGroup(const FHGroup *group, libfreeha
   }
   else
     m_currentTransforms.push(libfreehand::FHTransform());
-
-  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
-  if (!elements)
-  {
-    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
-    return;
-  }
 
   auto iterVec = elements->begin();
   FHBoundingBox tmpBBox;
@@ -1068,6 +1068,13 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, l
   if (!painter || !group)
     return;
 
+  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
+  if (!elements)
+  {
+    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
+    return;
+  }
+
   if (group->m_xFormId)
   {
     const FHTransform *trafo = _findTransform(group->m_xFormId);
@@ -1078,13 +1085,6 @@ void libfreehand::FHCollector::_outputGroup(const libfreehand::FHGroup *group, l
   }
   else
     m_currentTransforms.push(libfreehand::FHTransform());
-
-  const std::vector<unsigned> *elements = _findListElements(group->m_elementsId);
-  if (!elements)
-  {
-    FH_DEBUG_MSG(("ERROR: The pointed element list does not exist\n"));
-    return;
-  }
 
   if (!elements->empty())
   {
