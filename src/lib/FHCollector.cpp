@@ -211,6 +211,9 @@ static void _composePath(librevenge::RVNGPropertyListVector &path, bool isClosed
   }
 }
 
+// Following a chain of groups or property lists costs one stack frame per link.
+const unsigned MAX_NESTING_DEPTH = 1024;
+
 class ObjectRecursionGuard
 {
 public:
@@ -1036,6 +1039,8 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, librevenge
   if (!painter || !somethingId)
     return;
   if (find(m_visitedObjects.begin(), m_visitedObjects.end(), somethingId) != m_visitedObjects.end())
+    return;
+  if (m_visitedObjects.size() >= MAX_NESTING_DEPTH)
     return;
 
   const ObjectRecursionGuard guard(m_visitedObjects, somethingId);
@@ -2206,7 +2211,8 @@ void libfreehand::FHCollector::_appendFillProperties(librevenge::RVNGPropertyLis
 {
   if (!propList["draw:fill"])
     propList.insert("draw:fill", "none");
-  if (graphicStyleId && find(m_visitedObjects.begin(), m_visitedObjects.end(), graphicStyleId) == m_visitedObjects.end())
+  if (graphicStyleId && m_visitedObjects.size() < MAX_NESTING_DEPTH
+      && find(m_visitedObjects.begin(), m_visitedObjects.end(), graphicStyleId) == m_visitedObjects.end())
   {
     const ObjectRecursionGuard guard(m_visitedObjects, graphicStyleId);
     const FHPropList *propertyList = _findPropList(graphicStyleId);
@@ -2264,7 +2270,8 @@ void libfreehand::FHCollector::_appendStrokeProperties(librevenge::RVNGPropertyL
 {
   if (!propList["draw:stroke"])
     propList.insert("draw:stroke", "none");
-  if (graphicStyleId && find(m_visitedObjects.begin(), m_visitedObjects.end(), graphicStyleId) == m_visitedObjects.end())
+  if (graphicStyleId && m_visitedObjects.size() < MAX_NESTING_DEPTH
+      && find(m_visitedObjects.begin(), m_visitedObjects.end(), graphicStyleId) == m_visitedObjects.end())
   {
     const ObjectRecursionGuard guard(m_visitedObjects, graphicStyleId);
     const FHPropList *propertyList = _findPropList(graphicStyleId);
