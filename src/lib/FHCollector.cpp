@@ -907,6 +907,12 @@ void libfreehand::FHCollector::_getBBofSomething(unsigned somethingId, libfreeha
 {
   if (!somethingId)
     return;
+  if (find(m_visitedObjects.begin(), m_visitedObjects.end(), somethingId) != m_visitedObjects.end())
+    return;
+  if (m_visitedObjects.size() >= MAX_NESTING_DEPTH)
+    return;
+
+  const ObjectRecursionGuard guard(m_visitedObjects, somethingId);
 
   FHBoundingBox tmpBBox;
   _getBBofGroup(_findGroup(somethingId), tmpBBox);
