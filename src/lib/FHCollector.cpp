@@ -619,10 +619,12 @@ void libfreehand::FHCollector::_getBBofClipGroup(const FHGroup *group, libfreeha
   else
     m_currentTransforms.push(libfreehand::FHTransform());
 
-  auto iterVec = elements->begin();
-  FHBoundingBox tmpBBox;
-  _getBBofSomething(*iterVec, tmpBBox);
-  bBox.merge(tmpBBox);
+  if (!elements->empty())
+  {
+    FHBoundingBox tmpBBox;
+    _getBBofSomething(elements->front(), tmpBBox);
+    bBox.merge(tmpBBox);
+  }
 
   if (!m_currentTransforms.empty())
     m_currentTransforms.pop();
