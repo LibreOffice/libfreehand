@@ -114,6 +114,9 @@ void libfreehand::FHParser::parseDictionary(librevenge::RVNGInputStream *input)
   unsigned count = readU16(input);
   FH_DEBUG_MSG(("FHParser::parseDictionary - count 0x%x\n", count));
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  // each entry is at least a 2 byte id and the zero byte that ends its name
+  if (count > getRemainingLength(input) / 3)
+    count = getRemainingLength(input) / 3;
   for (unsigned i = 0; i < count; ++i)
   {
     unsigned short id = readU16(input);
