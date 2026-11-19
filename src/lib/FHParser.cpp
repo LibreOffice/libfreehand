@@ -1965,10 +1965,6 @@ void libfreehand::FHParser::readRectangle(librevenge::RVNGInputStream *input, li
   double rbrr = rtll;
   double rblb = rtlt;
   double rbll = rtll;
-  bool rbl(true);
-  bool rtl(true);
-  bool rtr(true);
-  bool rbr(true);
   if (m_version >= 11)
   {
     rtrt = _readCoordinate(input) / 72.0;
@@ -1986,40 +1982,28 @@ void libfreehand::FHParser::readRectangle(librevenge::RVNGInputStream *input, li
   else
   {
     path.appendMoveTo(x1 + rblb, y1);
-    if (rbl)
-      path.appendQuadraticBezierTo(x1, y1, x1, y1 + rbll);
-    else
-      path.appendQuadraticBezierTo(x1 + rblb, y1 + rbll, x1, y1 + rbll);
+    path.appendQuadraticBezierTo(x1, y1, x1, y1 + rbll);
   }
   if (FH_ALMOST_ZERO(rtll) || FH_ALMOST_ZERO(rtlt))
     path.appendLineTo(x1, y2);
   else
   {
     path.appendLineTo(x1, y2 - rtll);
-    if (rtl)
-      path.appendQuadraticBezierTo(x1, y2, x1 + rtlt, y2);
-    else
-      path.appendQuadraticBezierTo(x1 + rtlt, y2 - rtll, x1 + rtlt, y2);
+    path.appendQuadraticBezierTo(x1, y2, x1 + rtlt, y2);
   }
   if (FH_ALMOST_ZERO(rtrt) || FH_ALMOST_ZERO(rtrr))
     path.appendLineTo(x2, y2);
   else
   {
     path.appendLineTo(x2 - rtrt, y2);
-    if (rtr)
-      path.appendQuadraticBezierTo(x2, y2, x2, y2 - rtrr);
-    else
-      path.appendQuadraticBezierTo(x2 - rtrt, y2 - rtrr, x2, y2 - rtrr);
+    path.appendQuadraticBezierTo(x2, y2, x2, y2 - rtrr);
   }
   if (FH_ALMOST_ZERO(rbrr) || FH_ALMOST_ZERO(rbrb))
     path.appendLineTo(x2, y1);
   else
   {
     path.appendLineTo(x2, y1 + rbrr);
-    if (rbr)
-      path.appendQuadraticBezierTo(x2, y1, x2 - rbrb, y1);
-    else
-      path.appendQuadraticBezierTo(x2 - rbrb, y1 + rbrr, x2 - rbrb, y1);
+    path.appendQuadraticBezierTo(x2, y1, x2 - rbrb, y1);
   }
   if (FH_ALMOST_ZERO(rbll) || FH_ALMOST_ZERO(rblb))
     path.appendLineTo(x1, y1);
