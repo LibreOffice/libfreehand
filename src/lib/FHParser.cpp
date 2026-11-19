@@ -2451,6 +2451,9 @@ void libfreehand::FHParser::readVDict(librevenge::RVNGInputStream *input, libfre
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short num = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  // each entry is at least a 2 byte key, a 2 byte record type and a 2 byte value
+  if (num > getRemainingLength(input) / 6)
+    num = getRemainingLength(input) / 6;
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned short key = readU16(input);
