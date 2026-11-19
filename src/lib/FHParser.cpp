@@ -2293,6 +2293,9 @@ void libfreehand::FHParser::readTextObject(librevenge::RVNGInputStream *input, l
   textObject.m_tStringId = _readRecordId(input);
   textObject.m_vmpObjId = _readRecordId(input);
 
+  // each entry is at least a 4 byte key and a 2 byte value
+  if (num > getRemainingLength(input) / 6)
+    num = getRemainingLength(input) / 6;
   for (unsigned short i = 0; i < num; ++i)
   {
     unsigned key = readU32(input);
