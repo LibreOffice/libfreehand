@@ -1406,6 +1406,9 @@ void libfreehand::FHParser::readMDict(librevenge::RVNGInputStream *input, libfre
   input->seek(2, librevenge::RVNG_SEEK_CUR);
   unsigned short size = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  // each entry is two record ids of at least 2 bytes each
+  if (size > getRemainingLength(input) / 4)
+    size = getRemainingLength(input) / 4;
   for (unsigned short i = 0; i < size; ++i)
   {
     _readRecordId(input);
