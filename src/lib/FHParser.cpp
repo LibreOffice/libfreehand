@@ -2131,9 +2131,12 @@ void libfreehand::FHParser::readSymbolInstance(librevenge::RVNGInputStream *inpu
 void libfreehand::FHParser::readSymbolLibrary(librevenge::RVNGInputStream *input, libfreehand::FHCollector * /* collector */)
 {
   input->seek(2, librevenge::RVNG_SEEK_CUR);
-  unsigned short size = readU16(input);
+  unsigned count = readU16(input) + 3;
   input->seek(8, librevenge::RVNG_SEEK_CUR);
-  for (unsigned short i = 0; i < size+3; ++i)
+  // each record id is at least 2 bytes
+  if (count > getRemainingLength(input) / 2)
+    count = getRemainingLength(input) / 2;
+  for (unsigned i = 0; i < count; ++i)
     _readRecordId(input);
 }
 
