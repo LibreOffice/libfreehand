@@ -2695,6 +2695,9 @@ void libfreehand::FHParser::_readBlockInformation(librevenge::RVNGInputStream *i
 
 void libfreehand::FHParser::_readPropLstElements(librevenge::RVNGInputStream *input, std::map<unsigned, unsigned> &properties, unsigned size)
 {
+  // each element is at least a 2 byte name id and a 2 byte value id
+  if (size > getRemainingLength(input) / 4)
+    size = getRemainingLength(input) / 4;
   for (unsigned i = 0; i < size; ++i)
   {
     unsigned nameId = _readRecordId(input);
