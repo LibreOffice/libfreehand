@@ -2452,6 +2452,9 @@ void libfreehand::FHParser::readVMpObj(librevenge::RVNGInputStream *input, libfr
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short num = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  // each entry is at least a 2 byte key and a 2 byte record type
+  if (num > getRemainingLength(input) / 4)
+    num = getRemainingLength(input) / 4;
   double minX = 0.0;
   double minY = 0.0;
   double maxX = 0.0;
