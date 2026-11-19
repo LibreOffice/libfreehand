@@ -1355,6 +1355,9 @@ void libfreehand::FHParser::readLineTable(librevenge::RVNGInputStream *input, li
   unsigned short size = readU16(input);
   if (m_version < 10)
     size = tmpSize;
+  // each entry is 48 bytes and a record id of at least 2 bytes
+  if (size > getRemainingLength(input) / 50)
+    size = getRemainingLength(input) / 50;
   for (unsigned short i = 0; i < size; ++i)
   {
     input->seek(48, librevenge::RVNG_SEEK_CUR);
