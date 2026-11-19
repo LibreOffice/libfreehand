@@ -1011,7 +1011,10 @@ void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, 
 #ifdef DEBUG
   librevenge::RVNGString text;
 #endif
-  for (unsigned short i = 0; i <= textLength; ++i)
+  unsigned numCharacters = textLength + 1;
+  if (numCharacters > getRemainingLength(input))
+    numCharacters = getRemainingLength(input);
+  for (unsigned i = 0; i < numCharacters; ++i)
   {
     unsigned char character = readU8(input);
     displayText.m_characters.push_back(character);
