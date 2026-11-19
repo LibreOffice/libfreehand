@@ -570,6 +570,9 @@ void libfreehand::FHParser::readAGDFont(librevenge::RVNGInputStream *input, libf
   input->seek(4, librevenge::RVNG_SEEK_CUR);
   unsigned short num = readU16(input);
   input->seek(2, librevenge::RVNG_SEEK_CUR);
+  // each entry is at least a 4 byte key and a 2 byte value
+  if (num > getRemainingLength(input) / 6)
+    num = getRemainingLength(input) / 6;
   FHAGDFont font;
   for (unsigned short i = 0; i < num; ++i)
   {
