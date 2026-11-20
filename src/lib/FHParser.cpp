@@ -1696,6 +1696,9 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
   unsigned short numPoints = readU16(input);
   if (m_version > 8)
     size = numPoints;
+  // each point is 27 bytes
+  if (numPoints > getRemainingLength(input) / 27)
+    numPoints = getRemainingLength(input) / 27;
 
   std::vector<unsigned char> ptrTypes;
   std::vector<std::vector<std::pair<double, double> > > path;
