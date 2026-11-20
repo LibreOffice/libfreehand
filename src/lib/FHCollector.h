@@ -254,6 +254,7 @@ private:
   unsigned m_contentId;
   unsigned m_textBoxNumberId;
   std::deque<unsigned> m_visitedObjects;
+  unsigned m_numObjectVisits;
 };
 
 } // namespace libfreehand

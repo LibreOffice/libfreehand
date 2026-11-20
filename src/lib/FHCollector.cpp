@@ -214,6 +214,9 @@ static void _composePath(librevenge::RVNGPropertyListVector &path, bool isClosed
 // Following a chain of groups or property lists costs one stack frame per link.
 const unsigned MAX_NESTING_DEPTH = 1024;
 
+// An object listed in several groups is drawn, and measured, once for each time it is reached.
+const unsigned MAX_OBJECT_VISITS = 1 << 20;
+
 class ObjectRecursionGuard
 {
 public:
@@ -248,7 +251,7 @@ libfreehand::FHCollector::FHCollector() :
   m_tints(), m_lensFills(), m_radialFills(), m_newBlends(), m_filterAttributeHolders(), m_opacityFilters(),
   m_shadowFilters(), m_glowFilters(), m_tileFills(), m_symbolClasses(), m_symbolInstances(), m_patternFills(),
   m_linePatterns(), m_arrowPaths(),
-  m_strokeId(0), m_fillId(0), m_contentId(0), m_textBoxNumberId(0), m_visitedObjects()
+  m_strokeId(0), m_fillId(0), m_contentId(0), m_textBoxNumberId(0), m_visitedObjects(), m_numObjectVisits(0)
 {
 }
 
@@ -913,6 +916,9 @@ void libfreehand::FHCollector::_getBBofSomething(unsigned somethingId, libfreeha
     return;
   if (m_visitedObjects.size() >= MAX_NESTING_DEPTH)
     return;
+  if (m_numObjectVisits >= MAX_OBJECT_VISITS)
+    return;
+  ++m_numObjectVisits;
 
   const ObjectRecursionGuard guard(m_visitedObjects, somethingId);
 
@@ -1050,6 +1056,9 @@ void libfreehand::FHCollector::_outputSomething(unsigned somethingId, librevenge
     return;
   if (m_visitedObjects.size() >= MAX_NESTING_DEPTH)
     return;
+  if (m_numObjectVisits >= MAX_OBJECT_VISITS)
+    return;
+  ++m_numObjectVisits;
 
   const ObjectRecursionGuard guard(m_visitedObjects, somethingId);
 
