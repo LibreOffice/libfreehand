@@ -217,6 +217,9 @@ const unsigned MAX_NESTING_DEPTH = 1024;
 // An object listed in several groups is drawn, and measured, once for each time it is reached.
 const unsigned MAX_OBJECT_VISITS = 1 << 20;
 
+// A drawing nested as an image is embedded in base64, a third larger than the drawing inside it.
+const unsigned MAX_NESTED_IMAGES = 8;
+
 class ObjectRecursionGuard
 {
 public:
@@ -983,7 +986,7 @@ void libfreehand::FHCollector::_outputPath(const libfreehand::FHPath *path, libr
     painter->openGroup(librevenge::RVNGPropertyList());
   painter->setStyle(propList);
   painter->drawPath(pList);
-  if (contentId)
+  if (contentId && m_fakeTransforms.size() < MAX_NESTED_IMAGES)
   {
     FHBoundingBox bBox;
     fhPath.getBoundingBox(bBox.m_xmin, bBox.m_ymin, bBox.m_xmax, bBox.m_ymax);
@@ -1125,7 +1128,7 @@ void libfreehand::FHCollector::_outputClipGroup(const libfreehand::FHGroup *grou
   {
     auto iter = elements->begin();
     const FHPath *path = _findPath(*iter);
-    if (!path)
+    if (!path || m_fakeTransforms.size() >= MAX_NESTED_IMAGES)
       _outputGroup(group, painter);
     else
     {
@@ -2545,7 +2548,8 @@ void libfreehand::FHCollector::_appendTileFill(librevenge::RVNGPropertyList &pro
 
   FHBoundingBox bBox;
   _getBBofSomething(tileFill->m_groupId, bBox);
-  if (bBox.isValid() && !FH_ALMOST_ZERO(bBox.m_xmax - bBox.m_xmin) && !FH_ALMOST_ZERO(bBox.m_ymax - bBox.m_ymin))
+  if (bBox.isValid() && !FH_ALMOST_ZERO(bBox.m_xmax - bBox.m_xmin) && !FH_ALMOST_ZERO(bBox.m_ymax - bBox.m_ymin)
+      && m_fakeTransforms.size() < MAX_NESTED_IMAGES)
   {
     FHTransform fakeTrafo(tileFill->m_scaleX, 0.0, 0.0, tileFill->m_scaleY, - bBox.m_xmin, -bBox.m_ymin);
     m_fakeTransforms.push_back(fakeTrafo);
