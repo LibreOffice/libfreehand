@@ -910,6 +910,9 @@ void libfreehand::FHParser::readCustomProc(librevenge::RVNGInputStream *input, l
   unsigned short size = readU16(input);
   _readRecordId(input); // name
   input->seek(4, librevenge::RVNG_SEEK_CUR); // ?, and N
+  // each entry is at least 10 bytes
+  if (size > getRemainingLength(input) / 10)
+    size = getRemainingLength(input) / 10;
   for (int i=0; i<size; ++i)
   {
     int type=readU8(input);
