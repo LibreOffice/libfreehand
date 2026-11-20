@@ -1549,8 +1549,12 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
         unsigned actPos=0;
         if (elements && !elements->empty())
         {
+          std::set<unsigned> output;
           for (unsigned int element : *elements)
-            _outputParagraph(_findParagraph(element), painter, actPos, textObject->m_beginPos, textObject->m_endPos);
+          {
+            if (output.insert(element).second)
+              _outputParagraph(_findParagraph(element), painter, actPos, textObject->m_beginPos, textObject->m_endPos);
+          }
         }
       }
       painter->endTextObject();
@@ -1571,6 +1575,8 @@ void libfreehand::FHCollector::_outputParagraph(const libfreehand::FHParagraph *
     {
       if (actPos>=maxPos) break;
       unsigned lastChar=i+1 < paragraph->m_charStyleIds.size() ? paragraph->m_charStyleIds[i+1].first : iter->second.size();
+      if (lastChar < paragraph->m_charStyleIds[i].first)
+        continue;
       unsigned numChar=lastChar-paragraph->m_charStyleIds[i].first;
       unsigned nextPos=actPos+numChar;
       if (nextPos<minPos)
