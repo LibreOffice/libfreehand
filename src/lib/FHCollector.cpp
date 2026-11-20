@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <set>
 #include <string.h>
 #include <librevenge/librevenge.h>
 #include "FHCollector.h"
@@ -3174,8 +3175,11 @@ librevenge::RVNGBinaryData libfreehand::FHCollector::getImageData(unsigned id)
   librevenge::RVNGBinaryData data;
   if (iter == m_dataLists.end())
     return data;
+  std::set<unsigned> appended;
   for (unsigned int element : iter->second.m_elements)
   {
+    if (!appended.insert(element).second)
+      continue;
     const librevenge::RVNGBinaryData *pData = _findData(element);
     if (pData)
       data.append(*pData);
