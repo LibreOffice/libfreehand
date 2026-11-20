@@ -127,24 +127,26 @@ const unsigned char *libfreehand::FHInternalStream::read(unsigned long numBytes,
 
 int libfreehand::FHInternalStream::seek(long offset, librevenge::RVNG_SEEK_TYPE seekType)
 {
+  const long size = long(m_buffer.size());
+  long base = 0;
   if (seekType == librevenge::RVNG_SEEK_CUR)
-    m_offset += offset;
-  else if (seekType == librevenge::RVNG_SEEK_SET)
-    m_offset = offset;
+    base = m_offset;
   else if (seekType == librevenge::RVNG_SEEK_END)
-    m_offset = long(static_cast<unsigned long>(m_buffer.size())) + offset;
+    base = size;
 
-  if (m_offset < 0)
+  // base is between 0 and size, so neither side of these tests can overflow
+  if (offset < -base)
   {
     m_offset = 0;
     return 1;
   }
-  if ((long)m_offset > (long)m_buffer.size())
+  if (offset > size - base)
   {
-    m_offset = m_buffer.size();
+    m_offset = size;
     return 1;
   }
 
+  m_offset = base + offset;
   return 0;
 }
 
