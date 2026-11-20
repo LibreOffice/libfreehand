@@ -62,6 +62,8 @@ int16_t readS16(librevenge::RVNGInputStream *input);
 int32_t readS32(librevenge::RVNGInputStream *input);
 
 unsigned long getRemainingLength(librevenge::RVNGInputStream *input);
+// Moves the stream on by count bytes, and leaves it where it is when count is not positive.
+void skipForward(librevenge::RVNGInputStream *input, long count);
 
 void writeU16(librevenge::RVNGBinaryData &buffer, const int value);
 void writeU32(librevenge::RVNGBinaryData &buffer, const int value);

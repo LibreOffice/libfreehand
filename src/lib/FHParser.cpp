@@ -968,7 +968,7 @@ void libfreehand::FHParser::readData(librevenge::RVNGInputStream *input, libfree
   unsigned long numBytesRead = 0;
   const unsigned char *buffer = input->read(dataSize, numBytesRead);
   librevenge::RVNGBinaryData data(buffer, numBytesRead);
-  input->seek(blockSize*4-dataSize, librevenge::RVNG_SEEK_CUR);
+  skipForward(input, long(blockSize)*4 - long(dataSize));
   if (collector)
     collector->collectData(m_currentRecord+1, data);
 }
@@ -1440,7 +1440,7 @@ void libfreehand::FHParser::readList(librevenge::RVNGInputStream *input, libfree
   for (unsigned short i = 0; i < size; ++i)
     lst.m_elements.push_back(_readRecordId(input));
   if (m_version < 9)
-    input->seek(2*(size2-size),librevenge::RVNG_SEEK_CUR);
+    skipForward(input, 2*(size2-size));
   if (collector)
     collector->collectList(m_currentRecord+1, lst);
 }
@@ -1457,7 +1457,7 @@ void libfreehand::FHParser::readMName(librevenge::RVNGInputStream *input, libfre
   for (unsigned short i = 0; i < length && 0 != (character = readU8(input)); i++)
     _appendMacRoman(name, character);
   FH_DEBUG_MSG(("FHParser::readMName %s\n", name.cstr()));
-  input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
+  skipForward(input, startPosition + (size+1)*4 - input->tell());
   if (collector)
   {
     collector->collectString(m_currentRecord+1, name);
@@ -1488,7 +1488,7 @@ void libfreehand::FHParser::readMString(librevenge::RVNGInputStream *input, libf
   for (unsigned short i = 0; i < length && 0 != (character = readU8(input)); i++)
     _appendMacRoman(str, character);
   FH_DEBUG_MSG(("FHParser::readMString %s\n", str.cstr()));
-  input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
+  skipForward(input, startPosition + (size+1)*4 - input->tell());
   if (collector)
     collector->collectString(m_currentRecord+1, str);
 }
@@ -1731,7 +1731,7 @@ void libfreehand::FHParser::readPath(librevenge::RVNGInputStream *input, libfree
         path.push_back(segment);
       segment.clear();
     }
-    input->seek((size-numPoints)*27, librevenge::RVNG_SEEK_CUR);
+    skipForward(input, (size-numPoints)*27);
   }
   catch (const EndOfStreamException &)
   {
@@ -1913,7 +1913,7 @@ void libfreehand::FHParser::readPropLst(librevenge::RVNGInputStream *input, libf
   /* osnola: TODO
      - if version>3, look if pages is defined, if yes, the zone defines the list of pages, */
   if (m_version < 9)
-    input->seek((size2 - size)*4, librevenge::RVNG_SEEK_CUR);
+    skipForward(input, (size2 - size)*4);
   if (collector)
     collector->collectPropList(m_currentRecord+1, propertyList);
 }
@@ -2258,7 +2258,7 @@ void libfreehand::FHParser::readTextBlok(librevenge::RVNGInputStream *input, lib
   characters.reserve(length);
   for (unsigned i = 0; i < length; ++i)
     characters.push_back(readU16(input));
-  input->seek(size*4 - length*2, librevenge::RVNG_SEEK_CUR);
+  skipForward(input, size*4 - length*2);
   if (collector)
     collector->collectTextBlok(m_currentRecord+1, characters);
 #ifdef DEBUG
@@ -2438,7 +2438,7 @@ void libfreehand::FHParser::readTString(librevenge::RVNGInputStream *input, libf
   for (unsigned short i = 0; i < size; ++i)
     elements.push_back(_readRecordId(input));
   if (m_version < 9)
-    input->seek((size2-size)*2, librevenge::RVNG_SEEK_CUR);
+    skipForward(input, (size2-size)*2);
   if (collector && !elements.empty())
     collector->collectTString(m_currentRecord+1, elements);
 }
@@ -2465,7 +2465,7 @@ void libfreehand::FHParser::readUString(librevenge::RVNGInputStream *input, libf
   _appendUTF16(str, ustr);
 
   FH_DEBUG_MSG(("FHParser::readUString %i (%s)\n", length, str.cstr()));
-  input->seek(startPosition + (size+1)*4, librevenge::RVNG_SEEK_SET);
+  skipForward(input, startPosition + (size+1)*4 - input->tell());
   if (collector)
     collector->collectString(m_currentRecord+1, str);
 }

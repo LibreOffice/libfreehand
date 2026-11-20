@@ -127,6 +127,12 @@ int32_t libfreehand::readS32(librevenge::RVNGInputStream *input)
   return (int32_t)readU32(input);
 }
 
+void libfreehand::skipForward(librevenge::RVNGInputStream *const input, const long count)
+{
+  if (input && count > 0)
+    input->seek(count, librevenge::RVNG_SEEK_CUR);
+}
+
 unsigned long libfreehand::getRemainingLength(librevenge::RVNGInputStream *const input)
 {
   if (!input || input->tell() < 0)
