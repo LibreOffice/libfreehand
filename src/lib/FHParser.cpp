@@ -2260,6 +2260,9 @@ void libfreehand::FHParser::readTextEffs(librevenge::RVNGInputStream *input, lib
   eff.m_nameId=_readRecordId(input);
   eff.m_shortNameId=_readRecordId(input);
   input->seek(num==0 ? 16 : 18, librevenge::RVNG_SEEK_CUR);
+  // each entry is at least 12 bytes
+  if (num > getRemainingLength(input) / 12)
+    num = getRemainingLength(input) / 12;
   int numId=0;
   for (unsigned i = 0; i < num; ++i)
   {
