@@ -1448,6 +1448,8 @@ void libfreehand::FHParser::readMName(librevenge::RVNGInputStream *input, libfre
   long startPosition = input->tell();
   unsigned short size = readU16(input);
   unsigned short length = readU16(input);
+  if (length > getRemainingLength(input))
+    length = getRemainingLength(input);
   librevenge::RVNGString name;
   unsigned char character = 0;
   for (unsigned short i = 0; i < length && 0 != (character = readU8(input)); i++)
@@ -1477,6 +1479,8 @@ void libfreehand::FHParser::readMString(librevenge::RVNGInputStream *input, libf
   long startPosition = input->tell();
   unsigned short size = readU16(input);
   unsigned short length = readU16(input);
+  if (length > getRemainingLength(input))
+    length = getRemainingLength(input);
   librevenge::RVNGString str;
   unsigned char character = 0;
   for (unsigned short i = 0; i < length && 0 != (character = readU8(input)); i++)
