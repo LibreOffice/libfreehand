@@ -30,6 +30,9 @@ namespace
 
 #include "tokenhash.h"
 
+// Each segment of a polygon figure adds two points to its outline.
+const unsigned short MAX_POLYGON_SEGMENTS = 1 << 13;
+
 static int getTokenId(const char *name)
 {
   const fhtoken *token = Perfect_Hash::in_word_set(name, strlen(name));
@@ -1840,6 +1843,8 @@ void libfreehand::FHParser::readPolygonFigure(librevenge::RVNGInputStream *input
   input->seek(12, librevenge::RVNG_SEEK_CUR);
   unsigned short xform = _readRecordId(input);
   unsigned short numSegments = readU16(input);
+  if (numSegments > MAX_POLYGON_SEGMENTS)
+    numSegments = MAX_POLYGON_SEGMENTS;
   auto evenodd = bool(readU8(input));
   double cx = _readCoordinate(input) / 72.0;
   double cy = _readCoordinate(input) / 72.0;
