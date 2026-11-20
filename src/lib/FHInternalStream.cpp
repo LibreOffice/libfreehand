@@ -15,6 +15,9 @@
 
 
 #define CHUNK 16384
+#define MAX_INFLATED_SIZE (1ull << 30)
+#define INFLATED_SIZE_ALLOWANCE (1ull << 26)
+#define MAX_INFLATE_RATIO 100ull
 
 libfreehand::FHInternalStream::FHInternalStream(librevenge::RVNGInputStream *input, unsigned long size, bool compressed) :
   librevenge::RVNGInputStream(),
@@ -66,6 +69,12 @@ libfreehand::FHInternalStream::FHInternalStream(librevenge::RVNGInputStream *inp
 
     do
     {
+      // The inflated data ends at MAX_INFLATED_SIZE, or sooner at INFLATED_SIZE_ALLOWANCE plus
+      // MAX_INFLATE_RATIO times the compressed data read so far.
+      const unsigned long long inflated(m_buffer.size());
+      if (inflated >= MAX_INFLATED_SIZE
+          || inflated >= INFLATED_SIZE_ALLOWANCE + MAX_INFLATE_RATIO * strm.total_in)
+        break;
       strm.avail_out = CHUNK;
       strm.next_out = out;
       ret = inflate(&strm, Z_NO_FLUSH);
