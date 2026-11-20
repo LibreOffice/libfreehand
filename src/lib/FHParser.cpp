@@ -997,6 +997,8 @@ void libfreehand::FHParser::readDisplayText(librevenge::RVNGInputStream *input, 
   displayText.m_height = dimT - dimB;
   input->seek(32, librevenge::RVNG_SEEK_CUR);
   unsigned short textLength = readU16(input);
+  if (textLength > getRemainingLength(input))
+    textLength = getRemainingLength(input);
   displayText.m_justify=readU8(input);
   input->seek(1, librevenge::RVNG_SEEK_CUR);
 
