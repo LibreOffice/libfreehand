@@ -618,6 +618,9 @@ void libfreehand::FHParser::readArrowPath(librevenge::RVNGInputStream *input, li
   input->seek(4, librevenge::RVNG_SEEK_CUR);
 
   long endPos=input->tell()+27*numPoints;
+  // each point is 27 bytes
+  if (numPoints > getRemainingLength(input) / 27)
+    numPoints = getRemainingLength(input) / 27;
   std::vector<unsigned char> ptrTypes;
   std::vector<std::vector<std::pair<double, double> > > path;
   try
