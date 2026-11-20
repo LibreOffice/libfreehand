@@ -1418,9 +1418,14 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
     }
   }
   ++m_textBoxNumberId;
-  for (unsigned dim0=0; dim0<num[0]; ++dim0)
+#ifdef HAVE_CHAINED_TEXTBOX
+  const unsigned numBoxes[2] = {num[0], num[1]};
+#else
+  const unsigned numBoxes[2] = {1, 1};
+#endif
+  for (unsigned dim0=0; dim0<numBoxes[0]; ++dim0)
   {
-    for (unsigned dim1=0; dim1<num[1]; ++dim1)
+    for (unsigned dim1=0; dim1<numBoxes[1]; ++dim1)
     {
       unsigned id = dim0*num[1]+dim1;
       double rotation = 0, finalHeight = 0, finalWidth = 0, xmid=0, ymid=0;
@@ -1536,14 +1541,7 @@ void libfreehand::FHCollector::_outputTextObject(const libfreehand::FHTextObject
         }
       }
       painter->endTextObject();
-
-#if !defined(HAVE_CHAINED_TEXTBOX)
-      break;
-#endif
     }
-#if !defined(HAVE_CHAINED_TEXTBOX)
-    break;
-#endif
   }
 }
 
